@@ -8,13 +8,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion(29)
+    compileSdkVersion(Versions.COMPILE_SDK)
     defaultConfig {
         applicationId = "com.vamsi.worldcountriesinformation"
-        minSdkVersion(24)
-        targetSdkVersion(29)
-        versionCode = 1
-        versionName = "1.0"
+        minSdkVersion(Versions.MIN_SDK)
+        targetSdkVersion(Versions.TARGET_SDK)
+        versionCode = Versions.versionCode
+        versionName = Versions.versionName
         testInstrumentationRunner = "com.vamsi.worldcountriesinformation.WorldCountriesTestRunner"
         vectorDrawables.useSupportLibrary = true
 
@@ -32,8 +32,10 @@ android {
         }
     }
 
-    buildFeatures.dataBinding = true
-    buildFeatures.viewBinding = true
+    buildFeatures {
+        dataBinding = true
+        viewBinding = true
+    }
 
     kotlinOptions {
         jvmTarget = "1.8"
@@ -43,57 +45,80 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        // "this" is currently lacking a proper type
+        // See: https://youtrack.jetbrains.com/issue/KT-31077
+        val options = this as? org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
+        options?.jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
 }
 
 dependencies {
-    implementation(Libs.kotlinStdLib)
-    implementation(Libs.appCompat)
-    implementation(Libs.constraintLayout)
-    implementation(Libs.viewpager2)
+    implementation(project(":domain"))
+    implementation(project(":common"))
 
-    implementation(Libs.coreCtx)
+    // UI
+    implementation(Libs.ACTIVITY_KTX)
+    implementation(Libs.APPCOMPAT)
+    implementation(Libs.FRAGMENT_KTX)
+    implementation(Libs.CARDVIEW)
+    implementation(Libs.CONSTRAINT_LAYOUT)
+    implementation(Libs.DRAWER_LAYOUT)
+    implementation(Libs.MATERIAL)
+    implementation(Libs.FLEXBOX)
+    implementation(Libs.LOTTIE)
+    implementation(Libs.INK_PAGE_INDICATOR)
 
-    implementation(Libs.viewModelKtx)
-    implementation(Libs.lifecycleExt)
-    implementation(Libs.lifecycleKtx)
-    kapt(Libs.lifecycleCompiler)
+    // Utils
+    api(Libs.TIMBER)
+    implementation(Libs.GSON)
+    implementation(Libs.CORE_KTX)
 
-    implementation(Libs.navigationFragmentKtx)
-    implementation(Libs.navigationUiKtx)
+    // Architecture Components
+    implementation(Libs.LIFECYCLE_LIVE_DATA_KTX)
+    kapt(Libs.LIFECYCLE_COMPILER)
+    testImplementation(Libs.ARCH_TESTING)
+    implementation(Libs.NAVIGATION_FRAGMENT_KTX)
+    implementation(Libs.NAVIGATION_UI_KTX)
+    implementation(Libs.ROOM_KTX)
+    implementation(Libs.ROOM_RUNTIME)
+    kapt(Libs.ROOM_COMPILER)
+    testImplementation(Libs.ROOM_KTX)
+    testImplementation(Libs.ROOM_RUNTIME)
 
-    implementation(Libs.material)
-    implementation(Libs.roomRuntime)
-    implementation(Libs.roomKtx)
-    kapt(Libs.roomCompiler)
+    // Dagger Hilt
+    implementation(Libs.HILT_ANDROID)
+    implementation(Libs.HILT_VIEWMODEL)
+    androidTestImplementation(Libs.HILT_TESTING)
+    kapt(Libs.HILT_COMPILER)
+    kapt(Libs.ANDROIDX_HILT_COMPILER)
+    kaptAndroidTest(Libs.HILT_COMPILER)
+    kaptAndroidTest(Libs.ANDROIDX_HILT_COMPILER)
 
-    implementation(Libs.coroutinesCore)
-    implementation(Libs.coroutinesAndroid)
+    // Glide
+    implementation(Libs.GLIDE)
+    kapt(Libs.GLIDE_COMPILER)
 
-    implementation(Libs.hilt)
-    implementation(Libs.hiltJetpack)
-    kapt(Libs.hiltCompiler)
-    kapt(Libs.hiltJetpackCompiler)
+    // Kotlin
+    implementation(Libs.KOTLIN_STDLIB)
 
-    implementation(Libs.retrofit)
-    implementation(Libs.retrofitMoshi)
+    // Instrumentation tests
+    androidTestImplementation(Libs.ESPRESSO_CORE)
+    androidTestImplementation(Libs.ESPRESSO_CONTRIB)
+    androidTestImplementation(Libs.EXT_JUNIT)
+    androidTestImplementation(Libs.RUNNER)
+    androidTestImplementation(Libs.RULES)
 
-    implementation(Libs.moshi)
-    kapt(Libs.moshiCodeGen)
+    // Local unit tests
+    testImplementation(Libs.JUNIT)
+    testImplementation(Libs.MOCKITO_CORE)
+    testImplementation(Libs.MOCKITO_KOTLIN)
+    testImplementation(Libs.HAMCREST)
 
-    implementation(Libs.glide)
-    kapt(Libs.glideCompiler)
+    implementation(Libs.RETROFIT)
+    implementation(Libs.RETROFIT_MOSHI)
 
-    implementation(Libs.circleIndicator)
-
-    testImplementation(Libs.coroutinesCore)
-    testImplementation(Libs.mockito)
-    testImplementation(Libs.mockitoKotlin)
-    testImplementation(Libs.coreTesting)
-    testImplementation(Libs.junit)
-    testImplementation(Libs.truth)
-    testImplementation(Libs.coroutinesTest)
-    androidTestImplementation(Libs.testRunner)
-    androidTestImplementation(Libs.espresso)
-    androidTestImplementation(Libs.hiltAndroidTesting)
-    kaptAndroidTest(Libs.hiltAndroidTestingCompiler)
+    implementation(Libs.MOSHI)
+    kapt(Libs.MOSHI_CODEGEN)
 }

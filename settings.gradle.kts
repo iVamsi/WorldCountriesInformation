@@ -1,2 +1,2 @@
 rootProject.name = "World Countries Information"
-include(":app")
+include(":app", ":domain", ":model", ":common")
