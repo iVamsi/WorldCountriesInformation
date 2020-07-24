@@ -1,6 +1,7 @@
-package com.vamsi.worldcountriesinformation.constants
+package com.vamsi.worldcountriesinformation.core.constants
 
 object Constants {
+    // https://restcountries.eu/rest/v2/all
     const val BASE_URL = "https://restcountries.eu/rest/v2/"
 
     // API end points

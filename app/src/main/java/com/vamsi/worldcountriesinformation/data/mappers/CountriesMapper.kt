@@ -3,9 +3,9 @@ package com.vamsi.worldcountriesinformation.data.mappers
 import com.vamsi.worldcountriesinformation.domain.countries.Country
 import com.vamsi.worldcountriesinformation.domain.countries.Currency
 import com.vamsi.worldcountriesinformation.domain.countries.Language
-import com.vamsi.worldcountriesinformation.model.CountriesResponse
+import com.vamsi.worldcountriesinformation.model.CountriesResponseItem
 
-fun CountriesResponse.toCountries(): List<Country> {
+fun List<CountriesResponseItem>.toCountries(): List<Country> {
     return this.map { countriesResponseItem ->
         val languages = countriesResponseItem.languages.map { Language(it.name, it.nativeName) }.toList()
         val currencies = countriesResponseItem.currencies.map { Currency(it.code, it.name, it.symbol) }.toList()

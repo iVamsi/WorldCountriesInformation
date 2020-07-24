@@ -7,6 +7,7 @@ import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domain.countries.Country
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import timber.log.Timber
 import javax.inject.Inject
 
 class CountriesRepositoryImpl @Inject constructor(
@@ -19,6 +20,7 @@ class CountriesRepositoryImpl @Inject constructor(
                 val countriesInfo = countriesApi.fetchWorldCountriesInformation()
                 CurrentState.Success(countriesInfo.toCountries())
             } catch (exception: Exception) {
+                Timber.d(exception)
                 CurrentState.Error(exception)
             }
         }

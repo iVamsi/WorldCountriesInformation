@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.di
 
-import com.vamsi.worldcountriesinformation.constants.Constants.BASE_URL
+import com.vamsi.worldcountriesinformation.core.constants.Constants.BASE_URL
 import com.vamsi.worldcountriesinformation.data.remote.WorldCountriesInformationAPI
 import dagger.Module
 import dagger.Provides
