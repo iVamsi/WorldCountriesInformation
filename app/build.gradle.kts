@@ -56,6 +56,7 @@ android {
 
 dependencies {
     implementation(project(":domain"))
+    implementation(project(":model"))
 
     // UI
     implementation(Libs.ACTIVITY_KTX)

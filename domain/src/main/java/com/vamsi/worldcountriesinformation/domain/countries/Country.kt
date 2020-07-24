@@ -3,7 +3,7 @@ package com.vamsi.worldcountriesinformation.domain.countries
 data class Country(
     val name: String,
     val capital: String,
-    val languages: List<String>,
+    val languages: List<Language>,
     val twoLetterCode: String,
     val threeLetterCode: String,
     val population: Int,
