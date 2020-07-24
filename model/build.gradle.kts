@@ -8,7 +8,10 @@ dependencies {
     implementation(Libs.CORE_KTX)
 
     implementation(Libs.KOTLIN_STDLIB)
+
+    // Moshi
     implementation(Libs.MOSHI)
+    implementation(Libs.MOSHI_CODEGEN)
     kapt(Libs.MOSHI_CODEGEN)
 }
 

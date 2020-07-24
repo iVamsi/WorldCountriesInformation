@@ -6,23 +6,23 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class TranslationsResponseItem(
     @Json(name = "br")
-    val br: String,
+    val br: String? = null,
     @Json(name = "de")
-    val de: String,
+    val de: String? = null,
     @Json(name = "es")
-    val es: String,
+    val es: String? = null,
     @Json(name = "fa")
-    val fa: String,
+    val fa: String? = null,
     @Json(name = "fr")
-    val fr: String,
+    val fr: String? = null,
     @Json(name = "hr")
-    val hr: String,
+    val hr: String? = null,
     @Json(name = "it")
-    val `it`: String,
+    val `it`: String? = null,
     @Json(name = "ja")
-    val ja: String,
+    val ja: String? = null,
     @Json(name = "nl")
-    val nl: String,
+    val nl: String? = null,
     @Json(name = "pt")
-    val pt: String
+    val pt: String? = null
 )

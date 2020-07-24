@@ -6,51 +6,51 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class CountriesResponseItem(
     @Json(name = "alpha2Code")
-    val alpha2Code: String,
+    val alpha2Code: String? = null,
     @Json(name = "alpha3Code")
-    val alpha3Code: String,
+    val alpha3Code: String? = null,
     @Json(name = "altSpellings")
-    val altSpellings: List<String>,
+    val altSpellings: List<String>? = null,
     @Json(name = "area")
-    val area: Double,
+    val area: Double? = null,
     @Json(name = "borders")
-    val borders: List<String>,
+    val borders: List<String>? = null,
     @Json(name = "callingCodes")
-    val callingCodes: List<String>,
+    val callingCodes: List<String>? = null,
     @Json(name = "capital")
-    val capital: String,
+    val capital: String? = null,
     @Json(name = "cioc")
-    val cioc: String,
+    val cioc: String? = null,
     @Json(name = "currencies")
-    val currencies: List<CurrencyResponseItem>,
+    val currencies: List<CurrencyResponseItem>? = null,
     @Json(name = "demonym")
-    val demonym: String,
+    val demonym: String? = null,
     @Json(name = "flag")
-    val flag: String,
+    val flag: String? = null,
     @Json(name = "gini")
-    val gini: Double,
+    val gini: Any? = null,
     @Json(name = "languages")
-    val languages: List<LanguageResponseItem>,
+    val languages: List<LanguageResponseItem>? = null,
     @Json(name = "latlng")
-    val latlng: List<Double>,
+    val latlng: List<Double>? = null,
     @Json(name = "name")
-    val name: String,
+    val name: String? = null,
     @Json(name = "nativeName")
-    val nativeName: String,
+    val nativeName: String? = null,
     @Json(name = "numericCode")
-    val numericCode: String,
+    val numericCode: String? = null,
     @Json(name = "population")
-    val population: Int,
+    val population: Int? = null,
     @Json(name = "region")
-    val region: String,
+    val region: String? = null,
     @Json(name = "regionalBlocs")
-    val regionalBlocs: List<RegionalBlocResponseItem>,
+    val regionalBlocs: List<RegionalBlocResponseItem>? = null,
     @Json(name = "subregion")
-    val subregion: String,
+    val subregion: String? = null,
     @Json(name = "timezones")
-    val timezones: List<String>,
+    val timezones: List<String>? = null,
     @Json(name = "topLevelDomain")
-    val topLevelDomain: List<String>,
+    val topLevelDomain: List<String>? = null,
     @Json(name = "translations")
-    val translations: TranslationsResponseItem
+    val translations: TranslationsResponseItem? = null
 )

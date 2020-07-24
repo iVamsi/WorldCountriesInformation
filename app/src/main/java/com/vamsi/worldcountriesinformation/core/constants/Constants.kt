@@ -18,6 +18,15 @@ object Constants {
 
     // url constants
     const val FIELDS = "fields"
+
+    // Self hosted API
+    const val TEST_BASE_URL = "https://ivamsi.github.io/WorldCountriesAPI/api/"
+
+    // Self hosted API end points
+    const val TEST_ALL = "all/"
+
+    // other constants
+    const val EMPTY = ""
 }
 
 enum class RegionalBLoc {

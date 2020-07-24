@@ -62,6 +62,18 @@ android {
             "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi"
         )
     }
+
+    packagingOptions {
+        exclude("META-INF/DEPENDENCIES")
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/LICENSE.txt")
+        exclude("META-INF/license.txt")
+        exclude("META-INF/NOTICE")
+        exclude("META-INF/NOTICE.txt")
+        exclude("META-INF/notice.txt")
+        exclude("META-INF/ASL2.0")
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 dependencies {
@@ -130,9 +142,12 @@ dependencies {
     testImplementation(Libs.MOCKITO_KOTLIN)
     testImplementation(Libs.HAMCREST)
 
+    // Retrofit
     implementation(Libs.RETROFIT)
     implementation(Libs.RETROFIT_MOSHI)
 
+    // Moshi
     implementation(Libs.MOSHI)
+    implementation(Libs.MOSHI_CODEGEN)
     kapt(Libs.MOSHI_CODEGEN)
 }

@@ -6,9 +6,9 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class CurrencyResponseItem(
     @Json(name = "code")
-    val code: String,
+    val code: String? = null,
     @Json(name = "name")
-    val name: String,
+    val name: String? = null,
     @Json(name = "symbol")
-    val symbol: String
+    val symbol: String? = null
 )
