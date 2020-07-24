@@ -1,8 +1,8 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.common.di.IoDispatcher
 import com.vamsi.worldcountriesinformation.domain.core.CurrentState
 import com.vamsi.worldcountriesinformation.domain.core.FlowUseCase
+import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject

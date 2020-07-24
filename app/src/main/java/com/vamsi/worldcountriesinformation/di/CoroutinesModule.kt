@@ -16,10 +16,10 @@
 
 package com.vamsi.worldcountriesinformation.di
 
-import com.vamsi.worldcountriesinformation.common.di.DefaultDispatcher
-import com.vamsi.worldcountriesinformation.common.di.IoDispatcher
-import com.vamsi.worldcountriesinformation.common.di.MainDispatcher
-import com.vamsi.worldcountriesinformation.common.di.MainImmediateDispatcher
+import com.vamsi.worldcountriesinformation.domain.di.DefaultDispatcher
+import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
+import com.vamsi.worldcountriesinformation.domain.di.MainDispatcher
+import com.vamsi.worldcountriesinformation.domain.di.MainImmediateDispatcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

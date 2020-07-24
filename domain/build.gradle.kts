@@ -10,7 +10,6 @@ java {
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(Libs.KOTLIN_STDLIB)
 
     implementation(Libs.COROUTINES)

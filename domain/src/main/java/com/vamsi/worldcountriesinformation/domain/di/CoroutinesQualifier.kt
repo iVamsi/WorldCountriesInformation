@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.vamsi.worldcountriesinformation.common.di
+package com.vamsi.worldcountriesinformation.domain.di
 
 import javax.inject.Qualifier
 
