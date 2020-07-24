@@ -21,6 +21,14 @@ android {
         useLibrary("android.test.runner")
         useLibrary("android.test.base")
         useLibrary("android.test.mock")
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+                arg("room.incremental", "true")
+                arg("room.expandProjection", "true")
+            }
+        }
     }
     buildTypes {
         getByName("release") {
@@ -47,10 +55,11 @@ android {
     }
 
     kotlinOptions {
-        // "this" is currently lacking a proper type
-        // See: https://youtrack.jetbrains.com/issue/KT-31077
-        val options = this as? org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
-        options?.jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = "1.8"
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi"
+        )
     }
 }
 
