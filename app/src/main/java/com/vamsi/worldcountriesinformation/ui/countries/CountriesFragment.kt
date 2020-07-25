@@ -9,14 +9,18 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import com.vamsi.worldcountriesinformation.R
 import com.vamsi.worldcountriesinformation.core.BaseFragment
+import com.vamsi.worldcountriesinformation.core.ClickHandler
+import com.vamsi.worldcountriesinformation.core.extensions.observe
 import com.vamsi.worldcountriesinformation.databinding.FragmentCountriesBinding
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
 @AndroidEntryPoint
-class CountriesFragment : BaseFragment() {
+class CountriesFragment : BaseFragment(), ClickHandler {
 
     private val countriesViewModel: CountriesViewModel by viewModels()
+
+    private lateinit var adapter: CountriesAdapter
     private lateinit var binding: FragmentCountriesBinding
 
     companion object {
@@ -36,11 +40,20 @@ class CountriesFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        countriesViewModel.countries.observe(viewLifecycleOwner, Observer {
-            it.forEach {
-                Timber.d(it.name)
-            }
-        })
+        adapter = CountriesAdapter(this)
+        binding.apply {
+            viewModel = countriesViewModel
+            executePendingBindings()
+            countryList.adapter = adapter
+        }
+
+        observe(countriesViewModel.countries) {
+            adapter.submitList(it)
+        }
+    }
+
+    override fun onItemClick(countryCode: String) {
+        Timber.d("Item with $countryCode clicked")
     }
 
 }

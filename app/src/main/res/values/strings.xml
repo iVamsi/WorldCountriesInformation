@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">World Countries Information</string>
+    <string name="country_flag_ada">country flag</string>
 </resources>
