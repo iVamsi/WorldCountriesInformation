@@ -16,12 +16,15 @@ class CountriesRepositoryImpl @Inject constructor(
 
     override fun getCountries(): Flow<CurrentState<List<Country>>> {
         return flow {
+            // Emit the state to show progress bar
+            emit(CurrentState.Loading)
+
             try {
                 val countriesInfo = countriesApi.fetchWorldCountriesInformation()
-                CurrentState.Success(countriesInfo.toCountries())
+                emit(CurrentState.Success(countriesInfo.toCountries()))
             } catch (exception: Exception) {
                 Timber.d(exception)
-                CurrentState.Error(exception)
+                emit(CurrentState.Error(exception))
             }
         }
     }
