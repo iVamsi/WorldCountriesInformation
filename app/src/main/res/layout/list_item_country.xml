@@ -14,14 +14,14 @@
             type="com.vamsi.worldcountriesinformation.domain.countries.Country" />
     </data>
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/listItemCardView"
+        style="@style/Widget.WCI.Card"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/card_view_height"
+        android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/dimen_16dp"
         android:layout_marginEnd="@dimen/dimen_16dp"
         android:layout_marginTop="@dimen/dimen_16dp"
-        app:cardElevation="@dimen/dimen_4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -29,6 +29,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="@dimen/card_view_min_height"
             android:onClick="@{() -> clickListener.onItemClick(country.threeLetterCode)}"
             android:padding="@dimen/dimen_2dp">
 
@@ -62,5 +63,5 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Country Name Country Name" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 </layout>
