@@ -13,10 +13,26 @@
         <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/use_light_status</item>
         <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">@bool/use_light_navigation</item>
+        <item name="android:navigationBarColor">@color/nav_bar_color</item>
+
+        <!-- Widget styles -->
+        <item name="toolbarStyle">@style/Widget.WCI.Toolbar</item>
 
         <!-- Customize your theme here. -->
         <item name="android:fontFamily">@font/open_sans</item>
     </style>
 
+    <style name="ThemeOverlay.WCI.Light" parent="ThemeOverlay.MaterialComponents.Light">
+        <item name="colorPrimary">@color/deep_sky_blue</item>
+        <item name="colorPrimaryDark">@color/warm_blue</item>
+    </style>
+
+    <style name="ThemeOverlay.WCI.Dark" parent="ThemeOverlay.MaterialComponents.Dark">
+        <item name="colorPrimary">@color/carolina_blue</item>
+        <item name="colorPrimaryDark">@color/cornflower_blue</item>
+    </style>
+
     <style name="AppTheme" parent="Base.AppTheme" />
+
+    <style name="AppTheme.PopupTheme" parent="ThemeOverlay.WCI.Light" />
 </resources>

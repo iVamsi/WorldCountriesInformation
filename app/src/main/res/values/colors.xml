@@ -15,6 +15,8 @@
     <color name="color_control_light">#39000000</color> <!-- Same as textColorPrimary disabled -->
     <color name="color_surface_secondary">#F8F9FA</color> <!-- Same as textColorPrimary disabled -->
 
+    <color name="nav_bar_color">#40000000</color> <!-- 25% black -->
+
     <color name="blue">#0ff</color>
     <color name="White">#FFFFFF</color>
     <color name="Ivory">#FFFFF0</color>
