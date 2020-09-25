@@ -8,8 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="color_primary">@color/deep_sky_blue</color>
-    <color name="color_primary_dark">@color/warm_blue</color>
+    <color name="color_primary">@color/color_primary_in_light_mode</color>
+    <color name="color_primary_dark">@color/color_primary_dark_in_light_mode</color>
+    <color name="color_accent">@color/color_accent_in_light_mode</color>
     <color name="color_on_secondary">@color/white</color>
 
     <color name="color_control_light">#39000000</color> <!-- Same as textColorPrimary disabled -->
@@ -161,10 +162,12 @@
     <color name="Navy">#000080</color>
     <color name="Black">#000000</color>
 
-    <color name="deep_sky_blue">#1a73e8</color> <!-- colorPrimary in Light mode-->
-    <color name="warm_blue">#574ddd</color> <!-- colorPrimaryDark in Light mode-->
-    <color name="carolina_blue">#8ab4f8</color> <!-- colorPrimary in Dark mode-->
-    <color name="cornflower_blue">#669DF6</color> <!-- colorPrimaryDark in Dark mode-->
+    <color name="color_primary_in_light_mode">#008577</color> <!-- colorPrimary in Light mode-->
+    <color name="color_primary_dark_in_light_mode">#00574B</color> <!-- colorPrimaryDark in Light mode-->
+    <color name="color_accent_in_light_mode">#D81B60</color>
+    <color name="color_primary_in_dark_mode">#008577</color> <!-- colorPrimary in Dark mode-->
+    <color name="color_primary_dark_in_dark_mode">#00574B</color> <!-- colorPrimaryDark in Dark mode-->
+    <color name="color_accent_in_dark_mode">#FAEBD7</color>
 
     <color name="teal">#069f86</color>
     <color name="bright_light_blue">#27e5fd</color>

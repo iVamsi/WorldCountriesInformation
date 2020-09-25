@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.di
 
-import com.vamsi.worldcountriesinformation.core.constants.Constants.BASE_URL
+import com.vamsi.worldcountriesinformation.core.constants.Constants
 import com.vamsi.worldcountriesinformation.data.remote.WorldCountriesInformationAPI
 import dagger.Module
 import dagger.Provides
@@ -18,7 +18,7 @@ object ServiceModule {
     @Provides
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(Constants.TEST_BASE_URL)
             .addConverterFactory(
                 MoshiConverterFactory.create()
             )

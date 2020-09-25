@@ -27,6 +27,7 @@ object Constants {
 
     // other constants
     const val EMPTY = ""
+    const val COUNTRY_DETAILS = "countryDetails"
 }
 
 enum class RegionalBLoc {

@@ -7,12 +7,6 @@
         <item name="cardCornerRadius">@dimen/card_corner_radius</item>
     </style>
 
-    <style name="Widget.WCI.Toolbar" parent="Widget.MaterialComponents.Toolbar">
-        <item name="android:paddingEnd">8dp</item>
-        <item name="popupTheme">@style/AppTheme.PopupTheme</item>
-        <item name="titleTextAppearance">@style/TextAppearance.WCI.ToolbarTitle</item>
-    </style>
-
     <style name="TextAppearance.WCI.ToolbarTitle" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:fontFamily">@font/open_sans</item>
         <item name="android:textSize" tools:ignore="SpUsage">20dp</item>

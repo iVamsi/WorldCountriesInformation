@@ -1,5 +1,7 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
+import java.io.Serializable
+
 data class Country(
     val name: String,
     val capital: String,
@@ -9,5 +11,7 @@ data class Country(
     val population: Int,
     val region: String,
     val currencies: List<Currency>,
-    val callingCode: String
-)
+    val callingCode: String,
+    val latitude: Double,
+    val longitude: Double
+): Serializable
