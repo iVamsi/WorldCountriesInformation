@@ -4,4 +4,8 @@
 
     <string name="country_name_label">"Name: "</string>
     <string name="capital_city_label">"Capital City: "</string>
+    <string name="population_label">"Population: "</string>
+    <string name="calling_code_label">"Calling Code: "</string>
+    <string name="language_label">"Languages: "</string>
+    <string name="currency_label">"Currencies: "</string>
 </resources>
