@@ -9,6 +9,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.vamsi.worldcountriesinformation.R
@@ -27,7 +28,6 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
     private lateinit var adapter: CountryDetailsAdapter
     private lateinit var binding: FragmentCountryDetailsBinding
     private lateinit var googleMap: GoogleMap
-    private lateinit var mapView: MapView
 
     private lateinit var countryDetails: Country
 
@@ -57,12 +57,9 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
             countryDetailsList.adapter = adapter
         }
 
-        mapView = binding.map.apply {
-            onCreate(savedInstanceState)
-            onResume()
-        }
-
-        mapView.getMapAsync(this)
+        val supportMapFragment =
+            childFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+        supportMapFragment?.getMapAsync(this)
 
         val countryDetails = mapCountryDetailsModel(this.arguments)
         adapter.submitList(countryDetails)

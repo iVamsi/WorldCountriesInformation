@@ -16,14 +16,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.gms.maps.MapView
+        <fragment
+            class="com.google.android.gms.maps.SupportMapFragment"
             android:id="@+id/map"
             android:layout_height="@dimen/match_constraint"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/guideline"
-            android:layout_width="match_parent" />
+            android:layout_width="match_parent"
+            tools:ignore="FragmentTagUsage" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
