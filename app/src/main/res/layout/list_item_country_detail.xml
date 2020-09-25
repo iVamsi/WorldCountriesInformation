@@ -4,14 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
-        <variable
-            name="clickListener"
-            type="com.vamsi.worldcountriesinformation.core.ClickHandler" />
-
         <variable
             name="country"
-            type="com.vamsi.worldcountriesinformation.domain.countries.Country" />
+            type="com.vamsi.worldcountriesinformation.domain.countries.CountryDetailsModel" />
     </data>
 
     <com.google.android.material.card.MaterialCardView
@@ -30,38 +25,37 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:minHeight="@dimen/card_view_min_height"
-            android:onClick="@{() -> clickListener.onItemClick(country)}"
             android:padding="@dimen/dimen_2dp">
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/countryFlag"
-                android:layout_width="@dimen/icon_width"
-                android:layout_height="@dimen/icon_height"
-                android:layout_marginStart="@dimen/dimen_8dp"
-                android:layout_marginEnd="@dimen/dimen_8dp"
-                android:contentDescription="@string/country_flag_ada"
-                android:scaleType="fitXY"
-                app:imageUrl="@{country.twoLetterCode}"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/countryName"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:srcCompat="@tools:sample/avatars" />
-
             <TextView
-                android:id="@+id/countryName"
+                android:id="@+id/textKey"
                 android:layout_width="@dimen/match_constraint"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/dimen_8dp"
                 android:layout_marginEnd="@dimen/dimen_8dp"
                 android:gravity="start"
-                android:text="@{country.name}"
+                android:text="@{country.key}"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/textValue"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Key Label" />
+
+            <TextView
+                android:id="@+id/textValue"
+                android:layout_width="@dimen/match_constraint"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dimen_8dp"
+                android:layout_marginEnd="@dimen/dimen_8dp"
+                android:gravity="start"
+                android:text="@{country.value}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/countryFlag"
+                app:layout_constraintStart_toEndOf="@+id/textKey"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Country Name" />
+                tools:text="Key Value" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 </layout>

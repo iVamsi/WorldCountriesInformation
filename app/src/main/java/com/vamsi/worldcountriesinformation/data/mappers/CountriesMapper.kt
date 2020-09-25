@@ -19,7 +19,21 @@ fun List<CountriesResponseItem>.toCountries(): List<Country> {
             population = countriesResponseItem.population ?: 0,
             region = countriesResponseItem.subregion ?: EMPTY,
             currencies = currencies ?: emptyList(),
-            callingCode = countriesResponseItem.callingCodes?.first() ?: EMPTY
+            callingCode = countriesResponseItem.callingCodes?.first() ?: EMPTY,
+            latitude = countriesResponseItem.latlng?.let {
+                if (it.isNotEmpty() && it.size == 2) {
+                    it[0]
+                } else {
+                    0.0
+                }
+            } ?: 0.0,
+            longitude = countriesResponseItem.latlng?.let {
+                if (it.isNotEmpty() && it.size == 2) {
+                    it[1]
+                } else {
+                    0.0
+                }
+            } ?: 0.0
         )
     }.toList()
 }

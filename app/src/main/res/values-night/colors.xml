@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="color_primary">@color/carolina_blue</color>
-    <color name="color_primary_dark">@color/cornflower_blue</color>
+    <color name="color_primary">@color/color_primary_in_dark_mode</color>
+    <color name="color_primary_dark">@color/color_primary_dark_in_dark_mode</color>
+    <color name="color_accent">@color/color_accent_in_dark_mode</color>
     <color name="color_on_secondary">@color/black</color>
 
     <color name="color_control_light">#2EFFFFFF</color>
