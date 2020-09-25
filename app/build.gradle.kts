@@ -1,3 +1,7 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import com.android.build.gradle.internal.dsl.BaseFlavor
+import com.android.build.gradle.internal.dsl.DefaultConfig
+
 plugins {
     id("com.android.application")
     id("androidx.navigation.safeargs")
@@ -18,6 +22,8 @@ android {
         versionName = Versions.versionName
         testInstrumentationRunner = "com.vamsi.worldcountriesinformation.WorldCountriesTestRunner"
         vectorDrawables.useSupportLibrary = true
+
+        addToManifestPlaceHoldersFromLocalProperty("mapsApiKey")
 
         useLibrary("android.test.runner")
         useLibrary("android.test.base")
@@ -103,6 +109,7 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
+    implementation("com.google.android.gms:play-services-maps:17.0.0")
     kapt(Libs.LIFECYCLE_COMPILER)
     testImplementation(Libs.ARCH_TESTING)
     implementation(Libs.NAVIGATION_FRAGMENT_KTX)
@@ -150,4 +157,44 @@ dependencies {
     implementation(Libs.MOSHI)
     implementation(Libs.MOSHI_CODEGEN)
     kapt(Libs.MOSHI_CODEGEN)
+}
+
+fun BaseFlavor.buildConfigFieldFromGradleProperty(gradlePropertyName: String) {
+    val propertyValue = project.properties[gradlePropertyName] as? String
+    checkNotNull(propertyValue) { "Gradle property $gradlePropertyName is null" }
+
+    val androidResourceName = "GRADLE_${gradlePropertyName.toSnakeCase()}".toUpperCase()
+    buildConfigField("String", androidResourceName, propertyValue)
+}
+
+fun BaseFlavor.buildResourceValueFromGradleProperty(gradlePropertyName: String) {
+    val propertyValue = project.properties[gradlePropertyName] as? String
+    checkNotNull(propertyValue) { "Gradle property $gradlePropertyName is null" }
+
+    val androidResourceName = "GRADLE_${gradlePropertyName.toSnakeCase()}".toUpperCase()
+    resValue("String", androidResourceName, propertyValue)
+}
+
+fun BaseFlavor.addToManifestPlaceHoldersFromGradleProperty(gradlePropertyName: String) {
+    val propertyValue = project.properties[gradlePropertyName] as? String
+    checkNotNull(propertyValue) { "Gradle property $gradlePropertyName is null" }
+
+    val androidResourceName = "GRADLE_${gradlePropertyName.toSnakeCase()}".toUpperCase()
+    manifestPlaceholders[androidResourceName] = propertyValue
+}
+
+fun BaseFlavor.addToManifestPlaceHoldersFromLocalProperty(securePropertyName: String) {
+    // Read the API key from ./local.properties
+    val propertyValue: String = gradleLocalProperties(rootDir).getProperty(securePropertyName)
+
+    val androidResourceName = "GRADLE_${securePropertyName.toSnakeCase()}".toUpperCase()
+    manifestPlaceholders[androidResourceName] = propertyValue
+}
+
+fun String.toSnakeCase() = this.split(Regex("(?=[A-Z])")).joinToString("_") { it.toLowerCase() }
+
+fun DefaultConfig.buildConfigField(name: String, value: Set<String>) {
+    // Generates String that holds Java String Array code
+    val strValue = value.joinToString(prefix = "{", separator = ",", postfix = "}", transform = { "\"$it\"" })
+    buildConfigField("String", name, strValue)
 }

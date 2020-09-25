@@ -60,7 +60,7 @@ class CountriesFragment : BaseFragment(), ClickHandler {
         Timber.d("Item with ${country.threeLetterCode} clicked")
         activity?.supportFragmentManager?.inTransaction {
             replace(R.id.fragment_container, CountryDetailsFragment.newInstance(Bundle().apply { putSerializable(Constants.COUNTRY_DETAILS, country) }))
-            addToBackStack(CountryDetailsFragment.javaClass.simpleName)
+            addToBackStack(CountryDetailsFragment::class.java.simpleName)
         }
     }
 
