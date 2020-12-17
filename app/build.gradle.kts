@@ -8,7 +8,6 @@ plugins {
     id("dagger.hilt.android.plugin")
     kotlin("android")
     kotlin("kapt")
-    kotlin("android.extensions")
     id("kotlin-android")
 }
 
@@ -147,6 +146,7 @@ dependencies {
     testImplementation(Libs.JUNIT)
     testImplementation(Libs.MOCKITO_CORE)
     testImplementation(Libs.MOCKITO_KOTLIN)
+    testImplementation(Libs.MOCKITO_INLINE)
     testImplementation(Libs.HAMCREST)
 
     // Retrofit

@@ -2,9 +2,9 @@ package com.vamsi.worldcountriesinformation.data.repository
 
 import com.vamsi.worldcountriesinformation.data.mappers.toCountries
 import com.vamsi.worldcountriesinformation.data.remote.WorldCountriesInformationAPI
-import com.vamsi.worldcountriesinformation.domain.core.CurrentState
+import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
-import com.vamsi.worldcountriesinformation.domain.countries.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
@@ -14,17 +14,17 @@ class CountriesRepositoryImpl @Inject constructor(
     private val countriesApi: WorldCountriesInformationAPI
 ): CountriesRepository {
 
-    override fun getCountries(): Flow<CurrentState<List<Country>>> {
+    override fun getCountries(): Flow<ApiResponse<List<Country>>> {
         return flow {
             // Emit the state to show progress bar
-            emit(CurrentState.Loading)
+            emit(ApiResponse.Loading)
 
             try {
                 val countriesInfo = countriesApi.fetchWorldCountriesInformation()
-                emit(CurrentState.Success(countriesInfo.toCountries()))
+                emit(ApiResponse.Success(countriesInfo.toCountries()))
             } catch (exception: Exception) {
                 Timber.d(exception)
-                emit(CurrentState.Error(exception))
+                emit(ApiResponse.Error(exception))
             }
         }
     }

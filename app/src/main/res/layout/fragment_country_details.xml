@@ -11,40 +11,33 @@
             type="com.vamsi.worldcountriesinformation.ui.countrydetails.CountryDetailsViewModel"/>
     </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:id="@+id/main_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:weightSum="1">
 
         <fragment
             class="com.google.android.gms.maps.SupportMapFragment"
             android:id="@+id/map"
-            android:layout_height="@dimen/match_constraint"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/guideline"
+            android:layout_height="0dp"
             android:layout_width="match_parent"
+            android:layout_weight="0.3"
             tools:ignore="FragmentTagUsage" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.3"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/countryDetailsList"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/match_constraint"
+            android:layout_height="0dp"
+            android:layout_weight="0.7"
             android:clipToPadding="false"
             android:paddingStart="@dimen/dimen_8dp"
             android:paddingEnd="@dimen/dimen_8dp"
-            app:layout_constraintTop_toBottomOf="@id/guideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingTop="@dimen/dimen_8dp"
+            android:paddingBottom="@dimen/dimen_16dp"
+            android:scrollbars="vertical"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/list_item_country_detail"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            tools:listitem="@layout/list_item_country_detail" />
+    </LinearLayout>
 </layout>

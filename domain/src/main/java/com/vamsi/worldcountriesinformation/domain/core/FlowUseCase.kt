@@ -24,12 +24,12 @@ import kotlinx.coroutines.flow.flowOn
 /**
  * Executes business logic in its execute method and keep posting updates to the result as
  * [Result<R>].
- * Handling an exception (emit [CurrentState.Error] to the result) is the subclasses's responsibility.
+ * Handling an exception (emit [ApiResponse.Error] to the result) is the subclasses's responsibility.
  */
 abstract class FlowUseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) {
-    operator fun invoke(parameters: P): Flow<CurrentState<R>> = execute(parameters)
-        .catch { e -> emit(CurrentState.Error(Exception(e))) }
+    operator fun invoke(parameters: P): Flow<ApiResponse<R>> = execute(parameters)
+        .catch { e -> emit(ApiResponse.Error(Exception(e))) }
         .flowOn(coroutineDispatcher)
 
-    protected abstract fun execute(parameters: P): Flow<CurrentState<R>>
+    protected abstract fun execute(parameters: P): Flow<ApiResponse<R>>
 }

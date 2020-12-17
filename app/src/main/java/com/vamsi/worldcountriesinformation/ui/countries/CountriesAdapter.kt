@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.vamsi.worldcountriesinformation.core.ClickHandler
 import com.vamsi.worldcountriesinformation.databinding.ListItemCountryBinding
-import com.vamsi.worldcountriesinformation.domain.countries.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Country
 
 /**
  * Adapter for the [RecyclerView] in [CountriesFragment] fragment.

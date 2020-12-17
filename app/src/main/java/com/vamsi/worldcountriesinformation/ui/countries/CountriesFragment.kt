@@ -1,12 +1,10 @@
 package com.vamsi.worldcountriesinformation.ui.countries
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.vamsi.worldcountriesinformation.R
 import com.vamsi.worldcountriesinformation.core.BaseFragment
 import com.vamsi.worldcountriesinformation.core.ClickHandler
@@ -14,7 +12,7 @@ import com.vamsi.worldcountriesinformation.core.constants.Constants
 import com.vamsi.worldcountriesinformation.core.extensions.inTransaction
 import com.vamsi.worldcountriesinformation.core.extensions.observe
 import com.vamsi.worldcountriesinformation.databinding.FragmentCountriesBinding
-import com.vamsi.worldcountriesinformation.domain.countries.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.ui.countrydetails.CountryDetailsFragment
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
