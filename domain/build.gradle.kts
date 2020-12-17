@@ -15,7 +15,10 @@ dependencies {
     implementation(Libs.KOTLIN_STDLIB)
 
     implementation(Libs.COROUTINES)
-    implementation(Libs.COROUTINES_TEST)
+    implementation(Libs.COROUTINES_TEST) {
+        // conflicts with mockito due to direct inclusion of byte buddy
+        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-debug")
+    }
 
     implementation(Libs.DAGGER)
     kapt(Libs.DAGGER_COMPILER)
