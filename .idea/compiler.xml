@@ -4,6 +4,7 @@
     <bytecodeTargetLevel target="1.8">
       <module name="World_Countries_Information.app" target="13" />
       <module name="World_Countries_Information.buildSrc" target="13" />
+      <module name="WorldCountriesInformation.buildSrc" target="13" />
     </bytecodeTargetLevel>
   </component>
 </project>

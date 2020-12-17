@@ -11,7 +11,7 @@
 
         <variable
             name="country"
-            type="com.vamsi.worldcountriesinformation.domain.countries.Country" />
+            type="com.vamsi.worldcountriesinformation.domainmodel.Country" />
     </data>
 
     <com.google.android.material.card.MaterialCardView

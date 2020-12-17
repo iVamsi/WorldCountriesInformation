@@ -1,9 +1,9 @@
 package com.vamsi.worldcountriesinformation.data.mappers
 
 import com.vamsi.worldcountriesinformation.core.constants.Constants.EMPTY
-import com.vamsi.worldcountriesinformation.domain.countries.Country
-import com.vamsi.worldcountriesinformation.domain.countries.Currency
-import com.vamsi.worldcountriesinformation.domain.countries.Language
+import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Currency
+import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.model.CountriesResponseItem
 
 fun List<CountriesResponseItem>.toCountries(): List<Country> {

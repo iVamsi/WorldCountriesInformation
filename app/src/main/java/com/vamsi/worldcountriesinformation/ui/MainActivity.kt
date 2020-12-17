@@ -11,6 +11,10 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // hide default action bar
+        supportActionBar?.hide()
+
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {

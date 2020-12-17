@@ -1,16 +1,16 @@
 package com.vamsi.worldcountriesinformation.domain.core
 
-import com.vamsi.worldcountriesinformation.domain.core.CurrentState.Success
+import com.vamsi.worldcountriesinformation.domain.core.ApiResponse.Success
 
 /**
  * A generic class that holds a value with its loading status.
  * @param <T>
  */
-sealed class CurrentState<out R> {
+sealed class ApiResponse<out R> {
 
-    data class Success<out T>(val data: T) : CurrentState<T>()
-    data class Error(val exception: Exception) : CurrentState<Nothing>()
-    object Loading : CurrentState<Nothing>()
+    data class Success<out T>(val data: T) : ApiResponse<T>()
+    data class Error(val exception: Exception) : ApiResponse<Nothing>()
+    object Loading : ApiResponse<Nothing>()
 
     override fun toString(): String {
         return when (this) {
@@ -22,14 +22,14 @@ sealed class CurrentState<out R> {
 }
 
 /**
- * `true` if [CurrentState] is of type [Success] & holds non-null [Success.data].
+ * `true` if [ApiResponse] is of type [Success] & holds non-null [Success.data].
  */
-val CurrentState<*>.succeeded
+val ApiResponse<*>.succeeded
     get() = this is Success && data != null
 
-fun <T> CurrentState<T>.successOr(fallback: T): T {
+fun <T> ApiResponse<T>.successOr(fallback: T): T {
     return (this as? Success<T>)?.data ?: fallback
 }
 
-val <T> CurrentState<T>.data: T?
+val <T> ApiResponse<T>.data: T?
     get() = (this as? Success)?.data

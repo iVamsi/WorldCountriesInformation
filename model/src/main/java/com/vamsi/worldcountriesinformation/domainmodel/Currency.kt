@@ -1,4 +1,4 @@
-package com.vamsi.worldcountriesinformation.domain.countries
+package com.vamsi.worldcountriesinformation.domainmodel
 
 import java.io.Serializable
 

@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.vamsi.worldcountriesinformation.databinding.ListItemCountryDetailBinding
-import com.vamsi.worldcountriesinformation.domain.countries.CountryDetailsModel
+import com.vamsi.worldcountriesinformation.domainmodel.CountryDetailsModel
 
 class CountryDetailsAdapter: ListAdapter<CountryDetailsModel, CountryDetailsAdapter.ViewHolder>(
     CountryDetailsDiffCallback()

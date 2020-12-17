@@ -11,7 +11,7 @@ java {
 
 dependencies {
     implementation(project(":model"))
-    implementation(project(":tests-shared"))
+
     implementation(Libs.KOTLIN_STDLIB)
 
     implementation(Libs.COROUTINES)

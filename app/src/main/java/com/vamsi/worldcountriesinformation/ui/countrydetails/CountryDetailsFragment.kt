@@ -15,8 +15,8 @@ import com.vamsi.worldcountriesinformation.R
 import com.vamsi.worldcountriesinformation.core.BaseFragment
 import com.vamsi.worldcountriesinformation.core.constants.Constants
 import com.vamsi.worldcountriesinformation.databinding.FragmentCountryDetailsBinding
-import com.vamsi.worldcountriesinformation.domain.countries.Country
-import com.vamsi.worldcountriesinformation.domain.countries.CountryDetailsModel
+import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountryDetailsModel
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -67,27 +67,33 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
         return bundle?.let {
             country = it.getSerializable(Constants.COUNTRY_DETAILS) as Country
             val countryDetailsList = mutableListOf<CountryDetailsModel>()
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.country_name_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.country_name_label),
                     country.name
                 )
             )
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.capital_city_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.capital_city_label),
                     country.capital
                 )
             )
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.population_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.population_label),
                     country.population.toString()
                 )
             )
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.calling_code_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.calling_code_label),
                     country.callingCode
                 )
             )
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.language_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.language_label),
                     country.languages.map { language -> language.name }.joinToString(", ")
                 )
             )
-            countryDetailsList.add(CountryDetailsModel(getString(R.string.currency_label),
+            countryDetailsList.add(
+                CountryDetailsModel(getString(R.string.currency_label),
                     country.currencies.map { currency -> currency.name }.joinToString(", ")
                 )
             )

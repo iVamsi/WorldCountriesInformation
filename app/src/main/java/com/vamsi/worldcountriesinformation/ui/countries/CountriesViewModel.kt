@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.BaseViewModel
 import com.vamsi.worldcountriesinformation.domain.core.successOr
-import com.vamsi.worldcountriesinformation.domain.countries.Country
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
+import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
