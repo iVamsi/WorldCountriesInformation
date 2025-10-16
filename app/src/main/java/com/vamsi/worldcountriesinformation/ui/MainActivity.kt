@@ -32,23 +32,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-/* Legacy Fragment-based implementation - keeping for reference during migration
-@AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        // hide default action bar
-        supportActionBar?.hide()
-
-        setContentView(R.layout.activity_main)
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.inTransaction {
-                add(R.id.fragment_container, CountriesFragment.newInstance())
-            }
-        }
-    }
-}
-*/

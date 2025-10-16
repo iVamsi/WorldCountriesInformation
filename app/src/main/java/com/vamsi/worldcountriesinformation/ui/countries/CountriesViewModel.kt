@@ -1,7 +1,7 @@
 package com.vamsi.worldcountriesinformation.ui.countries
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vamsi.worldcountriesinformation.core.BaseViewModel
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CountriesViewModel @Inject constructor(
     private val countriesUseCase: GetCountriesUseCase
-) : BaseViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<List<Country>>>(UiState.Idle)
     val uiState: StateFlow<UiState<List<Country>>> = _uiState.asStateFlow()

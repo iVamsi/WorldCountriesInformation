@@ -3,7 +3,6 @@ import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
 plugins {
     id("worldcountries.android.application")
     id("worldcountries.android.hilt")
-    alias(libs.plugins.navigation.safeargs)
     alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
@@ -31,8 +30,6 @@ android {
     }
 
     buildFeatures {
-        dataBinding = true
-        viewBinding = true
         compose = true
     }
 }
@@ -46,8 +43,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.appcompat)
 
     // Compose BOM
     implementation(platform(libs.androidx.compose.bom))
@@ -64,20 +59,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // UI Components
+    // Material Components (required for theme compatibility)
     implementation(libs.material.components)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.cardview)
-    implementation(libs.androidx.drawerlayout)
-    implementation(libs.flexbox)
-    implementation(libs.lottie)
 
     // Architecture Components
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-    implementation(libs.androidx.lifecycle.livedata.ktx)
     ksp(libs.androidx.lifecycle.compiler)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.navigation.ui.ktx)
 
     // Room Database
     implementation(libs.androidx.room.runtime)
@@ -87,9 +74,6 @@ dependencies {
 
     // Image Loading - Coil for Compose
     implementation(libs.coil.compose)
-    // Keep Glide for legacy XML views during migration
-    implementation(libs.glide)
-    ksp(libs.glide.compiler)
 
     // Networking
     implementation(libs.retrofit)
