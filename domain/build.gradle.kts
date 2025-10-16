@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":model"))
+    api(project(":core:model"))
     implementation(project(":tests-shared"))
 
     // Dependency Injection annotations

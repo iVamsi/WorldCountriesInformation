@@ -12,9 +12,9 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
+    implementation(project(":core:model"))
 
-    // Domain modules - using :model instead of :core:model for now
-    implementation(project(":model"))
+    // Domain modules
     implementation(project(":domain"))
 
     // Coroutines

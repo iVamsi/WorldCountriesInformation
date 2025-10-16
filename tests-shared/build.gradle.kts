@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":model"))
+    api(project(":core:model"))
 
     // Coroutines
     api(libs.kotlinx.coroutines.android)

@@ -19,7 +19,6 @@ rootProject.name = "World Countries Information"
 include(
     ":app",
     ":domain",
-    ":model",
     ":tests-shared",
     ":core:common",
     ":core:model",
