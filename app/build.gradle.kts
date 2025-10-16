@@ -4,6 +4,7 @@ plugins {
     id("worldcountries.android.application")
     id("worldcountries.android.hilt")
     alias(libs.plugins.navigation.safeargs)
+    alias(libs.plugins.compose.compiler)
     id("kotlin-parcelize")
 }
 
@@ -21,6 +22,7 @@ android {
         val mapsApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("mapsApiKey") ?: ""
         manifestPlaceholders["GRADLE_MAPS_API_KEY"] = mapsApiKey
 
+        //noinspection WrongGradleMethod
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.incremental", "true")
@@ -31,6 +33,7 @@ android {
     buildFeatures {
         dataBinding = true
         viewBinding = true
+        compose = true
     }
 }
 
@@ -45,6 +48,21 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.appcompat)
+
+    // Compose BOM
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // UI Components
     implementation(libs.material.components)
@@ -67,7 +85,9 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.androidx.room.testing)
 
-    // Image Loading
+    // Image Loading - Coil for Compose
+    implementation(libs.coil.compose)
+    // Keep Glide for legacy XML views during migration
     implementation(libs.glide)
     ksp(libs.glide.compiler)
 
@@ -89,6 +109,7 @@ dependencies {
 
     // Google Play Services
     implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
 
     // Testing
     testImplementation(libs.junit)
