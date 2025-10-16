@@ -37,6 +37,10 @@ gradlePlugin {
             id = "worldcountries.android.hilt"
             implementationClass = "AndroidHiltConventionPlugin"
         }
+        register("androidCompose") {
+            id = "worldcountries.android.compose"
+            implementationClass = "AndroidComposeConventionPlugin"
+        }
         register("jvmLibrary") {
             id = "worldcountries.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"

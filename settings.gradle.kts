@@ -16,4 +16,16 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "World Countries Information"
-include(":app", ":domain", ":model", ":tests-shared")
+include(
+    ":app",
+    ":domain",
+    ":model",
+    ":tests-shared",
+    ":core:common",
+    ":core:model",
+    ":core:designsystem",
+    ":core:navigation",
+    ":core:network",
+    ":core:database",
+    ":data:countries"
+)
