@@ -1,30 +1,23 @@
 plugins {
-    id("java-library")
-    id("kotlin")
-    kotlin("kapt")
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    id("worldcountries.jvm.library")
 }
 
 dependencies {
-    implementation(project(":model"))
+    api(project(":model"))
     implementation(project(":tests-shared"))
-    implementation(Libs.KOTLIN_STDLIB)
 
-    implementation(Libs.COROUTINES)
-    implementation(Libs.COROUTINES_TEST) {
+    // Dependency Injection annotations
+    api(libs.javax.inject)
+
+    // Coroutines
+    api(libs.kotlinx.coroutines.android)
+    testImplementation(libs.kotlinx.coroutines.test) {
         // conflicts with mockito due to direct inclusion of byte buddy
-        exclude("org.jetbrains.kotlinx", "kotlinx-coroutines-debug")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-debug")
     }
 
-    implementation(Libs.DAGGER)
-    kapt(Libs.DAGGER_COMPILER)
-
-    implementation(Libs.JUNIT)
-    implementation(Libs.MOCKITO_CORE)
-    implementation(Libs.MOCKITO_KOTLIN)
-    implementation(Libs.MOCKITO_INLINE)
+    // Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
 }

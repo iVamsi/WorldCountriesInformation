@@ -1,10 +1,12 @@
 package com.vamsi.worldcountriesinformation.ui.countrydetails
 
-import androidx.hilt.lifecycle.ViewModelInject
 import com.vamsi.worldcountriesinformation.core.BaseViewModel
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class CountryDetailsViewModel @ViewModelInject constructor(
+@HiltViewModel
+class CountryDetailsViewModel @Inject constructor(
     private val countriesUseCase: GetCountriesUseCase
 ) : BaseViewModel() {
     //TODO
