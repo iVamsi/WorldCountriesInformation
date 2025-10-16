@@ -77,10 +77,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
 
-    // JSON
+    // JSON - Moshi for JSON serialization
     implementation(libs.moshi)
     ksp(libs.moshi.codegen)
-    implementation(libs.gson)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

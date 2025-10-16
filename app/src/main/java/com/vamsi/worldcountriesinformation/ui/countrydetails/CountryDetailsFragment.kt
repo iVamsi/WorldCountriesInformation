@@ -46,8 +46,8 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
             }.root
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val countryDetails = mapCountryDetailsModel(this.arguments)
         val supportMapFragment =
@@ -56,6 +56,7 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
         adapter = CountryDetailsAdapter()
         binding.apply {
             viewModel = countryDetailsViewModel
+            lifecycleOwner = viewLifecycleOwner
             executePendingBindings()
             countryDetailsList.adapter = adapter
         }
@@ -65,7 +66,12 @@ class CountryDetailsFragment: BaseFragment(), OnMapReadyCallback {
 
     private fun mapCountryDetailsModel(bundle: Bundle?): List<CountryDetailsModel>? {
         return bundle?.let {
-            country = it.getSerializable(Constants.COUNTRY_DETAILS) as Country
+            @Suppress("DEPRECATION")
+            country = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                it.getSerializable(Constants.COUNTRY_DETAILS, Country::class.java)!!
+            } else {
+                it.getSerializable(Constants.COUNTRY_DETAILS) as Country
+            }
             val countryDetailsList = mutableListOf<CountryDetailsModel>()
             countryDetailsList.add(
                 CountryDetailsModel(getString(R.string.country_name_label),
