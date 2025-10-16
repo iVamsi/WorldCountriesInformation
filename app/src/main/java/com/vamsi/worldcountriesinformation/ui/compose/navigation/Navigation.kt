@@ -6,8 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.vamsi.worldcountriesinformation.ui.compose.countries.CountriesScreen
-import com.vamsi.worldcountriesinformation.ui.compose.countrydetails.CountryDetailsRoute
+import com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen
+import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute
 
 /**
  * Navigation routes for the app

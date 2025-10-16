@@ -11,13 +11,9 @@ dependencies {
 
     // Coroutines
     api(libs.kotlinx.coroutines.android)
-    testImplementation(libs.kotlinx.coroutines.test) {
-        // conflicts with mockito due to direct inclusion of byte buddy
-        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-debug")
-    }
+    testImplementation(libs.kotlinx.coroutines.test)
 
     // Testing
     testImplementation(libs.junit)
-    testImplementation(libs.mockito.core)
-    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.mockk)
 }

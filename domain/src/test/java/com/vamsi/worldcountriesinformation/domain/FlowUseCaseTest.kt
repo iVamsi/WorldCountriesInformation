@@ -6,10 +6,10 @@ import com.vamsi.worldcountriesinformation.tests_shared.MainCoroutineRule
 import com.vamsi.worldcountriesinformation.tests_shared.runBlockingTest
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
-import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,7 +24,7 @@ class FlowUseCaseTest {
     @Test
     fun `exception emits ApiResponse#Error`() = coroutineRule.runBlockingTest {
         val useCase = ExceptionUseCase(testDispatcher)
-        val result = useCase(Unit)
+        val result = useCase(Unit).first()
         MatcherAssert.assertThat(result, CoreMatchers.instanceOf(ApiResponse.Error::class.java))
     }
 

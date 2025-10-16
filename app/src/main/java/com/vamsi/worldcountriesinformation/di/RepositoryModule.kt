@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.di
 
-import com.vamsi.worldcountriesinformation.data.repository.CountriesRepositoryImpl
+import com.vamsi.worldcountriesinformation.data.countries.repository.CountriesRepositoryImpl
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import dagger.Binds
 import dagger.Module

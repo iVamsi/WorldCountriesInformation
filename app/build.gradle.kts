@@ -32,12 +32,28 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
+        }
+    }
 }
 
 dependencies {
-    // Module dependencies
+    // Feature modules
+    implementation(project(":feature:countries"))
+    implementation(project(":feature:countrydetails"))
+
+    // Domain and Data modules
     implementation(project(":domain"))
+    implementation(project(":data:countries"))
+
+    // Core modules
     implementation(project(":core:model"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
 
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
