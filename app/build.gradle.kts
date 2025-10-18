@@ -41,6 +41,7 @@ dependencies {
 
     // Core modules (for MainActivity)
     implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
 
     // Core infrastructure (needed for Hilt DI)
     implementation(project(":core:network"))
