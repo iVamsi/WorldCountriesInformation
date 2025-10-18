@@ -5,6 +5,10 @@ plugins {
 
 android {
     namespace = "com.vamsi.worldcountriesinformation.core.network"
+    
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -23,4 +27,7 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    
+    // Testing
+    testImplementation(libs.junit)
 }

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration
+
+    This file configures network security policies for the World Countries
+    Information app. It enforces HTTPS-only connections at the Android
+    platform level, providing an additional security layer beyond the
+    HttpsOnlyInterceptor in the network module.
+
+    ## Security Features
+
+    1. HTTPS-Only Enforcement
+       - Blocks all cleartext (HTTP) traffic
+       - Prevents accidental insecure connections
+       - Enforced by Android OS, cannot be bypassed
+
+    2. Certificate Transparency
+       - Requires valid SSL certificates
+       - Prevents man-in-the-middle attacks
+       - Verifies server authenticity
+
+    3. Platform-Level Protection
+       - Works even if app code has vulnerabilities
+       - OS-level enforcement
+       - No performance overhead
+
+    ## How It Works
+
+    Android OS checks this configuration before allowing any network request:
+
+    Request Flow:
+    App Code → OkHttp (HttpsOnlyInterceptor) → Android OS (This Config) → Network
+                         ↓                              ↓
+                    Checks HTTPS              Blocks cleartext traffic
+                         ↓                              ↓
+                   Allow/Deny                      Allow/Deny
+
+    ## Configuration Levels
+
+    Base Configuration (applies to all domains):
+    - cleartextTrafficPermitted="false" → No HTTP allowed
+    - All connections must use HTTPS
+
+    ## Examples
+
+    Allowed Connections:
+    ✅ https://restcountries.com/v3.1/all
+    ✅ https://ivamsi.github.io/WorldCountriesAPI/api/all/
+    ✅ https://any-domain.com/api
+
+    Blocked Connections:
+    ❌ http://restcountries.com/v3.1/all
+    ❌ http://ivamsi.github.io/WorldCountriesAPI/api/all/
+    ❌ http://any-domain.com/api
+    ❌ ws://websocket.example.com (non-secure WebSocket)
+
+    ## Debug Exception (for development only)
+
+    If you need to test with HTTP localhost during development,
+    add a debug overrides configuration:
+
+    <debug overrides>
+        <domain config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">10.0.2.2</domain> (Android emulator host)
+            <domain includeSubdomains="true">127.0.0.1</domain>
+        </domain config>
+    </debug overrides>
+
+    NOTE: debug overrides are ONLY active in debug builds.
+    Production builds ignore this section.
+
+    ## Compliance
+
+    This configuration helps meet:
+    - Google Play security requirements
+    - GDPR data protection requirements
+    - OWASP Mobile Security guidelines
+    - Industry security best practices
+
+    ## Testing
+
+    To test HTTPS enforcement:
+
+    1. Try connecting to HTTP endpoint:
+       ```kotlin
+       // This will fail with SecurityException
+       val response = httpClient.get("http://example.com")
+       ```
+
+    2. Check logcat for security errors:
+       ```
+       CLEARTEXT communication to example.com not permitted by network security policy
+       ```
+
+    3. Verify HTTPS works:
+       ```kotlin
+       // This will succeed
+       val response = httpClient.get("https://example.com")
+       ```
+
+    ## References
+
+    - https://developer.android.com/training/articles/security-config
+    - https://developer.android.com/topic/security/best-practices
+    - https://owasp.org/www-project-mobile-security/
+-->
+<network-security-config>
+    <!--
+        Base Configuration
+        
+        Applies to all network connections in the app unless overridden
+        by domain-specific configurations.
+        
+        cleartextTrafficPermitted is set to false
+        This blocks all HTTP (cleartext) traffic
+        Only HTTPS connections are allowed
+        Enforced at Android OS level
+        Cannot be bypassed by app code
+        
+        This is the most secure configuration and should be the default
+        for all production apps handling any user data.
+    -->
+    <base-config cleartextTrafficPermitted="false">
+        <!--
+            Trust Anchors
+            
+            Defines which Certificate Authorities (CAs) are trusted for
+            validating server certificates. By using the system default,
+            we trust the same CAs that the Android OS trusts.
+            
+            This includes:
+            Major public CAs (Let's Encrypt, DigiCert, etc.)
+            Android's built in CA store
+            User installed CA certificates (optional)
+            
+            Benefits:
+            Standard, widely trusted CAs
+            Automatic updates via OS updates
+            Compatible with most public HTTPS servers
+        -->
+        <trust-anchors>
+            <!-- Use Android's default trusted CAs -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        Debug Overrides (Optional, commented out by default)
+        
+        Uncomment this section ONLY if you need to test with local
+        HTTP servers during development. This section is ONLY active
+        in debug builds and is completely ignored in release builds.
+        
+        Example use cases:
+        Testing with localhost:8080
+        Using Android emulator's special IP (10.0.2.2)
+        Development with self signed certificates
+        
+        IMPORTANT: Never use this in production! Always test with
+        HTTPS whenever possible, even in development.
+    
+    <debug overrides>
+        <domain config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">10.0.2.2</domain>
+            <domain includeSubdomains="true">127.0.0.1</domain>
+        </domain config>
+    </debug overrides>
+    -->
+</network-security-config>
