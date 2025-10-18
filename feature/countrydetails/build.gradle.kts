@@ -37,9 +37,8 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
-    // Google Maps for Compose
-    implementation(libs.play.services.maps)
-    implementation(libs.maps.compose)
+    // OpenStreetMap
+    implementation(libs.osmdroid.android)
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

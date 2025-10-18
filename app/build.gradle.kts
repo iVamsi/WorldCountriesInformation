@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
-
 plugins {
     id("worldcountries.android.application")
     id("worldcountries.android.hilt")
@@ -16,10 +14,6 @@ android {
         versionName = "1.0.0"
 
         testInstrumentationRunner = "com.vamsi.worldcountriesinformation.WorldCountriesTestRunner"
-
-        // Read the API key from ./local.properties
-        val mapsApiKey: String = gradleLocalProperties(rootDir, providers).getProperty("mapsApiKey") ?: ""
-        manifestPlaceholders["GRADLE_MAPS_API_KEY"] = mapsApiKey
     }
 
     buildFeatures {

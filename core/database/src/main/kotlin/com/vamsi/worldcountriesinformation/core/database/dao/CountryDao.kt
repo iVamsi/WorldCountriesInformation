@@ -33,7 +33,33 @@ interface CountryDao {
     fun getCountryByCode(code: String): Flow<CountryEntity?>
 
     /**
-     * Get a specific country by its three-letter code (one-time)
+     * Get a specific country by its three-letter code (one-time snapshot).
+     *
+     * This method performs a single database query and returns immediately.
+     * Use this for one-time lookups where you don't need to observe changes.
+     *
+     * **Performance:**
+     * - Uses primary key index for O(1) lookup
+     * - Executes on background thread (suspend function)
+     * - Returns immediately after query
+     *
+     * **Use Cases:**
+     * - One-time country validation
+     * - Export/share operations
+     * - Background sync operations
+     *
+     * @param code The three-letter country code (case-sensitive, should be uppercase)
+     *            Examples: "USA", "GBR", "JPN"
+     *
+     * @return The country entity if found, null otherwise
+     *
+     * Example:
+     * ```kotlin
+     * val country = countryDao.getCountryByCodeOnce("USA")
+     * if (country != null) {
+     *     // Country exists
+     * }
+     * ```
      */
     @Query("SELECT * FROM countries WHERE threeLetterCode = :code")
     suspend fun getCountryByCodeOnce(code: String): CountryEntity?

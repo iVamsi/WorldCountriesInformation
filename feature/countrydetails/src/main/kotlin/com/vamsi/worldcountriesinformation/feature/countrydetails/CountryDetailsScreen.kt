@@ -38,21 +38,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapType
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
 import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.CopyrightOverlay
+import org.osmdroid.views.overlay.Marker
 import java.util.Locale
 
 @Composable
@@ -223,6 +221,8 @@ private fun CountryFlagCard(country: Country) {
 
 @Composable
 private fun CountryMapCard(country: Country) {
+    val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -230,29 +230,41 @@ private fun CountryMapCard(country: Country) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         if (country.latitude != 0.0 && country.longitude != 0.0) {
-            val countryLocation = LatLng(country.latitude, country.longitude)
-            val cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(countryLocation, 5f)
-            }
-
-            GoogleMap(
+            AndroidView(
                 modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState,
-                properties = MapProperties(
-                    mapType = MapType.NORMAL
-                ),
-                uiSettings = MapUiSettings(
-                    zoomControlsEnabled = true,
-                    zoomGesturesEnabled = true,
-                    scrollGesturesEnabled = true
-                )
-            ) {
-                Marker(
-                    state = remember { MarkerState(position = countryLocation) },
-                    title = country.name,
-                    snippet = country.capital
-                )
-            }
+                factory = { ctx ->
+                    // Configure osmdroid
+                    Configuration.getInstance().userAgentValue = ctx.packageName
+
+                    MapView(ctx).apply {
+                        setTileSource(TileSourceFactory.MAPNIK)
+                        setMultiTouchControls(true)
+
+                        // Set initial position and zoom
+                        val countryLocation = GeoPoint(country.latitude, country.longitude)
+                        controller.setZoom(5.0)
+                        controller.setCenter(countryLocation)
+
+                        // Add copyright overlay (required by OpenStreetMap license)
+                        val copyrightOverlay = CopyrightOverlay(ctx)
+                        overlays.add(copyrightOverlay)
+
+                        // Add marker
+                        val marker = Marker(this).apply {
+                            position = countryLocation
+                            title = country.name
+                            snippet = country.capital
+                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        }
+                        overlays.add(marker)
+                    }
+                },
+                update = { mapView ->
+                    // Update map if country changes
+                    val countryLocation = GeoPoint(country.latitude, country.longitude)
+                    mapView.controller.setCenter(countryLocation)
+                }
+            )
         } else {
             Box(
                 modifier = Modifier

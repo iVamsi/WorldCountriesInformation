@@ -59,9 +59,8 @@ gson = "2.13.2"
 # Logging
 timber = "5.0.1"
 
-# Google Play Services
-playServicesMaps = "19.2.0"
-mapsCompose = "6.2.1"
+# Maps
+osmdroid = "6.1.20"
 
 # Testing
 junit = "4.13.2"
@@ -152,9 +151,8 @@ gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
-# Google Play Services
-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
+# Maps - OpenStreetMap
+osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 
 # Testing Libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }
