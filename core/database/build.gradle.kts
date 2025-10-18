@@ -17,9 +17,9 @@ android {
 }
 
 dependencies {
-    // Room Database
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
+    // Room Database - Use api for Hilt visibility
+    api(libs.androidx.room.runtime)
+    api(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
     // Coroutines

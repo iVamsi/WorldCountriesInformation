@@ -12,14 +12,14 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:model"))
 
-    // Networking
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.moshi)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
+    // Networking - Use api for Hilt visibility
+    api(libs.retrofit)
+    api(libs.retrofit.converter.moshi)
+    api(libs.okhttp)
+    api(libs.okhttp.logging)
 
     // JSON - Moshi
-    implementation(libs.moshi)
+    api(libs.moshi)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
