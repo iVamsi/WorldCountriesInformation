@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +46,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Currency
+import com.vamsi.worldcountriesinformation.domainmodel.Language
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -195,7 +198,7 @@ private fun CountryFlagCard(country: Country) {
                         .build(),
                     contentDescription = "Flag of ${country.name}",
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit
                 )
             } else {
                 // Fallback if flag not found
@@ -392,5 +395,116 @@ private fun CountryDetailsErrorContent(
                 }
             }
         }
+    }
+}
+
+// Preview Data
+private fun getSampleCountry() = Country(
+    name = "United States",
+    capital = "Washington, D.C.",
+    region = "Americas",
+    population = 331002651,
+    twoLetterCode = "US",
+    threeLetterCode = "USA",
+    callingCode = "+1",
+    currencies = listOf(Currency(code = "USD", name = "United States dollar", symbol = "$")),
+    languages = listOf(Language(name = "English")),
+    latitude = 38.8951,
+    longitude = -77.0364
+)
+
+// Previews
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "Country Details Screen", showBackground = true)
+@Composable
+private fun CountryDetailsScreenPreview() {
+    MaterialTheme {
+        // Preview version without map (to avoid osmdroid rendering issues)
+        val country = getSampleCountry()
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(country.name) },
+                    navigationIcon = {
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Navigate back"
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                )
+            }
+        ) { paddingValues ->
+            val detailsList = getCountryDetailsList(country)
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Country Flag
+                item {
+                    CountryFlagCard(country = country)
+                }
+
+                // Skip map in preview to avoid osmdroid errors
+
+                // Country Details
+                item {
+                    Text(
+                        text = "Country Information",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                items(detailsList) { detail ->
+                    CountryDetailItem(
+                        label = detail.label,
+                        value = detail.value
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(name = "Country Flag Card", showBackground = true)
+@Composable
+private fun CountryFlagCardPreview() {
+    MaterialTheme {
+        CountryFlagCard(country = getSampleCountry())
+    }
+}
+
+@Preview(name = "Country Detail Item", showBackground = true)
+@Composable
+private fun CountryDetailItemPreview() {
+    MaterialTheme {
+        CountryDetailItem(
+            label = "Capital City",
+            value = "Washington, D.C."
+        )
+    }
+}
+
+@Preview(name = "Error Content", showBackground = true)
+@Composable
+private fun CountryDetailsErrorContentPreview() {
+    MaterialTheme {
+        CountryDetailsErrorContent(
+            message = "Failed to load country details. Please try again.",
+            onRetry = {},
+            onNavigateBack = {}
+        )
     }
 }

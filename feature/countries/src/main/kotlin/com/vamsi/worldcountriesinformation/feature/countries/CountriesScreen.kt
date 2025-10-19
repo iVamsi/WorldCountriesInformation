@@ -35,13 +35,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Currency
+import com.vamsi.worldcountriesinformation.domainmodel.Language
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,7 +184,7 @@ private fun CountryCard(
                             .build(),
                         contentDescription = "Flag of ${country.name}",
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        contentScale = ContentScale.Fit
                     )
                 } else {
                     // Fallback if flag not found
@@ -248,5 +251,101 @@ private fun ErrorContent(
                 Text("Retry")
             }
         }
+    }
+}
+
+// Preview Data
+private fun getSampleCountries() = listOf(
+    Country(
+        name = "United States",
+        capital = "Washington, D.C.",
+        region = "Americas",
+        population = 331002651,
+        twoLetterCode = "US",
+        threeLetterCode = "USA",
+        callingCode = "+1",
+        currencies = listOf(Currency(code = "USD", name = "United States dollar", symbol = "$")),
+        languages = listOf(Language(name = "English")),
+        latitude = 38.8951,
+        longitude = -77.0364
+    ),
+    Country(
+        name = "United Kingdom",
+        capital = "London",
+        region = "Europe",
+        population = 67886011,
+        twoLetterCode = "GB",
+        threeLetterCode = "GBR",
+        callingCode = "+44",
+        currencies = listOf(Currency(code = "GBP", name = "British pound", symbol = "£")),
+        languages = listOf(Language(name = "English")),
+        latitude = 51.5074,
+        longitude = -0.1278
+    ),
+    Country(
+        name = "India",
+        capital = "New Delhi",
+        region = "Asia",
+        population = 1380004385,
+        twoLetterCode = "IN",
+        threeLetterCode = "IND",
+        callingCode = "+91",
+        currencies = listOf(Currency(code = "INR", name = "Indian rupee", symbol = "₹")),
+        languages = listOf(Language(name = "Hindi"), Language(name = "English")),
+        latitude = 28.6139,
+        longitude = 77.2090
+    )
+)
+
+// Previews
+@Preview(name = "Countries List - Light", showBackground = true)
+@Composable
+private fun CountriesListPreview() {
+    MaterialTheme {
+        CountriesListContent(
+            countries = getSampleCountries(),
+            onCountryClick = {}
+        )
+    }
+}
+
+@Preview(name = "Country Card", showBackground = true)
+@Composable
+private fun CountryCardPreview() {
+    MaterialTheme {
+        CountryCard(
+            country = getSampleCountries().first(),
+            onClick = {}
+        )
+    }
+}
+
+@Preview(name = "Loading State", showBackground = true)
+@Composable
+private fun LoadingContentPreview() {
+    MaterialTheme {
+        LoadingContent()
+    }
+}
+
+@Preview(name = "Error State", showBackground = true)
+@Composable
+private fun ErrorContentPreview() {
+    MaterialTheme {
+        ErrorContent(
+            message = "Failed to load countries. Please check your internet connection.",
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(name = "Empty List", showBackground = true)
+@Composable
+private fun EmptyListPreview() {
+    MaterialTheme {
+        CountriesListContent(
+            countries = emptyList(),
+            onCountryClick = {}
+        )
     }
 }

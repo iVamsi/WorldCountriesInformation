@@ -79,7 +79,7 @@ class CountryDetailsViewModel @Inject constructor(
      * Only this ViewModel can modify the state.
      */
     private val _uiState = MutableStateFlow<UiState<Country>>(UiState.Idle)
-    
+
     /**
      * Public read-only state flow for observing country details.
      * UI components should collect from this flow to receive state updates.
@@ -125,20 +125,17 @@ class CountryDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             // Set loading state immediately
             _uiState.value = UiState.Loading
-            
+
             Timber.d("Loading country details for code: $countryCode")
 
             getCountryByCodeUseCase(countryCode)
                 .catch { exception ->
                     // Handle unexpected errors from Flow
-                    val error = if (exception is Exception) {
-                        exception
-                    } else {
-                        Exception(exception.message ?: "Unknown error occurred")
-                    }
-                    
+                    val error = exception as? Exception
+                        ?: Exception(exception.message ?: "Unknown error occurred")
+
                     Timber.e(error, "Error loading country details for code: $countryCode")
-                    
+
                     _uiState.value = UiState.Error(
                         exception = error,
                         message = "Failed to load country details. Please try again."
@@ -151,24 +148,28 @@ class CountryDetailsViewModel @Inject constructor(
                             Timber.d("Country details loading...")
                             UiState.Loading
                         }
-                        
+
                         is ApiResponse.Success -> {
                             Timber.d("Country details loaded: ${apiResponse.data.name}")
                             UiState.Success(apiResponse.data)
                         }
-                        
+
                         is ApiResponse.Error -> {
                             val errorMessage = when {
-                                apiResponse.exception.message?.contains("not found", ignoreCase = true) == true -> {
+                                apiResponse.exception.message?.contains(
+                                    "not found",
+                                    ignoreCase = true
+                                ) == true -> {
                                     "Country with code '$countryCode' not found"
                                 }
+
                                 else -> {
                                     "Failed to load country details. Please try again."
                                 }
                             }
-                            
+
                             Timber.e(apiResponse.exception, "Country details error: $errorMessage")
-                            
+
                             UiState.Error(
                                 exception = apiResponse.exception,
                                 message = errorMessage
