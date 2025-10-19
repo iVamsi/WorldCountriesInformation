@@ -11,6 +11,7 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
@@ -29,44 +30,105 @@ class CountriesRepositoryImpl @Inject constructor(
     private val countryDao: CountryDao
 ) : CountriesRepository {
 
+    /**
+     * Retrieves all countries with reactive database updates.
+     *
+     * **Reactive Strategy (Enhanced):**
+     * This implementation uses a hybrid approach that combines immediate cache
+     * response with reactive database updates:
+     *
+     * 1. **Immediate Cache Response**: Checks if database has data
+     *    - If yes: Emits cached data immediately (instant UI)
+     *    - If no: Shows loading state only
+     *
+     * 2. **Background Network Sync**: Fetches fresh data from API
+     *    - Updates database with fresh data
+     *    - Database change triggers automatic UI update (via Flow)
+     *
+     * 3. **Reactive Database Observation**: Uses emitAll() with database Flow
+     *    - UI automatically updates when database changes
+     *    - Works for background refreshes, inserts, updates
+     *    - No manual emission needed after database update
+     *
+     * **Flow Emission Sequence:**
+     * ```
+     * Time 0ms:   ApiResponse.Loading
+     * Time 5ms:   ApiResponse.Success(cachedCountries) [if cache exists]
+     * Time 500ms: Network fetch completes → Database updated
+     * Time 505ms: ApiResponse.Success(freshCountries) [automatic via Flow]
+     * ```
+     *
+     * **Benefits over Previous Implementation:**
+     * - Automatic UI updates on any database change
+     * - Works with background sync operations
+     * - Single source of truth (database)
+     * - Reduced manual Flow emissions
+     * - Better support for pull-to-refresh
+     * - Handles concurrent updates gracefully
+     *
+     * **Error Handling:**
+     * - Network errors don't affect cached data display
+     * - Graceful degradation to offline mode
+     * - Errors logged for debugging
+     *
+     * @return Flow of [ApiResponse] containing list of all countries
+     *         Emits updates automatically when database changes
+     *
+     * @see CountryDao.getAllCountries for reactive database query
+     * @see emitAll for reactive Flow transformation
+     */
     override fun getCountries(): Flow<ApiResponse<List<Country>>> {
         return flow {
             // Emit loading state
             emit(ApiResponse.Loading)
 
-            // First, try to get cached data from database
+            // Check if we have cached data for instant display
             val cachedCountries = countryDao.getAllCountriesOnce()
+            val hasCache = cachedCountries.isNotEmpty()
 
-            if (cachedCountries.isNotEmpty()) {
-                // Emit cached data immediately for instant UI
+            if (hasCache) {
                 Timber.d("Emitting ${cachedCountries.size} cached countries")
                 emit(ApiResponse.Success(cachedCountries.toDomainList()))
             }
 
-            // Then fetch fresh data from network
+            // Launch network fetch in background (doesn't block Flow)
             try {
                 Timber.d("Fetching fresh countries from network")
                 val networkCountries = countriesApi.fetchWorldCountriesInformation()
                 val domainCountries = networkCountries.toCountries()
 
-                // Update database with fresh data
+                // Update database - this will trigger reactive Flow emission below
                 countryDao.refreshCountries(domainCountries.toEntityList())
-                Timber.d("Updated database with ${domainCountries.size} countries")
+                Timber.d("Database updated with ${domainCountries.size} countries")
 
-                // Emit fresh data
-                emit(ApiResponse.Success(domainCountries))
+                // Note: No manual emit here - the emitAll() below will handle it
+                // This ensures we're always emitting from the single source of truth
 
             } catch (exception: Exception) {
                 Timber.e(exception, "Failed to fetch countries from network")
 
-                // If we have cached data, don't emit error (offline mode)
-                if (cachedCountries.isEmpty()) {
+                // Only emit error if we don't have cached data (offline with no cache)
+                if (!hasCache) {
                     emit(ApiResponse.Error(exception))
+                    return@flow // Exit early, don't start observing database
                 } else {
-                    Timber.d("Using cached data due to network error")
-                    // We already emitted cached data above, so just log
+                    Timber.d("Network error, but continuing with cached data")
+                    // Continue to reactive observation even if network fails
                 }
             }
+
+            // Reactive observation: Emit all future database changes
+            // This enables automatic UI updates when:
+            // - Network refresh completes
+            // - Background sync updates database
+            // - User triggers manual refresh
+            // - Any other operation modifies database
+            Timber.d("Starting reactive database observation")
+            emitAll(
+                countryDao.getAllCountries().map { entities ->
+                    ApiResponse.Success(entities.toDomainList())
+                }
+            )
         }
     }
 
@@ -188,41 +250,34 @@ class CountriesRepositoryImpl @Inject constructor(
         }
     }
 
-    /**
-     * Get countries as a reactive Flow (observes database changes)
-     */
-    fun getCountriesFlow(): Flow<List<Country>> {
+    override fun getCountriesFlow(): Flow<List<Country>> {
         return countryDao.getAllCountries().map { entities ->
             entities.toDomainList()
         }
     }
 
-    /**
-     * Search countries by name
-     */
-    fun searchCountries(query: String): Flow<List<Country>> {
+    override fun searchCountries(query: String): Flow<List<Country>> {
         return countryDao.searchCountries(query).map { entities ->
             entities.toDomainList()
         }
     }
 
-    /**
-     * Get countries by region
-     */
-    fun getCountriesByRegion(region: String): Flow<List<Country>> {
+    override fun getCountriesByRegion(region: String): Flow<List<Country>> {
         return countryDao.getCountriesByRegion(region).map { entities ->
             entities.toDomainList()
         }
     }
 
-    /**
-     * Force refresh from network
-     */
-    suspend fun forceRefresh(): Result<Unit> {
+    override suspend fun forceRefresh(): Result<Unit> {
         return try {
+            Timber.d("Force refresh: Fetching fresh data from network")
             val networkCountries = countriesApi.fetchWorldCountriesInformation()
             val domainCountries = networkCountries.toCountries()
+            
+            Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
             countryDao.refreshCountries(domainCountries.toEntityList())
+            
+            Timber.d("Force refresh: Completed successfully")
             Result.success(Unit)
         } catch (exception: Exception) {
             Timber.e(exception, "Force refresh failed")

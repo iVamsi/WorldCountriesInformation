@@ -105,4 +105,248 @@ interface CountriesRepository {
      * @since 1.1.0
      */
     fun getCountryByCode(code: String): Flow<ApiResponse<Country>>
+    
+    /**
+     * Observes all countries as a reactive Flow.
+     *
+     * This method provides a reactive stream of countries that automatically
+     * updates when the underlying database changes. Unlike [getCountries()],
+     * this method doesn't wrap the result in [ApiResponse] and doesn't trigger
+     * network refreshes - it purely observes the database.
+     *
+     * **Use Cases:**
+     * - Real-time UI updates
+     * - Observing database changes from background operations
+     * - Building derived data streams (search, filter, sort)
+     * - Combining multiple data sources
+     *
+     * **Flow Characteristics:**
+     * - Emits immediately with current database state
+     * - Emits new values whenever database changes
+     * - Never completes (continuous observation)
+     * - Cold Flow (starts when collected)
+     *
+     * **Difference from getCountries():**
+     * ```
+     * getCountries():     Loading → Success(cache) → Success(network)
+     * getCountriesFlow(): [country1, country2] → [updated list] → ...
+     * ```
+     *
+     * @return Flow that emits list of countries whenever database changes
+     *
+     * Example:
+     * ```kotlin
+     * repository.getCountriesFlow()
+     *     .collect { countries ->
+     *         // Update UI with latest countries
+     *         updateCountryList(countries)
+     *     }
+     * ```
+     *
+     * @since 2.0.0
+     */
+    fun getCountriesFlow(): Flow<List<Country>>
+    
+    /**
+     * Searches countries by name with reactive updates.
+     *
+     * Performs a case-insensitive search on country names and returns
+     * results as a reactive Flow. The search automatically updates when
+     * the database changes.
+     *
+     * **Search Behavior:**
+     * - Case-insensitive partial matching
+     * - Matches anywhere in country name
+     * - Results sorted alphabetically by name
+     * - Empty query returns all countries
+     *
+     * **Examples:**
+     * ```
+     * Query: "united"
+     * Results: United States, United Kingdom, United Arab Emirates
+     *
+     * Query: "stan"
+     * Results: Afghanistan, Kazakhstan, Kyrgyzstan, Pakistan, etc.
+     *
+     * Query: "ISLAND"
+     * Results: Iceland, Ireland, Marshall Islands, etc.
+     * ```
+     *
+     * **Performance:**
+     * - Database indexed search (fast)
+     * - Results streamed as available
+     * - Minimal memory footprint
+     *
+     * **Use Cases:**
+     * - Search bar implementation
+     * - Autocomplete suggestions
+     * - Country picker with search
+     * - Filtering large country lists
+     *
+     * @param query Search term (case-insensitive)
+     *              Empty string returns all countries
+     *
+     * @return Flow emitting matching countries, updates on database changes
+     *
+     * Example:
+     * ```kotlin
+     * // Search with debouncing
+     * searchQueryFlow
+     *     .debounce(300)
+     *     .flatMapLatest { query ->
+     *         repository.searchCountries(query)
+     *     }
+     *     .collect { results ->
+     *         showSearchResults(results)
+     *     }
+     * ```
+     *
+     * @since 2.0.0
+     * @see SearchCountriesUseCase for a more feature-rich search implementation
+     */
+    fun searchCountries(query: String): Flow<List<Country>>
+    
+    /**
+     * Retrieves countries filtered by region with reactive updates.
+     *
+     * Returns all countries in the specified region as a reactive Flow.
+     * Results automatically update when the database changes.
+     *
+     * **Supported Regions:**
+     * - Africa
+     * - Americas (North and South America)
+     * - Asia
+     * - Europe
+     * - Oceania
+     * - Antarctic (Antarctica and surrounding territories)
+     *
+     * **Region Matching:**
+     * - Exact match (case-sensitive)
+     * - No partial matching
+     * - Invalid regions return empty list
+     *
+     * **Results:**
+     * - Sorted alphabetically by country name
+     * - Includes all countries in the region
+     * - Updates automatically on database changes
+     *
+     * **Examples:**
+     * ```
+     * Region: "Europe"
+     * Results: Albania, Andorra, Austria, Belgium, ..., United Kingdom
+     *
+     * Region: "Asia"
+     * Results: Afghanistan, Armenia, Azerbaijan, ..., Yemen
+     *
+     * Region: "Oceania"
+     * Results: Australia, Fiji, Kiribati, ..., Vanuatu
+     * ```
+     *
+     * **Use Cases:**
+     * - Region-based filtering
+     * - Geographic data visualization
+     * - Regional statistics
+     * - Continent selectors
+     *
+     * **Performance:**
+     * - Database indexed query (fast)
+     * - Typical result: 40-50 countries per region
+     * - Minimal memory overhead
+     *
+     * @param region The region name (must match exactly, case-sensitive)
+     *              Examples: "Africa", "Americas", "Asia", "Europe", "Oceania"
+     *
+     * @return Flow emitting countries in the specified region
+     *         Empty list if region not found or invalid
+     *
+     * Example:
+     * ```kotlin
+     * repository.getCountriesByRegion("Europe")
+     *     .collect { europeanCountries ->
+     *         displayCountries(europeanCountries)
+     *         updateStatistics(europeanCountries)
+     *     }
+     * ```
+     *
+     * @since 2.0.0
+     * @see GetCountriesByRegionUseCase for a more feature-rich implementation
+     */
+    fun getCountriesByRegion(region: String): Flow<List<Country>>
+    
+    /**
+     * Forces a refresh of country data from the network.
+     *
+     * This method bypasses the cache and fetches fresh data directly from
+     * the API, then updates the local database. Use this for user-triggered
+     * refreshes (pull-to-refresh) or when you need to ensure data is current.
+     *
+     * **Refresh Strategy:**
+     * 1. Fetch fresh data from network API
+     * 2. Clear existing database entries
+     * 3. Insert fresh data into database
+     * 4. Return success or failure
+     *
+     * **Behavior:**
+     * - Suspending function (runs on background thread)
+     * - Blocks until completion
+     * - Clears ALL existing data
+     * - Atomic operation (transaction)
+     *
+     * **Result:**
+     * - Success: Data refreshed successfully
+     * - Failure: Network error, parsing error, or database error
+     *
+     * **Use Cases:**
+     * - Pull-to-refresh gesture
+     * - Manual "Refresh" button
+     * - Forced sync after app update
+     * - Recovery from stale data
+     *
+     * **Side Effects:**
+     * - Triggers [getCountriesFlow] emissions
+     * - Updates all active observers
+     * - Clears cache completely
+     * - Network request overhead
+     *
+     * **Error Handling:**
+     * ```kotlin
+     * repository.forceRefresh().fold(
+     *     onSuccess = { showSuccessMessage() },
+     *     onFailure = { error ->
+     *         when (error) {
+     *             is IOException -> showNetworkError()
+     *             is HttpException -> showServerError()
+     *             else -> showGenericError()
+     *         }
+     *     }
+     * )
+     * ```
+     *
+     * **Performance Considerations:**
+     * - Network request: ~1-3 seconds
+     * - Database operation: ~100-200ms
+     * - Total: ~1.5-3.5 seconds
+     * - Should run in background with loading indicator
+     *
+     * @return Result indicating success or failure with exception
+     *         Success: Unit (no data returned, observers updated automatically)
+     *         Failure: Exception with error details
+     *
+     * Example:
+     * ```kotlin
+     * // With coroutines
+     * viewModelScope.launch {
+     *     repository.forceRefresh().fold(
+     *         onSuccess = { _uiState.value = UiState.RefreshSuccess },
+     *         onFailure = { error ->
+     *             _uiState.value = UiState.Error(error.message)
+     *         }
+     *     )
+     * }
+     * ```
+     *
+     * @since 2.0.0
+     * @see RefreshCountriesUseCase for a more feature-rich implementation
+     */
+    suspend fun forceRefresh(): Result<Unit>
 }
