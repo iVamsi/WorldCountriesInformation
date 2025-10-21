@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.vamsi.worldcountriesinformation.core.database.converter.Converters
+import kotlinx.serialization.Serializable
 
 /**
  * Room database entity for storing country information locally
@@ -27,18 +28,26 @@ data class CountryEntity(
 )
 
 /**
- * Embedded entity for language information
+ * Embedded entity for language information.
+ * 
+ * Marked as @Serializable for use with kotlinx.serialization in Room type converters.
+ * This provides compile-time safety and better performance compared to reflection-based JSON parsing.
  */
+@Serializable
 data class LanguageEntity(
-    val name: String?,
-    val nativeName: String?
+    val name: String? = null,
+    val nativeName: String? = null
 )
 
 /**
- * Embedded entity for currency information
+ * Embedded entity for currency information.
+ * 
+ * Marked as @Serializable for use with kotlinx.serialization in Room type converters.
+ * This provides compile-time safety and better performance compared to reflection-based JSON parsing.
  */
+@Serializable
 data class CurrencyEntity(
-    val code: String?,
-    val name: String?,
-    val symbol: String?
+    val code: String? = null,
+    val name: String? = null,
+    val symbol: String? = null
 )
