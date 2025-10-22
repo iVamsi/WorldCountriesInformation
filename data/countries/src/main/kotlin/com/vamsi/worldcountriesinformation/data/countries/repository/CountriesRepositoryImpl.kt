@@ -8,6 +8,7 @@ import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomain
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomainList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +32,47 @@ class CountriesRepositoryImpl @Inject constructor(
 ) : CountriesRepository {
 
     /**
-     * Retrieves all countries with reactive database updates.
+     * Retrieves all countries with configurable cache strategy and reactive database updates.
+     *
+     * **Cache Policy Strategies:**
+     *
+     * **[CachePolicy.CACHE_FIRST]** (Default):
+     * 1. Emit loading state
+     * 2. Check database for cached data
+     * 3. If cache exists and is fresh (< 24 hours):
+     *    - Emit cached data immediately
+     *    - Start observing database for future updates
+     * 4. If cache is stale or missing:
+     *    - Fetch from network
+     *    - Update database with fresh data
+     *    - Emit fresh data via reactive Flow
+     *
+     * **[CachePolicy.NETWORK_FIRST]**:
+     * 1. Emit loading state
+     * 2. Attempt network fetch immediately
+     * 3. If network succeeds:
+     *    - Update database
+     *    - Emit fresh data
+     * 4. If network fails:
+     *    - Check database for any cached data (even if stale)
+     *    - Emit cached data or error
+     *
+     * **[CachePolicy.FORCE_REFRESH]**:
+     * 1. Emit loading state
+     * 2. Always fetch from network (ignore cache)
+     * 3. If network succeeds:
+     *    - Update database
+     *    - Emit fresh data
+     * 4. If network fails:
+     *    - Emit error (no cache fallback)
+     *
+     * **[CachePolicy.CACHE_ONLY]**:
+     * 1. Emit loading state
+     * 2. Check database only (never hits network)
+     * 3. If cache exists (any age):
+     *    - Emit cached data
+     * 4. If cache is empty:
+     *    - Emit error
      *
      * **Reactive Strategy (Enhanced):**
      * This implementation uses a hybrid approach that combines immediate cache
@@ -41,7 +82,7 @@ class CountriesRepositoryImpl @Inject constructor(
      *    - If yes: Emits cached data immediately (instant UI)
      *    - If no: Shows loading state only
      *
-     * 2. **Background Network Sync**: Fetches fresh data from API
+     * 2. **Background Network Sync**: Fetches fresh data from API (if policy allows)
      *    - Updates database with fresh data
      *    - Database change triggers automatic UI update (via Flow)
      *
@@ -50,80 +91,178 @@ class CountriesRepositoryImpl @Inject constructor(
      *    - Works for background refreshes, inserts, updates
      *    - No manual emission needed after database update
      *
-     * **Flow Emission Sequence:**
+     * **Cache Staleness:**
+     * - Data is considered fresh if lastUpdated < 24 hours ago
+     * - Uses [CachePolicy.isCacheFresh] for staleness detection
+     * - Staleness only checked for [CachePolicy.CACHE_FIRST]
+     *
+     * **Flow Emission Sequence (CACHE_FIRST with fresh cache):**
      * ```
      * Time 0ms:   ApiResponse.Loading
-     * Time 5ms:   ApiResponse.Success(cachedCountries) [if cache exists]
+     * Time 5ms:   ApiResponse.Success(cachedCountries) [cache is fresh]
+     * Time 505ms: ApiResponse.Success(cachedCountries) [no network fetch needed]
+     * ```
+     *
+     * **Flow Emission Sequence (CACHE_FIRST with stale cache):**
+     * ```
+     * Time 0ms:   ApiResponse.Loading
+     * Time 5ms:   ApiResponse.Success(cachedCountries) [cache is stale]
      * Time 500ms: Network fetch completes → Database updated
      * Time 505ms: ApiResponse.Success(freshCountries) [automatic via Flow]
      * ```
      *
+     * **Flow Emission Sequence (FORCE_REFRESH):**
+     * ```
+     * Time 0ms:   ApiResponse.Loading
+     * Time 500ms: Network fetch completes → Database updated
+     * Time 505ms: ApiResponse.Success(freshCountries) [or Error if failed]
+     * ```
+     *
      * **Benefits over Previous Implementation:**
+     * - Configurable cache strategies for different use cases
      * - Automatic UI updates on any database change
      * - Works with background sync operations
      * - Single source of truth (database)
      * - Reduced manual Flow emissions
      * - Better support for pull-to-refresh
      * - Handles concurrent updates gracefully
+     * - Offline support with graceful degradation
      *
      * **Error Handling:**
-     * - Network errors don't affect cached data display
+     * - Network errors don't affect cached data display (except FORCE_REFRESH)
      * - Graceful degradation to offline mode
      * - Errors logged for debugging
+     * - Policy-aware error handling
      *
+     * @param policy Cache strategy to use (default: [CachePolicy.CACHE_FIRST])
      * @return Flow of [ApiResponse] containing list of all countries
      *         Emits updates automatically when database changes
      *
      * @see CountryDao.getAllCountries for reactive database query
+     * @see CachePolicy for detailed policy descriptions
      * @see emitAll for reactive Flow transformation
      */
-    override fun getCountries(): Flow<ApiResponse<List<Country>>> {
+    override fun getCountries(policy: CachePolicy): Flow<ApiResponse<List<Country>>> {
         return flow {
             // Emit loading state
             emit(ApiResponse.Loading)
 
-            // Check if we have cached data for instant display
+            // Step 1: Handle CACHE_ONLY policy (never hits network)
+            if (policy == CachePolicy.CACHE_ONLY) {
+                val cachedCountries = countryDao.getAllCountriesOnce()
+                if (cachedCountries.isNotEmpty()) {
+                    Timber.d("CACHE_ONLY: Emitting ${cachedCountries.size} cached countries")
+                    emit(ApiResponse.Success(cachedCountries.toDomainList()))
+                    
+                    // Start reactive observation for any future database changes
+                    emitAll(
+                        countryDao.getAllCountries().map { entities ->
+                            ApiResponse.Success(entities.toDomainList())
+                        }
+                    )
+                } else {
+                    Timber.w("CACHE_ONLY: No cached data available")
+                    emit(ApiResponse.Error(Exception("No cached data available (offline mode)")))
+                }
+                return@flow
+            }
+
+            // Step 2: Check cache for CACHE_FIRST and NETWORK_FIRST policies
             val cachedCountries = countryDao.getAllCountriesOnce()
             val hasCache = cachedCountries.isNotEmpty()
+            
+            // Determine cache staleness (only for CACHE_FIRST)
+            val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
+                val oldestTimestamp = cachedCountries.minOfOrNull { it.lastUpdated } ?: 0L
+                val isFresh = CachePolicy.isCacheFresh(oldestTimestamp)
+                Timber.d("CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp)}, fresh=$isFresh")
+                isFresh
+            } else {
+                false
+            }
 
-            if (hasCache) {
-                Timber.d("Emitting ${cachedCountries.size} cached countries")
+            // Step 3: Emit cached data if appropriate
+            val shouldEmitCache = when (policy) {
+                CachePolicy.CACHE_FIRST -> hasCache // Emit cache immediately if exists
+                CachePolicy.NETWORK_FIRST -> false // Wait for network first
+                CachePolicy.FORCE_REFRESH -> false // Ignore cache completely
+                CachePolicy.CACHE_ONLY -> hasCache // Already handled above
+            }
+
+            if (shouldEmitCache && hasCache) {
+                Timber.d("${policy.name}: Emitting ${cachedCountries.size} cached countries")
                 emit(ApiResponse.Success(cachedCountries.toDomainList()))
             }
 
-            // Launch network fetch in background (doesn't block Flow)
-            try {
-                Timber.d("Fetching fresh countries from network")
-                val networkCountries = countriesApi.fetchWorldCountriesInformation()
-                val domainCountries = networkCountries.toCountries()
+            // Step 4: Determine if network fetch is needed
+            val shouldFetchNetwork = when (policy) {
+                CachePolicy.CACHE_FIRST -> !isCacheFresh // Only if cache is stale or missing
+                CachePolicy.NETWORK_FIRST -> true // Always try network
+                CachePolicy.FORCE_REFRESH -> true // Always fetch
+                CachePolicy.CACHE_ONLY -> false // Never fetch
+            }
 
-                // Update database - this will trigger reactive Flow emission below
-                countryDao.refreshCountries(domainCountries.toEntityList())
-                Timber.d("Database updated with ${domainCountries.size} countries")
+            // Step 5: Fetch from network if needed
+            if (shouldFetchNetwork) {
+                try {
+                    Timber.d("${policy.name}: Fetching fresh countries from network")
+                    val networkCountries = countriesApi.fetchWorldCountriesInformation()
+                    val domainCountries = networkCountries.toCountries()
 
-                // Note: No manual emit here - the emitAll() below will handle it
-                // This ensures we're always emitting from the single source of truth
+                    // Update database - this will trigger reactive Flow emission below
+                    // Database update will set current timestamp for lastUpdated
+                    countryDao.refreshCountries(domainCountries.toEntityList())
+                    Timber.d("${policy.name}: Database updated with ${domainCountries.size} countries")
 
-            } catch (exception: Exception) {
-                Timber.e(exception, "Failed to fetch countries from network")
+                    // Note: No manual emit here - the emitAll() below will handle it
+                    // This ensures we're always emitting from the single source of truth
 
-                // Only emit error if we don't have cached data (offline with no cache)
-                if (!hasCache) {
-                    emit(ApiResponse.Error(exception))
-                    return@flow // Exit early, don't start observing database
-                } else {
-                    Timber.d("Network error, but continuing with cached data")
-                    // Continue to reactive observation even if network fails
+                } catch (exception: Exception) {
+                    Timber.e(exception, "${policy.name}: Failed to fetch countries from network")
+
+                    // Handle error based on policy
+                    when (policy) {
+                        CachePolicy.FORCE_REFRESH -> {
+                            // FORCE_REFRESH: Always emit error, no cache fallback
+                            emit(ApiResponse.Error(exception))
+                            return@flow // Exit early
+                        }
+                        CachePolicy.NETWORK_FIRST -> {
+                            // NETWORK_FIRST: Fallback to cache if available
+                            if (hasCache) {
+                                Timber.d("NETWORK_FIRST: Network failed, falling back to cached data")
+                                emit(ApiResponse.Success(cachedCountries.toDomainList()))
+                            } else {
+                                Timber.w("NETWORK_FIRST: Network failed and no cache available")
+                                emit(ApiResponse.Error(exception))
+                                return@flow
+                            }
+                        }
+                        CachePolicy.CACHE_FIRST -> {
+                            // CACHE_FIRST: Continue with cached data if available
+                            if (!hasCache) {
+                                // No cache and network failed (offline with no cache)
+                                emit(ApiResponse.Error(exception))
+                                return@flow
+                            } else {
+                                Timber.d("CACHE_FIRST: Network error, continuing with cached data")
+                                // Continue to reactive observation
+                            }
+                        }
+                        CachePolicy.CACHE_ONLY -> {
+                            // Already handled above, shouldn't reach here
+                        }
+                    }
                 }
             }
 
-            // Reactive observation: Emit all future database changes
+            // Step 6: Reactive observation: Emit all future database changes
             // This enables automatic UI updates when:
             // - Network refresh completes
             // - Background sync updates database
             // - User triggers manual refresh
             // - Any other operation modifies database
-            Timber.d("Starting reactive database observation")
+            Timber.d("${policy.name}: Starting reactive database observation")
             emitAll(
                 countryDao.getAllCountries().map { entities ->
                     ApiResponse.Success(entities.toDomainList())

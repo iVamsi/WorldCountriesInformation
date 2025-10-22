@@ -1,6 +1,7 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.flow.Flow
 
@@ -36,24 +37,48 @@ import kotlinx.coroutines.flow.Flow
 interface CountriesRepository {
     
     /**
-     * Retrieves all countries from the repository.
+     * Retrieves all countries from the repository with configurable cache strategy.
      *
      * **Strategy:**
-     * - Returns cached data immediately if available
-     * - Fetches fresh data from network in background
-     * - Updates cache with fresh data
-     * - Emits updates as they become available
+     * The behavior depends on the [policy] parameter:
+     * - [CachePolicy.CACHE_FIRST]: Returns cached data if fresh, fetches if stale
+     * - [CachePolicy.NETWORK_FIRST]: Always tries network first, fallback to cache
+     * - [CachePolicy.FORCE_REFRESH]: Always fetches from network
+     * - [CachePolicy.CACHE_ONLY]: Returns only cached data, never fetches
      *
-     * **Flow Emissions:**
+     * **Flow Emissions (CACHE_FIRST):**
      * 1. [ApiResponse.Loading] - Initial loading state
-     * 2. [ApiResponse.Success] with cached data (if available)
-     * 3. [ApiResponse.Success] with fresh data (after network fetch)
+     * 2. [ApiResponse.Success] with cached data (if available and fresh)
+     * 3. [ApiResponse.Success] with fresh data (after network fetch, if stale)
      * 4. [ApiResponse.Error] if both cache and network fail
      *
+     * **Flow Emissions (NETWORK_FIRST):**
+     * 1. [ApiResponse.Loading] - Initial loading state
+     * 2. [ApiResponse.Success] with fresh data (if network succeeds)
+     * 3. [ApiResponse.Success] with cached data (if network fails, fallback)
+     * 4. [ApiResponse.Error] if both network and cache fail
+     *
+     * **Flow Emissions (FORCE_REFRESH):**
+     * 1. [ApiResponse.Loading] - Initial loading state
+     * 2. [ApiResponse.Success] with fresh data (if network succeeds)
+     * 3. [ApiResponse.Error] if network fails (no cache fallback)
+     *
+     * **Flow Emissions (CACHE_ONLY):**
+     * 1. [ApiResponse.Loading] - Initial loading state
+     * 2. [ApiResponse.Success] with cached data (if available)
+     * 3. [ApiResponse.Error] if cache is empty
+     *
+     * **Cache Staleness:**
+     * - Data is considered stale after 24 hours
+     * - Staleness only checked for [CachePolicy.CACHE_FIRST]
+     * - Updated timestamp on every successful network fetch
+     *
+     * @param policy Cache strategy to use (default: [CachePolicy.CACHE_FIRST])
      * @return Flow of [ApiResponse] containing list of all countries
      *
      * Example:
      * ```kotlin
+     * // Default: use cache first
      * repository.getCountries()
      *     .collect { response ->
      *         when (response) {
@@ -62,9 +87,24 @@ interface CountriesRepository {
      *             is ApiResponse.Loading -> showLoading()
      *         }
      *     }
+     *
+     * // Pull-to-refresh: force fresh data
+     * repository.getCountries(CachePolicy.FORCE_REFRESH)
+     *     .collect { response ->
+     *         // Always gets fresh data or error
+     *     }
+     *
+     * // Offline mode: cache only
+     * repository.getCountries(CachePolicy.CACHE_ONLY)
+     *     .collect { response ->
+     *         // Never hits network
+     *     }
      * ```
+     *
+     * @see CachePolicy for detailed policy descriptions
+     * @since 2.4.0 (added cache policy support)
      */
-    fun getCountries(): Flow<ApiResponse<List<Country>>>
+    fun getCountries(policy: CachePolicy = CachePolicy.CACHE_FIRST): Flow<ApiResponse<List<Country>>>
     
     /**
      * Retrieves a single country by its three-letter ISO code.
