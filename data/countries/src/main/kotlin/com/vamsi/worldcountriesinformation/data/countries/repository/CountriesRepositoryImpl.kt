@@ -318,7 +318,10 @@ class CountriesRepositoryImpl @Inject constructor(
      *     }
      * ```
      */
-    override fun getCountryByCode(code: String): Flow<ApiResponse<Country>> {
+    override fun getCountryByCode(
+        code: String,
+        policy: CachePolicy
+    ): Flow<ApiResponse<Country>> {
         return flow {
             // Emit loading state
             emit(ApiResponse.Loading)
@@ -327,59 +330,101 @@ class CountriesRepositoryImpl @Inject constructor(
                 // Normalize country code to uppercase
                 val normalizedCode = code.uppercase().trim()
 
-                Timber.d("Fetching country by code: $normalizedCode (hybrid strategy)")
+                Timber.d("Fetching country by code: $normalizedCode with policy: $policy")
 
-                // Step 1: Try database cache first (fast path)
-                val countryEntity = countryDao.getCountryByCodeOnce(normalizedCode)
+                // Check cache based on policy
+                val cachedCountry = countryDao.getCountryByCodeOnce(normalizedCode)?.toDomain()
 
-                if (countryEntity != null) {
-                    // Cache hit: Return immediately
-                    val country = countryEntity.toDomain()
-                    Timber.d("Country found in cache: ${country.name}")
-                    emit(ApiResponse.Success(country))
-                } else {
-                    // Cache miss: Fetch from network (v3.1 single country endpoint)
-                    Timber.d("Country not in cache, fetching from network: $normalizedCode")
-
-                    try {
-                        // Fetch single country from v3.1 API (optimized endpoint)
-                        val networkCountries = countriesApi.fetchCountryByCode(normalizedCode)
-
-                        if (networkCountries.isNotEmpty()) {
-                            val domainCountry: Country? = networkCountries.first().toCountry()
-
-                            if (domainCountry != null) {
-                                // Cache the fetched country for future use
-                                val countryList: List<Country> = listOf(domainCountry)
-                                countryDao.insertCountries(countryList.toEntityList())
-                                Timber.d("Country fetched and cached: ${domainCountry.name}")
-
-                                // Return fresh data
-                                emit(ApiResponse.Success(domainCountry))
-                            } else {
-                                Timber.w("Failed to map country data for code: $normalizedCode")
-                                emit(
-                                    ApiResponse.Error(
-                                        Exception("Failed to process country data for '$normalizedCode'")
-                                    )
-                                )
-                            }
+                when (policy) {
+                    CachePolicy.CACHE_ONLY -> {
+                        // Return cache only, no network call
+                        if (cachedCountry != null) {
+                            Timber.d("Country found in cache (CACHE_ONLY): ${cachedCountry.name}")
+                            emit(ApiResponse.Success(cachedCountry))
                         } else {
-                            Timber.w("Country not found in API: $normalizedCode")
+                            Timber.w("Country not in cache (CACHE_ONLY): $normalizedCode")
                             emit(
                                 ApiResponse.Error(
-                                    Exception("Country with code '$normalizedCode' not found")
+                                    Exception("No cached data available for country '$normalizedCode'")
                                 )
                             )
                         }
-                    } catch (networkException: Exception) {
-                        // Network fetch failed
-                        Timber.e(networkException, "Network fetch failed for code: $normalizedCode")
-                        emit(
-                            ApiResponse.Error(
-                                Exception("Failed to fetch country '$normalizedCode': ${networkException.message}")
+                    }
+
+                    CachePolicy.CACHE_FIRST -> {
+                        if (cachedCountry != null) {
+                            // Emit cached data immediately for instant UX
+                            Timber.d("Country found in cache (CACHE_FIRST): ${cachedCountry.name}")
+                            emit(ApiResponse.Success(cachedCountry))
+                        } else {
+                            // No cache, fetch from network
+                            Timber.d("Country not in cache, fetching from network: $normalizedCode")
+                            fetchCountryFromNetwork(normalizedCode)?.let { country ->
+                                emit(ApiResponse.Success(country))
+                            } ?: run {
+                                emit(
+                                    ApiResponse.Error(
+                                        Exception("Country with code '$normalizedCode' not found")
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    CachePolicy.NETWORK_FIRST -> {
+                        // Try network first
+                        try {
+                            val freshCountry = fetchCountryFromNetwork(normalizedCode)
+                            if (freshCountry != null) {
+                                emit(ApiResponse.Success(freshCountry))
+                            } else if (cachedCountry != null) {
+                                // Network failed, fall back to cache
+                                Timber.d("Network fetch failed, using cache: ${cachedCountry.name}")
+                                emit(ApiResponse.Success(cachedCountry))
+                            } else {
+                                emit(
+                                    ApiResponse.Error(
+                                        Exception("Country with code '$normalizedCode' not found")
+                                    )
+                                )
+                            }
+                        } catch (networkException: Exception) {
+                            // Network error, try cache
+                            if (cachedCountry != null) {
+                                Timber.w(networkException, "Network failed, using cache: ${cachedCountry.name}")
+                                emit(ApiResponse.Success(cachedCountry))
+                            } else {
+                                Timber.e(networkException, "Network failed and no cache available")
+                                emit(
+                                    ApiResponse.Error(
+                                        Exception("Failed to fetch country '$normalizedCode': ${networkException.message}")
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    CachePolicy.FORCE_REFRESH -> {
+                        // Always fetch fresh from network, ignore cache
+                        try {
+                            val freshCountry = fetchCountryFromNetwork(normalizedCode)
+                            if (freshCountry != null) {
+                                emit(ApiResponse.Success(freshCountry))
+                            } else {
+                                emit(
+                                    ApiResponse.Error(
+                                        Exception("Country with code '$normalizedCode' not found")
+                                    )
+                                )
+                            }
+                        } catch (networkException: Exception) {
+                            Timber.e(networkException, "Force refresh failed for: $normalizedCode")
+                            emit(
+                                ApiResponse.Error(
+                                    Exception("Failed to fetch country '$normalizedCode': ${networkException.message}")
+                                )
                             )
-                        )
+                        }
                     }
                 }
             } catch (exception: Exception) {
@@ -387,6 +432,35 @@ class CountriesRepositoryImpl @Inject constructor(
                 emit(ApiResponse.Error(exception))
             }
         }
+    }
+
+    /**
+     * Helper function to fetch country from network and cache it.
+     * 
+     * @param code The three-letter country code
+     * @return The fetched country, or null if not found
+     */
+    private suspend fun fetchCountryFromNetwork(code: String): Country? {
+        Timber.d("Fetching country from network: $code")
+        
+        val networkCountries = countriesApi.fetchCountryByCode(code)
+        
+        if (networkCountries.isNotEmpty()) {
+            val domainCountry = networkCountries.first().toCountry()
+            
+            if (domainCountry != null) {
+                // Cache the fetched country
+                countryDao.insertCountries(listOf(domainCountry).toEntityList())
+                Timber.d("Country fetched and cached: ${domainCountry.name}")
+                return domainCountry
+            } else {
+                Timber.w("Failed to map country data for code: $code")
+            }
+        } else {
+            Timber.w("Country not found in API: $code")
+        }
+        
+        return null
     }
 
     override fun getCountriesFlow(): Flow<List<Country>> {

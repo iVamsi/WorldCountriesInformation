@@ -142,9 +142,14 @@ interface CountriesRepository {
      *     }
      * ```
      *
-     * @since 1.1.0
+     * @param policy The cache strategy to use (default: CACHE_FIRST)
+     *
+     * @since 1.1.0 (Enhanced in 2.0.0 with cache policy support)
      */
-    fun getCountryByCode(code: String): Flow<ApiResponse<Country>>
+    fun getCountryByCode(
+        code: String,
+        policy: CachePolicy = CachePolicy.CACHE_FIRST
+    ): Flow<ApiResponse<Country>>
     
     /**
      * Observes all countries as a reactive Flow.
