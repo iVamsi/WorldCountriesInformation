@@ -9,6 +9,7 @@ import androidx.navigation.navArgument
 import com.vamsi.worldcountriesinformation.core.navigation.Screen
 import com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen
 import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute
+import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
 
 /**
  * Main navigation configuration for the World Countries application.
@@ -75,6 +76,20 @@ fun WorldCountriesNavigation(
                     navController.navigate(
                         Screen.CountryDetails.createRoute(country.threeLetterCode)
                     )
+                },
+                onNavigateToSettings = {
+                    // Navigate to settings screen
+                    navController.navigate(Screen.Settings.route)
+                }
+            )
+        }
+
+        // Settings Screen
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = {
+                    // Pop back stack to return to countries list
+                    navController.popBackStack()
                 }
             )
         }

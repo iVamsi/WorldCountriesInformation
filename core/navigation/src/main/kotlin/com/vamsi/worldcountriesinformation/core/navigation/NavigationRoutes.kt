@@ -77,6 +77,32 @@ sealed class Screen(val route: String) {
     data object Countries : Screen("countries")
 
     /**
+     * Settings screen - user preferences and app configuration.
+     *
+     * **Route:** `"settings"`
+     *
+     * **Purpose:**
+     * - Configure cache policy preferences
+     * - Toggle offline mode
+     * - View cache statistics
+     * - Clear cached data
+     * - View app information
+     *
+     * **Parameters:** None
+     *
+     * **Example:**
+     * ```kotlin
+     * navController.navigate(Screen.Settings.route)
+     * ```
+     *
+     * **Deep Link:**
+     * ```
+     * myapp://settings
+     * ```
+     */
+    data object Settings : Screen("settings")
+
+    /**
      * Country details screen - shows detailed information about a specific country.
      *
      * **Route Pattern:** `"country_details/{countryCode}"`

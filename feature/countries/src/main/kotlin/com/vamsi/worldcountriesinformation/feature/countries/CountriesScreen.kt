@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -67,6 +68,7 @@ import java.util.Locale
  * - Manual refresh button in TopAppBar
  * - Enhanced error messages with retry
  * - **Search functionality with debounced input (Phase 3.8)**
+ * - **Settings navigation (Phase 3.9)**
  *
  * ## Phase 3.8: Search Features
  * - Real-time search with 300ms debounce
@@ -75,13 +77,18 @@ import java.util.Locale
  * - Search result count
  * - Empty state for no results
  *
+ * ## Phase 3.9: Settings Integration
+ * - Settings icon in TopAppBar for accessing preferences
+ *
  * @param onCountryClick Callback when a country is clicked
+ * @param onNavigateToSettings Callback when settings button is clicked
  * @param viewModel The ViewModel managing the screen state
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(
     onCountryClick: (Country) -> Unit,
+    onNavigateToSettings: () -> Unit = {},
     viewModel: CountriesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -113,6 +120,14 @@ fun CountriesScreen(
                     }
                 },
                 actions = {
+                    // Settings button
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                     // Manual refresh button
                     IconButton(
                         onClick = { viewModel.refresh() },
