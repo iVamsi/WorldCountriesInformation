@@ -14,9 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,6 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,13 +59,21 @@ import com.vamsi.worldcountriesinformation.domainmodel.Language
 import java.util.Locale
 
 /**
- * Countries screen with pull-to-refresh and cache age indicator.
+ * Countries screen with pull-to-refresh, cache age indicator, and search.
  *
- * ## Phase 3 Enhancement
+ * ## Phase 3 Enhancements
  * - Pull-to-refresh support for manual data updates
  * - Cache age indicator showing when data was last updated
  * - Manual refresh button in TopAppBar
  * - Enhanced error messages with retry
+ * - **Search functionality with debounced input (Phase 3.8)**
+ *
+ * ## Phase 3.8: Search Features
+ * - Real-time search with 300ms debounce
+ * - Case-insensitive partial matching
+ * - Clear search button
+ * - Search result count
+ * - Empty state for no results
  *
  * @param onCountryClick Callback when a country is clicked
  * @param viewModel The ViewModel managing the screen state
@@ -71,6 +86,9 @@ fun CountriesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val isSearchActive by viewModel.isSearchActive.collectAsStateWithLifecycle()
     val cacheAge = viewModel.getCacheAge()
     val isCacheFresh = viewModel.isCacheFresh()
 
@@ -138,10 +156,34 @@ fun CountriesScreen(
                     onRefresh = { viewModel.refresh() },
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    CountriesListContent(
-                        countries = state.data,
-                        onCountryClick = onCountryClick
-                    )
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // Search bar (Phase 3.8)
+                        SearchBar(
+                            query = searchQuery,
+                            onQueryChange = { viewModel.onSearchQueryChange(it) },
+                            onClearClick = { viewModel.clearSearch() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        )
+
+                        // Show search results count if searching
+                        if (isSearchActive) {
+                            Text(
+                                text = "${searchResults.size} result${if (searchResults.size != 1) "s" else ""} found",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            )
+                        }
+
+                        // Show search results or all countries
+                        CountriesListContent(
+                            countries = if (isSearchActive) searchResults else state.data,
+                            onCountryClick = onCountryClick,
+                            showEmptyState = isSearchActive && searchResults.isEmpty()
+                        )
+                    }
                 }
             }
 
@@ -156,6 +198,58 @@ fun CountriesScreen(
     }
 }
 
+/**
+ * Search bar composable for filtering countries.
+ *
+ * ## Phase 3.8 Enhancement
+ * Provides real-time search with debounced input and clear functionality.
+ *
+ * @param query Current search query
+ * @param onQueryChange Callback when query changes
+ * @param onClearClick Callback when clear button is clicked
+ * @param modifier Modifier for the search bar
+ */
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onClearClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier,
+        placeholder = { Text("Search countries...") },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search icon",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = onClearClick) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(
+            onSearch = { keyboardController?.hide() }
+        ),
+        shape = MaterialTheme.shapes.medium
+    )
+}
+
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(
@@ -166,10 +260,24 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Countries list content with optional empty state.
+ *
+ * ## Phase 3.8 Enhancement
+ * Added showEmptyState parameter to distinguish between:
+ * - No data loaded yet
+ * - No search results found
+ *
+ * @param countries List of countries to display
+ * @param onCountryClick Callback when a country is clicked
+ * @param showEmptyState Whether to show "No results" message
+ * @param modifier Modifier for the list
+ */
 @Composable
 private fun CountriesListContent(
     countries: List<Country>,
     onCountryClick: (Country) -> Unit,
+    showEmptyState: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     if (countries.isEmpty()) {
@@ -177,12 +285,34 @@ private fun CountriesListContent(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("No countries found")
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Text(
+                    text = if (showEmptyState) "No countries match your search" else "No countries found",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (showEmptyState) {
+                    Text(
+                        text = "Try a different search term",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
+            }
         }
     } else {
         LazyColumn(
             modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(
