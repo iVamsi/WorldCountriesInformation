@@ -16,18 +16,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,6 +51,18 @@ import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import java.util.Locale
 
+/**
+ * Countries screen with pull-to-refresh and cache age indicator.
+ *
+ * ## Phase 3 Enhancement
+ * - Pull-to-refresh support for manual data updates
+ * - Cache age indicator showing when data was last updated
+ * - Manual refresh button in TopAppBar
+ * - Enhanced error messages with retry
+ *
+ * @param onCountryClick Callback when a country is clicked
+ * @param viewModel The ViewModel managing the screen state
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(
@@ -54,11 +70,43 @@ fun CountriesScreen(
     viewModel: CountriesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val cacheAge = viewModel.getCacheAge()
+    val isCacheFresh = viewModel.isCacheFresh()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("World Countries") },
+                title = { 
+                    Column {
+                        Text("World Countries")
+                        // Cache age indicator
+                        if (cacheAge != "Never") {
+                            Text(
+                                text = "Updated $cacheAge",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isCacheFresh) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                } else {
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                                }
+                            )
+                        }
+                    }
+                },
+                actions = {
+                    // Manual refresh button
+                    IconButton(
+                        onClick = { viewModel.refresh() },
+                        enabled = !isRefreshing
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh countries",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -84,11 +132,17 @@ fun CountriesScreen(
             }
 
             is UiState.Success -> {
-                CountriesListContent(
-                    countries = state.data,
-                    onCountryClick = onCountryClick,
+                // Pull-to-refresh wrapper
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = { viewModel.refresh() },
                     modifier = Modifier.padding(paddingValues)
-                )
+                ) {
+                    CountriesListContent(
+                        countries = state.data,
+                        onCountryClick = onCountryClick
+                    )
+                }
             }
 
             is UiState.Error -> {

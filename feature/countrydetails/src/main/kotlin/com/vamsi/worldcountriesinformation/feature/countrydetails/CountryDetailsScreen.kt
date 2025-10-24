@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +58,15 @@ import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
 import java.util.Locale
 
+/**
+ * Country details route with pull-to-refresh support.
+ *
+ * ## Phase 3 Enhancement
+ * - Pull-to-refresh for manual data updates
+ * - Cache age indicator in TopAppBar
+ * - Manual refresh button
+ * - Enhanced error handling
+ */
 @Composable
 fun CountryDetailsRoute(
     countryCode: String,
@@ -63,6 +74,7 @@ fun CountryDetailsRoute(
     viewModel: CountryDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
 
     LaunchedEffect(countryCode) {
         viewModel.loadCountryDetails(countryCode)
@@ -90,7 +102,11 @@ fun CountryDetailsRoute(
         is UiState.Success -> {
             CountryDetailsScreen(
                 country = state.data,
-                onNavigateBack = onNavigateBack
+                onNavigateBack = onNavigateBack,
+                isRefreshing = isRefreshing,
+                onRefresh = { viewModel.refresh(countryCode) },
+                cacheAge = viewModel.getCacheAge(),
+                isCacheFresh = viewModel.isCacheFresh()
             )
         }
 
@@ -109,17 +125,50 @@ fun CountryDetailsRoute(
 private fun CountryDetailsScreen(
     country: Country,
     onNavigateBack: () -> Unit,
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {},
+    cacheAge: String = "Never",
+    isCacheFresh: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(country.name) },
+                title = { 
+                    Column {
+                        Text(country.name)
+                        // Cache age indicator
+                        if (cacheAge != "Never") {
+                            Text(
+                                text = "Updated $cacheAge",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (isCacheFresh) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                } else {
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
+                                }
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Navigate back"
+                        )
+                    }
+                },
+                actions = {
+                    // Manual refresh button
+                    IconButton(
+                        onClick = onRefresh,
+                        enabled = !isRefreshing
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh country details",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 },
@@ -131,40 +180,45 @@ private fun CountryDetailsScreen(
             )
         }
     ) { paddingValues ->
-        val detailsList = getCountryDetailsList(country)
-
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Pull-to-refresh wrapper
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = onRefresh,
+            modifier = Modifier.padding(paddingValues)
         ) {
-            // Country Flag
-            item {
-                CountryFlagCard(country = country)
-            }
+            val detailsList = getCountryDetailsList(country)
 
-            // Map
-            item {
-                CountryMapCard(country = country)
-            }
+            LazyColumn(
+                modifier = modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Country Flag
+                item {
+                    CountryFlagCard(country = country)
+                }
 
-            // Country Details
-            item {
-                Text(
-                    text = "Country Information",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
+                // Map
+                item {
+                    CountryMapCard(country = country)
+                }
 
-            items(detailsList) { detail ->
-                CountryDetailItem(
-                    label = detail.label,
-                    value = detail.value
-                )
+                // Country Details
+                item {
+                    Text(
+                        text = "Country Information",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+
+                items(detailsList) { detail ->
+                    CountryDetailItem(
+                        label = detail.label,
+                        value = detail.value
+                    )
+                }
             }
         }
     }
