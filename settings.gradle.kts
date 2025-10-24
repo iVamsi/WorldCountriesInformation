@@ -26,7 +26,9 @@ include(
     ":core:navigation",
     ":core:network",
     ":core:database",
+    ":core:datastore",
     ":data:countries",
     ":feature:countries",
-    ":feature:countrydetails"
+    ":feature:countrydetails",
+    ":feature:settings"
 )

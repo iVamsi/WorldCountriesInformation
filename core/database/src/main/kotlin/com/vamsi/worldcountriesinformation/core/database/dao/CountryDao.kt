@@ -107,6 +107,18 @@ interface CountryDao {
     suspend fun getCountriesCount(): Int
 
     /**
+     * Get the count of countries in the database (for cache statistics)
+     */
+    @Query("SELECT COUNT(*) FROM countries")
+    suspend fun getCountryCount(): Int
+
+    /**
+     * Get the timestamp of the oldest entry in the cache
+     */
+    @Query("SELECT MIN(lastUpdated) FROM countries")
+    suspend fun getOldestTimestamp(): Long
+
+    /**
      * Check if database is empty
      */
     @Query("SELECT COUNT(*) FROM countries")
