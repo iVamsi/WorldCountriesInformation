@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:model"))
+    implementation(project(":core:datastore"))
 
     // Domain
     implementation(project(":domain"))

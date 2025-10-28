@@ -1,6 +1,7 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.tests_shared.TestData
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -50,7 +51,7 @@ class GetCountriesUseCaseTest {
         coEvery { countriesRepository.getCountries() } returns expectedResult
 
         // When
-        val result = testCase.invoke(false).toList()
+        val result = testCase.invoke(CachePolicy.CACHE_FIRST).toList()
 
         // Then
         Assert.assertEquals(1, result.size)
@@ -66,7 +67,7 @@ class GetCountriesUseCaseTest {
         coEvery { countriesRepository.getCountries() } returns expectedError
 
         // When
-        val result = testCase.invoke(false).toList()
+        val result = testCase.invoke(CachePolicy.CACHE_FIRST).toList()
 
         // Then
         Assert.assertEquals(1, result.size)

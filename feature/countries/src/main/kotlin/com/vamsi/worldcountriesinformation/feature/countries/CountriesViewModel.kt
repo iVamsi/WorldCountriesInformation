@@ -8,9 +8,15 @@ import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
 import com.vamsi.worldcountriesinformation.domain.core.onSuccess
+import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Regions
+import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
+import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -105,7 +111,11 @@ import javax.inject.Inject
 @HiltViewModel
 class CountriesViewModel @Inject constructor(
     private val countriesUseCase: GetCountriesUseCase,
-    private val searchCountriesUseCase: SearchCountriesUseCase
+    private val searchCountriesUseCase: SearchCountriesUseCase,
+    private val filteredSearchUseCase: FilteredSearchCountriesUseCase,
+    private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
+    private val searchPreferencesDataSource: SearchPreferencesDataSource,
+    private val searchFiltersUseCase: com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
 ) : ViewModel() {
 
     /**
@@ -463,4 +473,222 @@ class CountriesViewModel @Inject constructor(
      * @return Current search query string
      */
     fun getCurrentSearchQuery(): String = _searchQuery.value
+
+    // ========================================
+    // Phase 3.10: Advanced Search Features
+    // ========================================
+
+    /**
+     * Search preferences including filters and history.
+     */
+    val searchPreferences = searchPreferencesDataSource.searchPreferences
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences()
+        )
+
+    /**
+     * Search suggestions based on current query.
+     */
+    val searchSuggestions: StateFlow<List<String>> = kotlinx.coroutines.flow.combine(
+        _searchQuery,
+        uiState
+    ) { query, state ->
+        if (query.length >= 2 && state is UiState.Success) {
+            suggestionsUseCase(
+                query = query,
+                allCountries = state.data,
+                maxSuggestions = 5
+            )
+        } else {
+            emptyList()
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000L),
+        initialValue = emptyList()
+    )
+
+    /**
+     * Filtered search results combining query + filters.
+     * 
+     * Strategy:
+     * - If no filters and no query: return cached data
+     * - If query but no filters: use search use case
+     * - If filters (with or without query): apply filters to search results or cached data
+     */
+    private val _filteredResults = kotlinx.coroutines.flow.combine(
+        _searchQuery,
+        searchPreferences,
+        uiState
+    ) { query, prefs, state ->
+        Triple(query, prefs.filters, state)
+    }
+        .debounce(300L)
+        .flatMapLatest { (query, filters, state) ->
+            val hasFilters = searchFiltersUseCase.hasActiveFilters(filters)
+            
+            Timber.d("FilteredResults - Query: '$query', HasFilters: $hasFilters, Filters: $filters, State: ${state::class.simpleName}")
+            
+            if (!hasFilters) {
+                // No filters active, use basic search
+                if (query.isBlank()) {
+                    // No query, no filters: return all cached data
+                    Timber.d("FilteredResults - Returning cached data")
+                    when (state) {
+                        is UiState.Success -> {
+                            Timber.d("FilteredResults - Cached data size: ${state.data.size}")
+                            kotlinx.coroutines.flow.flowOf(state.data)
+                        }
+                        else -> {
+                            Timber.d("FilteredResults - State not Success, returning empty")
+                            kotlinx.coroutines.flow.flowOf(emptyList())
+                        }
+                    }
+                } else {
+                    // Query but no filters: search database
+                    Timber.d("FilteredResults - Searching database for: $query")
+                    searchCountriesUseCase(query)
+                }
+            } else {
+                // Filters active
+                if (query.isBlank()) {
+                    // Filters only: apply to cached data
+                    Timber.d("FilteredResults - Applying filters to cached data")
+                    when (state) {
+                        is UiState.Success -> {
+                            Timber.d("FilteredResults - Cached data size: ${state.data.size}, Regions: ${filters.selectedRegions}")
+                            val filtered = filteredSearchUseCase.applyFiltersAndSort(state.data, filters)
+                            Timber.d("FilteredResults - Filtered data size: ${filtered.size}")
+                            if (filtered.isNotEmpty()) {
+                                Timber.d("FilteredResults - Sample filtered countries: ${filtered.take(3).map { it.name + " (" + it.region + ")" }}")
+                            }
+                            kotlinx.coroutines.flow.flowOf(filtered)
+                        }
+                        else -> {
+                            Timber.d("FilteredResults - State not Success, returning empty")
+                            kotlinx.coroutines.flow.flowOf(emptyList())
+                        }
+                    }
+                } else {
+                    // Query + filters: search then filter
+                    Timber.d("FilteredResults - Searching and filtering for: $query")
+                    filteredSearchUseCase(query, filters)
+                }
+            }
+        }
+        .catch { exception ->
+            Timber.e(exception, "Filtered search error")
+            emit(emptyList())
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = emptyList()
+        )
+
+    /**
+     * Final search results (replaces old searchResults).
+     * Uses filtered results when filters are active.
+     */
+    val filteredSearchResults: StateFlow<List<Country>> = _filteredResults
+
+    /**
+     * Updates search filters.
+     */
+    fun updateSearchFilters(filters: SearchFilters) {
+        viewModelScope.launch {
+            Timber.d("Updating search filters: $filters")
+            searchPreferencesDataSource.updateFilters(filters)
+        }
+    }
+
+    /**
+     * Toggles a region filter.
+     */
+    fun toggleRegion(region: String) {
+        viewModelScope.launch {
+            val currentRegions = searchPreferences.value.filters.selectedRegions
+            val newRegions = if (currentRegions.contains(region)) {
+                currentRegions - region
+            } else {
+                currentRegions + region
+            }
+            Timber.d("Toggling region $region. New regions: $newRegions")
+            searchPreferencesDataSource.updateSelectedRegions(newRegions)
+        }
+    }
+
+    /**
+     * Updates sort order.
+     */
+    fun updateSortOrder(sortOrder: SortOrder) {
+        viewModelScope.launch {
+            Timber.d("Updating sort order: $sortOrder")
+            searchPreferencesDataSource.updateSortOrder(sortOrder)
+        }
+    }
+
+    /**
+     * Clears all active filters.
+     */
+    fun clearFilters() {
+        viewModelScope.launch {
+            Timber.d("Clearing all filters")
+            searchPreferencesDataSource.clearFilters()
+        }
+    }
+
+    /**
+     * Saves current search query to history.
+     */
+    fun saveSearchToHistory() {
+        val query = _searchQuery.value
+        if (query.isNotBlank()) {
+            viewModelScope.launch {
+                Timber.d("Saving search to history: $query")
+                searchPreferencesDataSource.addToSearchHistory(query)
+            }
+        }
+    }
+
+    /**
+     * Clears search history.
+     */
+    fun clearSearchHistory() {
+        viewModelScope.launch {
+            Timber.d("Clearing search history")
+            searchPreferencesDataSource.clearSearchHistory()
+        }
+    }
+
+    /**
+     * Selects a query from history or suggestions.
+     */
+    fun selectSearchQuery(query: String) {
+        Timber.d("Selecting search query: $query")
+        _searchQuery.value = query
+        saveSearchToHistory()
+    }
+
+    /**
+     * Gets all available regions for filtering.
+     */
+    fun getAvailableRegions(): Set<String> = Regions.ALL
+
+    /**
+     * Checks if filters are active.
+     */
+    fun hasActiveFilters(filters: SearchFilters): Boolean {
+        return searchFiltersUseCase.hasActiveFilters(filters)
+    }
+
+    /**
+     * Gets count of active filters.
+     */
+    fun getActiveFilterCount(filters: SearchFilters): Int {
+        return searchFiltersUseCase.getActiveFilterCount(filters)
+    }
 }
+

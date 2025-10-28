@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -27,6 +30,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +45,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -57,6 +65,8 @@ import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.domainmodel.Regions
+import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import java.util.Locale
 
 /**
@@ -94,7 +104,9 @@ fun CountriesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val searchResults by viewModel.filteredSearchResults.collectAsStateWithLifecycle()
+    val searchPreferences by viewModel.searchPreferences.collectAsStateWithLifecycle()
+    val searchSuggestions by viewModel.searchSuggestions.collectAsStateWithLifecycle()
     val isSearchActive by viewModel.isSearchActive.collectAsStateWithLifecycle()
     val cacheAge = viewModel.getCacheAge()
     val isCacheFresh = viewModel.isCacheFresh()
@@ -182,8 +194,41 @@ fun CountriesScreen(
                                 .padding(16.dp)
                         )
 
+                        // Region filter chips (Phase 3.10)
+                        if (searchPreferences.filters.selectedRegions.isNotEmpty() || 
+                            !isSearchActive) {
+                            RegionFilterChips(
+                                selectedRegions = searchPreferences.filters.selectedRegions,
+                                onRegionToggle = { viewModel.toggleRegion(it) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        // Show filter count and clear button
+                        if (viewModel.hasActiveFilters(searchPreferences.filters)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val filterCount = viewModel.getActiveFilterCount(searchPreferences.filters)
+                                Text(
+                                    text = "$filterCount filter${if (filterCount != 1) "s" else ""} active",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                androidx.compose.material3.TextButton(
+                                    onClick = { viewModel.clearFilters() }
+                                ) {
+                                    Text("Clear filters")
+                                }
+                            }
+                        }
+
                         // Show search results count if searching
-                        if (isSearchActive) {
+                        if (isSearchActive || viewModel.hasActiveFilters(searchPreferences.filters)) {
                             Text(
                                 text = "${searchResults.size} result${if (searchResults.size != 1) "s" else ""} found",
                                 style = MaterialTheme.typography.labelMedium,
@@ -192,11 +237,11 @@ fun CountriesScreen(
                             )
                         }
 
-                        // Show search results or all countries
+                        // Show search results (filtered + sorted)
                         CountriesListContent(
-                            countries = if (isSearchActive) searchResults else state.data,
+                            countries = searchResults.ifEmpty { state.data },
                             onCountryClick = onCountryClick,
-                            showEmptyState = isSearchActive && searchResults.isEmpty()
+                            showEmptyState = (isSearchActive || viewModel.hasActiveFilters(searchPreferences.filters)) && searchResults.isEmpty()
                         )
                     }
                 }
@@ -495,6 +540,117 @@ private fun getSampleCountries() = listOf(
         longitude = 77.2090
     )
 )
+
+// ========================================
+// Phase 3.10: Advanced Search UI Components
+// ========================================
+
+/**
+ * Filter chips row for region filtering.
+ *
+ * @param selectedRegions Currently selected regions
+ * @param onRegionToggle Callback when a region is toggled
+ * @param modifier Modifier for the row
+ */
+@Composable
+private fun RegionFilterChips(
+    selectedRegions: Set<String>,
+    onRegionToggle: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Filter by Region",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (selectedRegions.isNotEmpty()) {
+                Text(
+                    text = "${selectedRegions.size} active",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+        
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(Regions.ALL.toList()) { region ->
+                FilterChip(
+                    selected = selectedRegions.contains(region),
+                    onClick = { onRegionToggle(region) },
+                    label = { Text(region) }
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Sort options dropdown/selector.
+ *
+ * @param currentSort Currently selected sort order
+ * @param onSortChange Callback when sort order changes
+ * @param modifier Modifier for the component
+ */
+@Composable
+private fun SortSelector(
+    currentSort: SortOrder,
+    onSortChange: (SortOrder) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "Sort: ${currentSort.displayName}",
+            style = MaterialTheme.typography.labelLarge
+        )
+        // TODO: Add dropdown menu for sort options
+    }
+}
+
+/**
+ * Extension property for user-friendly sort order names.
+ */
+private val SortOrder.displayName: String
+    get() = when (this) {
+        SortOrder.NAME_ASC -> "Name (A-Z)"
+        SortOrder.NAME_DESC -> "Name (Z-A)"
+        SortOrder.POPULATION_DESC -> "Population (High-Low)"
+        SortOrder.POPULATION_ASC -> "Population (Low-High)"
+        SortOrder.AREA_DESC -> "Area (Large-Small)"
+        SortOrder.AREA_ASC -> "Area (Small-Large)"
+    }
+
+// ========================================
+// Previews
+// ========================================
 
 // Previews
 @Preview(name = "Countries List - Light", showBackground = true)

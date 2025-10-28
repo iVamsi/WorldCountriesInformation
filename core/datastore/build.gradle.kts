@@ -8,9 +8,15 @@ android {
 }
 
 dependencies {
+    // Core modules
+    implementation(project(":core:model"))
+    
     // DataStore
     implementation(libs.androidx.datastore.core)
     implementation(libs.androidx.datastore.preferences)
+    
+    // Kotlinx Serialization
+    implementation(libs.kotlinx.serialization.json)
     
     // Coroutines
     implementation(libs.kotlinx.coroutines.core)

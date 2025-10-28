@@ -1,6 +1,7 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -100,11 +101,12 @@ class GetCountryByCodeUseCaseTest {
     fun `country is returned by repository successfully`() = runTest(testDispatcher) {
         // Given
         val countryCode = "USA"
+        val params = CountryByCodeParams(code = countryCode)
         val expectedResponse = flowOf(ApiResponse.Success(sampleCountry))
         coEvery { countriesRepository.getCountryByCode(countryCode) } returns expectedResponse
 
         // When
-        val result = useCase.invoke(countryCode).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertEquals(1, result.size)
@@ -130,12 +132,13 @@ class GetCountryByCodeUseCaseTest {
     fun `repository returns error when country not found`() = runTest(testDispatcher) {
         // Given
         val countryCode = "XXX"
+        val params = CountryByCodeParams(code = countryCode)
         val expectedException = Exception("Country with code 'XXX' not found")
         val expectedError = flowOf(ApiResponse.Error(expectedException))
         coEvery { countriesRepository.getCountryByCode(countryCode) } returns expectedError
 
         // When
-        val result = useCase.invoke(countryCode).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertEquals(1, result.size)
@@ -159,12 +162,13 @@ class GetCountryByCodeUseCaseTest {
     fun `repository returns error when network exception is thrown`() = runTest(testDispatcher) {
         // Given
         val countryCode = "USA"
+        val params = CountryByCodeParams(code = countryCode)
         val expectedException = IOException("Network error")
         val expectedError = flowOf(ApiResponse.Error(expectedException))
         coEvery { countriesRepository.getCountryByCode(countryCode) } returns expectedError
 
         // When
-        val result = useCase.invoke(countryCode).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertEquals(1, result.size)
@@ -187,11 +191,12 @@ class GetCountryByCodeUseCaseTest {
         // Given
         val lowercaseCode = "usa"
         val normalizedCode = "USA"
+        val params = CountryByCodeParams(code = lowercaseCode)
         val expectedResponse = flowOf(ApiResponse.Success(sampleCountry))
         coEvery { countriesRepository.getCountryByCode(normalizedCode) } returns expectedResponse
 
         // When
-        val result = useCase.invoke(lowercaseCode).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertTrue("Result should be Success", result[0] is ApiResponse.Success)
@@ -212,11 +217,12 @@ class GetCountryByCodeUseCaseTest {
         // Given
         val codeWithWhitespace = " USA "
         val trimmedCode = "USA"
+        val params = CountryByCodeParams(code = codeWithWhitespace)
         val expectedResponse = flowOf(ApiResponse.Success(sampleCountry))
         coEvery { countriesRepository.getCountryByCode(trimmedCode) } returns expectedResponse
 
         // When
-        val result = useCase.invoke(codeWithWhitespace).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertTrue("Result should be Success", result[0] is ApiResponse.Success)
@@ -236,9 +242,10 @@ class GetCountryByCodeUseCaseTest {
     fun `use case throws exception for invalid code length`() = runTest(testDispatcher) {
         // Given
         val invalidCode = "US" // Only 2 characters
+        val params = CountryByCodeParams(code = invalidCode)
 
         // When
-        useCase.invoke(invalidCode).toList()
+        useCase.invoke(params).toList()
 
         // Then: Should throw IllegalArgumentException
     }
@@ -254,9 +261,10 @@ class GetCountryByCodeUseCaseTest {
     fun `use case throws exception for non-letter characters`() = runTest(testDispatcher) {
         // Given
         val invalidCode = "US1" // Contains number
+        val params = CountryByCodeParams(code = invalidCode)
 
         // When
-        useCase.invoke(invalidCode).toList()
+        useCase.invoke(params).toList()
 
         // Then: Should throw IllegalArgumentException
     }
@@ -272,6 +280,7 @@ class GetCountryByCodeUseCaseTest {
     fun `use case propagates loading state from repository`() = runTest(testDispatcher) {
         // Given
         val countryCode = "USA"
+        val params = CountryByCodeParams(code = countryCode)
         val expectedResponse = flowOf(
             ApiResponse.Loading,
             ApiResponse.Success(sampleCountry)
@@ -279,7 +288,7 @@ class GetCountryByCodeUseCaseTest {
         coEvery { countriesRepository.getCountryByCode(countryCode) } returns expectedResponse
 
         // When
-        val result = useCase.invoke(countryCode).toList()
+        val result = useCase.invoke(params).toList()
 
         // Then
         assertEquals(2, result.size)
