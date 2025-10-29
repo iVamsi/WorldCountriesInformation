@@ -27,7 +27,7 @@ fun List<CountriesResponseItem>.toCountries(): List<Country> {
             twoLetterCode = countriesResponseItem.alpha2Code ?: EMPTY,
             threeLetterCode = countriesResponseItem.alpha3Code ?: EMPTY,
             population = countriesResponseItem.population ?: 0,
-            region = countriesResponseItem.subregion ?: EMPTY,
+            region = countriesResponseItem.region ?: EMPTY,
             currencies = currencies ?: emptyList(),
             callingCode = countriesResponseItem.callingCodes?.first() ?: EMPTY,
             latitude = countriesResponseItem.latlng?.let {

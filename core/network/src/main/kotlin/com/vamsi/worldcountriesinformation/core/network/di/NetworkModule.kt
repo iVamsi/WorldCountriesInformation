@@ -3,6 +3,7 @@ package com.vamsi.worldcountriesinformation.core.network.di
 import com.vamsi.worldcountriesinformation.core.common.Constants
 import com.vamsi.worldcountriesinformation.core.network.BuildConfig
 import com.vamsi.worldcountriesinformation.core.network.WorldCountriesApi
+import com.vamsi.worldcountriesinformation.core.network.di.NetworkModule.provideRetrofit
 import com.vamsi.worldcountriesinformation.core.network.interceptor.HttpsOnlyInterceptor
 import dagger.Module
 import dagger.Provides
@@ -186,7 +187,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(Constants.TEST_BASE_URL)
+            .baseUrl(Constants.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
