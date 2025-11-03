@@ -61,6 +61,9 @@ dependencies {
     // Splash Screen
     implementation(libs.androidx.core.splashscreen)
 
+    // Baseline Profile
+    implementation(libs.androidx.profileinstaller)
+
     // Logging (for Application class)
     implementation(libs.timber)
 

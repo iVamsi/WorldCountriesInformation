@@ -1,0 +1,32 @@
+# Baseline Profile for World Countries Information App
+# This profile improves app startup time and runtime performance
+
+# Application startup
+Lcom/vamsi/worldcountriesinformation/WorldCountriesApplication;
+HSPLcom/vamsi/worldcountriesinformation/WorldCountriesApplication;-><init>()V
+HSPLcom/vamsi/worldcountriesinformation/WorldCountriesApplication;->onCreate()V
+
+# MainActivity - App entry point
+Lcom/vamsi/worldcountriesinformation/ui/MainActivity;
+HSPLcom/vamsi/worldcountriesinformation/ui/MainActivity;-><init>()V
+HSPLcom/vamsi/worldcountriesinformation/ui/MainActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Countries feature - Primary screen
+Lcom/vamsi/worldcountriesinformation/feature/countries/CountriesViewModel;
+HSPLcom/vamsi/worldcountriesinformation/feature/countries/CountriesViewModel;-><init>(Lcom/vamsi/worldcountriesinformation/domain/usecase/GetCountriesUseCase;Lcom/vamsi/worldcountriesinformation/domain/usecase/SearchCountriesUseCase;Lcom/vamsi/worldcountriesinformation/domain/usecase/GetCountriesByRegionUseCase;Lcom/vamsi/worldcountriesinformation/domain/repository/PreferencesRepository;Lkotlinx/coroutines/CoroutineDispatcher;)V
+
+# Country details feature
+Lcom/vamsi/worldcountriesinformation/feature/countrydetails/CountryDetailsViewModel;
+HSPLcom/vamsi/worldcountriesinformation/feature/countrydetails/CountryDetailsViewModel;-><init>(Lcom/vamsi/worldcountriesinformation/domain/usecase/GetCountryByCodeUseCase;Landroidx/lifecycle/SavedStateHandle;Lkotlinx/coroutines/CoroutineDispatcher;)V
+
+# Settings feature
+Lcom/vamsi/worldcountriesinformation/feature/settings/SettingsViewModel;
+HSPLcom/vamsi/worldcountriesinformation/feature/settings/SettingsViewModel;-><init>(Lcom/vamsi/worldcountriesinformation/domain/repository/PreferencesRepository;)V
+
+# Navigation
+Lcom/vamsi/worldcountriesinformation/ui/compose/navigation/WorldCountriesNavigation;
+HSPLcom/vamsi/worldcountriesinformation/ui/compose/navigation/WorldCountriesNavigation;->WorldCountriesNavigation(Landroidx/navigation/NavHostController;Landroidx/compose/runtime/Composer;I)V
+
+# Design system theme
+Lcom/vamsi/worldcountriesinformation/core/designsystem/WorldCountriesTheme;
+HSPLcom/vamsi/worldcountriesinformation/core/designsystem/WorldCountriesTheme;->WorldCountriesTheme(ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
