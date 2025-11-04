@@ -6,7 +6,7 @@ import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
 @HiltAndroidApp
-class WorldCountriesApplication: Application() {
+class WorldCountriesApplication : Application() {
 
     override fun onCreate() {
         // Enable strict mode before Dagger creates graph
