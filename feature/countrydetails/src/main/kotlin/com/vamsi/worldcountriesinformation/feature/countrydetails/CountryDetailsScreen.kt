@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +49,7 @@ import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.feature.countrydetails.component.CountryDetailsShimmer
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -71,7 +71,7 @@ import java.util.Locale
 fun CountryDetailsRoute(
     countryCode: String,
     onNavigateBack: () -> Unit,
-    viewModel: CountryDetailsViewModel = hiltViewModel()
+    viewModel: CountryDetailsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -91,12 +91,7 @@ fun CountryDetailsRoute(
         }
 
         is UiState.Loading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            CountryDetailsShimmer()
         }
 
         is UiState.Success -> {
@@ -129,12 +124,12 @@ private fun CountryDetailsScreen(
     onRefresh: () -> Unit = {},
     cacheAge: String = "Never",
     isCacheFresh: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Column {
                         Text(country.name)
                         // Cache age indicator
@@ -278,7 +273,7 @@ private fun CountryFlagCard(country: Country) {
 
 @Composable
 private fun CountryMapCard(country: Country) {
-    val context = LocalContext.current
+    LocalContext.current
 
     Card(
         modifier = Modifier
@@ -343,7 +338,7 @@ private fun CountryMapCard(country: Country) {
 private fun CountryDetailItem(
     label: String,
     value: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -375,7 +370,7 @@ private fun CountryDetailItem(
 
 private data class CountryDetail(
     val label: String,
-    val value: String
+    val value: String,
 )
 
 @Composable
@@ -401,7 +396,7 @@ private fun CountryDetailsErrorContent(
     message: String,
     onRetry: () -> Unit,
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {

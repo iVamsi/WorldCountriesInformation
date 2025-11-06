@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -28,10 +27,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +39,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +63,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
+import com.vamsi.worldcountriesinformation.feature.countries.component.CountriesListShimmer
 import java.util.Locale
 
 /**
@@ -99,7 +96,7 @@ import java.util.Locale
 fun CountriesScreen(
     onCountryClick: (Country) -> Unit,
     onNavigateToSettings: () -> Unit = {},
-    viewModel: CountriesViewModel = hiltViewModel()
+    viewModel: CountriesViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
@@ -114,7 +111,7 @@ fun CountriesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Column {
                         Text("World Countries")
                         // Cache age indicator
@@ -195,8 +192,9 @@ fun CountriesScreen(
                         )
 
                         // Region filter chips (Phase 3.10)
-                        if (searchPreferences.filters.selectedRegions.isNotEmpty() || 
-                            !isSearchActive) {
+                        if (searchPreferences.filters.selectedRegions.isNotEmpty() ||
+                            !isSearchActive
+                        ) {
                             RegionFilterChips(
                                 selectedRegions = searchPreferences.filters.selectedRegions,
                                 onRegionToggle = { viewModel.toggleRegion(it) },
@@ -274,7 +272,7 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onClearClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -312,12 +310,7 @@ private fun SearchBar(
 
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator()
-    }
+    CountriesListShimmer(modifier = modifier)
 }
 
 /**
@@ -338,7 +331,7 @@ private fun CountriesListContent(
     countries: List<Country>,
     onCountryClick: (Country) -> Unit,
     showEmptyState: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (countries.isEmpty()) {
         Box(
@@ -392,7 +385,7 @@ private fun CountriesListContent(
 private fun CountryCard(
     country: Country,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase(Locale.US)}_flag"
@@ -470,7 +463,7 @@ private fun CountryCard(
 private fun ErrorContent(
     message: String,
     onRetry: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -556,7 +549,7 @@ private fun getSampleCountries() = listOf(
 private fun RegionFilterChips(
     selectedRegions: Set<String>,
     onRegionToggle: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -588,7 +581,7 @@ private fun RegionFilterChips(
                 )
             }
         }
-        
+
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -616,10 +609,10 @@ private fun RegionFilterChips(
 private fun SortSelector(
     currentSort: SortOrder,
     onSortChange: (SortOrder) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -679,7 +672,7 @@ private fun CountryCardPreview() {
 @Composable
 private fun LoadingContentPreview() {
     MaterialTheme {
-        LoadingContent()
+        CountriesListShimmer()
     }
 }
 
