@@ -604,6 +604,7 @@ private fun RegionFilterChips(
 @Composable
 private fun SortSelector(
     currentSort: SortOrder,
+    @Suppress("UNUSED_PARAMETER")
     onSortChange: (SortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
