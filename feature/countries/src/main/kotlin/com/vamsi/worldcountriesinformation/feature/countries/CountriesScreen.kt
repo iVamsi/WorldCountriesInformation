@@ -41,9 +41,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -103,7 +100,6 @@ fun CountriesScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val searchResults by viewModel.filteredSearchResults.collectAsStateWithLifecycle()
     val searchPreferences by viewModel.searchPreferences.collectAsStateWithLifecycle()
-    val searchSuggestions by viewModel.searchSuggestions.collectAsStateWithLifecycle()
     val isSearchActive by viewModel.isSearchActive.collectAsStateWithLifecycle()
     val cacheAge = viewModel.getCacheAge()
     val isCacheFresh = viewModel.isCacheFresh()
@@ -611,7 +607,6 @@ private fun SortSelector(
     onSortChange: (SortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var expanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
