@@ -20,7 +20,6 @@ import javax.inject.Inject
  *    - Validate filter combinations
  *    - Check filter applicability
  *
- * @since Phase 3.10
  */
 class SearchFiltersUseCase @Inject constructor() {
 

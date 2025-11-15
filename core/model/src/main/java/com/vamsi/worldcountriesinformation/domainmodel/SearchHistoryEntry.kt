@@ -8,7 +8,6 @@ package com.vamsi.worldcountriesinformation.domainmodel
  * @property query The search query text
  * @property timestamp When the search was performed (epoch milliseconds)
  *
- * @since Phase 3.10
  */
 data class SearchHistoryEntry(
     val query: String,

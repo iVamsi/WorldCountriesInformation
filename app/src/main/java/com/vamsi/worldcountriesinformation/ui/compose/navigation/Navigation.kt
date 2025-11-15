@@ -46,7 +46,7 @@ import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
  * @param navController The navigation controller for managing app navigation
  *
  * @see Screen for route definitions
- * @see CountriesScreen for the countries list screen
+ * @see CountriesMviScreen for the countries list screen (MVI pattern)
  * @see CountryDetailsRoute for the country details screen
  *
  * @since 1.0.0
@@ -71,10 +71,10 @@ fun WorldCountriesNavigation(
         // Countries List Screen
         composable(Screen.Countries.route) {
             CountriesScreen(
-                onCountryClick = { country ->
+                onNavigateToDetails = { countryCode ->
                     // Navigate to country details using type-safe route creation
                     navController.navigate(
-                        Screen.CountryDetails.createRoute(country.threeLetterCode)
+                        Screen.CountryDetails.createRoute(countryCode)
                     )
                 },
                 onNavigateToSettings = {

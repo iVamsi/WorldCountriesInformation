@@ -9,260 +9,225 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
-import com.vamsi.worldcountriesinformation.domainmodel.Currency
-import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
-import com.vamsi.worldcountriesinformation.feature.countries.component.CountriesListShimmer
-import java.util.Locale
+import kotlinx.coroutines.flow.collectLatest
 
 /**
- * Countries screen with pull-to-refresh, cache age indicator, and search.
+ * Countries list UI that wires search, filtering, favorites, and navigation hooks.
  *
- * ## Phase 3 Enhancements
- * - Pull-to-refresh support for manual data updates
- * - Cache age indicator showing when data was last updated
- * - Manual refresh button in TopAppBar
- * - Enhanced error messages with retry
- * - **Search functionality with debounced input (Phase 3.8)**
- * - **Settings navigation (Phase 3.9)**
- *
- * ## Phase 3.8: Search Features
- * - Real-time search with 300ms debounce
- * - Case-insensitive partial matching
- * - Clear search button
- * - Search result count
- * - Empty state for no results
- *
- * ## Phase 3.9: Settings Integration
- * - Settings icon in TopAppBar for accessing preferences
- *
- * @param onCountryClick Callback when a country is clicked
- * @param onNavigateToSettings Callback when settings button is clicked
- * @param viewModel The ViewModel managing the screen state
+ * Collects state from the view model, renders the appropriate surface, and listens for
+ * one-off effects (navigation, toasts, errors) to notify the host screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountriesScreen(
-    onCountryClick: (Country) -> Unit,
+    onNavigateToDetails: (String) -> Unit,
     onNavigateToSettings: () -> Unit = {},
     viewModel: CountriesViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val searchResults by viewModel.filteredSearchResults.collectAsStateWithLifecycle()
-    val searchPreferences by viewModel.searchPreferences.collectAsStateWithLifecycle()
-    val isSearchActive by viewModel.isSearchActive.collectAsStateWithLifecycle()
-    val cacheAge = viewModel.getCacheAge()
-    val isCacheFresh = viewModel.isCacheFresh()
+    // Collect state
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+
+    // Handle effects
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is CountriesContract.Effect.NavigateToDetails -> {
+                    onNavigateToDetails(effect.countryCode)
+                }
+
+                is CountriesContract.Effect.ShowToast -> {
+                    // Show toast in real implementation
+                }
+
+                is CountriesContract.Effect.ShowError -> {
+                    // Show error snackbar in real implementation
+                }
+
+                is CountriesContract.Effect.ShowSuccess -> {
+                    // Show success message
+                }
+            }
+        }
+    }
+
+    // Scroll back to top whenever filters/sort/search change
+    LaunchedEffect(state.selectedRegions, state.sortOrder, state.searchQuery) {
+        if (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0) {
+            listState.animateScrollToItem(0)
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Column {
-                        Text("World Countries")
-                        // Cache age indicator
-                        if (cacheAge != "Never") {
-                            Text(
-                                text = "Updated $cacheAge",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (isCacheFresh) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                } else {
-                                    MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                                }
-                            )
+                title = { Text("Countries") },
+                actions = {
+                    if (state.hasActiveFilters) {
+                        IconButton(
+                            onClick = { viewModel.processIntent(CountriesContract.Intent.ClearFilters) }
+                        ) {
+                            Icon(Icons.Default.FilterList, "Clear filters")
                         }
                     }
-                },
-                actions = {
-                    // Settings button
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                        Icon(Icons.Default.Settings, "Settings")
                     }
-                    // Manual refresh button
-                    IconButton(
-                        onClick = { viewModel.refresh() },
-                        enabled = !isRefreshing
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh countries",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                }
             )
         }
     ) { paddingValues ->
-        when (val state = uiState) {
-            is UiState.Idle -> {
-                // Initial state - show nothing or placeholder
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Initializing...")
-                }
+        when {
+            state.isLoading && state.countries.isEmpty() -> {
+                LoadingContent(Modifier.padding(paddingValues))
             }
 
-            is UiState.Loading -> {
-                LoadingContent(modifier = Modifier.padding(paddingValues))
+            state.showError && state.countries.isEmpty() -> {
+                ErrorContent(
+                    message = state.errorMessage ?: "Unknown error",
+                    onRetry = { viewModel.processIntent(CountriesContract.Intent.RetryLoading) },
+                    modifier = Modifier.padding(paddingValues)
+                )
             }
 
-            is UiState.Success -> {
-                // Pull-to-refresh wrapper
+            else -> {
                 PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = { viewModel.refresh() },
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { viewModel.processIntent(CountriesContract.Intent.RefreshCountries) },
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        // Search bar (Phase 3.8)
+                        // Search bar
                         SearchBar(
-                            query = searchQuery,
-                            onQueryChange = { viewModel.onSearchQueryChange(it) },
-                            onClearClick = { viewModel.clearSearch() },
+                            query = state.searchQuery,
+                            onQueryChange = {
+                                viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged(it))
+                            },
+                            onClearClick = {
+                                viewModel.processIntent(CountriesContract.Intent.ClearSearch)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         )
 
-                        // Region filter chips (Phase 3.10)
-                        if (searchPreferences.filters.selectedRegions.isNotEmpty() ||
-                            !isSearchActive
-                        ) {
-                            RegionFilterChips(
-                                selectedRegions = searchPreferences.filters.selectedRegions,
-                                onRegionToggle = { viewModel.toggleRegion(it) },
-                                modifier = Modifier.fillMaxWidth()
+                        // Region filters
+                        if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
+                            RegionFilters(
+                                selectedRegions = state.selectedRegions,
+                                onRegionToggle = { region ->
+                                    viewModel.processIntent(CountriesContract.Intent.ToggleRegion(region))
+                                }
                             )
                         }
 
-                        // Show filter count and clear button
-                        if (viewModel.hasActiveFilters(searchPreferences.filters)) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                val filterCount = viewModel.getActiveFilterCount(searchPreferences.filters)
-                                Text(
-                                    text = "$filterCount filter${if (filterCount != 1) "s" else ""} active",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
+                        // Sort selector
+                        SortSelector(
+                            currentSort = state.sortOrder,
+                            onSortChange = { sortOrder ->
+                                viewModel.processIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
+                            }
+                        )
+
+                        // Countries list or empty state
+                        when {
+                            state.showEmptySearchResults -> {
+                                EmptySearchResults(
+                                    query = state.searchQuery,
+                                    onClearSearch = {
+                                        viewModel.processIntent(CountriesContract.Intent.ClearSearch)
+                                    }
                                 )
-                                androidx.compose.material3.TextButton(
-                                    onClick = { viewModel.clearFilters() }
-                                ) {
-                                    Text("Clear filters")
-                                }
+                            }
+
+                            state.filteredCountries.isEmpty() && !state.isLoading -> {
+                                EmptyState()
+                            }
+
+                            else -> {
+                                CountriesList(
+                                    countries = state.filteredCountries,
+                                    favoriteCountryCodes = state.favoriteCountryCodes,
+                                    onCountryClick = { country ->
+                                        viewModel.processIntent(
+                                            CountriesContract.Intent.CountryClicked(country.threeLetterCode)
+                                        )
+                                    },
+                                    onFavoriteClick = { country ->
+                                        viewModel.processIntent(
+                                            CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
+                                        )
+                                    },
+                                    listState = listState
+                                )
                             }
                         }
-
-                        // Show search results count if searching
-                        if (isSearchActive || viewModel.hasActiveFilters(searchPreferences.filters)) {
-                            Text(
-                                text = "${searchResults.size} result${if (searchResults.size != 1) "s" else ""} found",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                            )
-                        }
-
-                        // Show search results (filtered + sorted)
-                        CountriesListContent(
-                            countries = searchResults.ifEmpty { state.data },
-                            onCountryClick = onCountryClick,
-                            showEmptyState = (isSearchActive || viewModel.hasActiveFilters(searchPreferences.filters)) && searchResults.isEmpty()
-                        )
                     }
                 }
-            }
-
-            is UiState.Error -> {
-                ErrorContent(
-                    message = state.message ?: "An error occurred",
-                    onRetry = { viewModel.retry() },
-                    modifier = Modifier.padding(paddingValues)
-                )
             }
         }
     }
 }
 
-/**
- * Search bar composable for filtering countries.
- *
- * ## Phase 3.8 Enhancement
- * Provides real-time search with debounced input and clear functionality.
- *
- * @param query Current search query
- * @param onQueryChange Callback when query changes
- * @param onClearClick Callback when clear button is clicked
- * @param modifier Modifier for the search bar
- */
+// ============================================================================
+// UI Components
+// ============================================================================
+
 @Composable
 private fun SearchBar(
     query: String,
@@ -270,279 +235,27 @@ private fun SearchBar(
     onClearClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier,
         placeholder = { Text("Search countries...") },
         leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search icon",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Icon(Icons.Default.Search, "Search")
         },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = onClearClick) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear search",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Icon(Icons.Default.Clear, "Clear")
                 }
             }
         },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-        keyboardActions = KeyboardActions(
-            onSearch = { keyboardController?.hide() }
-        ),
-        shape = MaterialTheme.shapes.medium
+        singleLine = true
     )
 }
 
 @Composable
-private fun LoadingContent(modifier: Modifier = Modifier) {
-    CountriesListShimmer(modifier = modifier)
-}
-
-/**
- * Countries list content with optional empty state.
- *
- * ## Phase 3.8 Enhancement
- * Added showEmptyState parameter to distinguish between:
- * - No data loaded yet
- * - No search results found
- *
- * @param countries List of countries to display
- * @param onCountryClick Callback when a country is clicked
- * @param showEmptyState Whether to show "No results" message
- * @param modifier Modifier for the list
- */
-@Composable
-private fun CountriesListContent(
-    countries: List<Country>,
-    onCountryClick: (Country) -> Unit,
-    showEmptyState: Boolean = false,
-    modifier: Modifier = Modifier,
-) {
-    if (countries.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-                Text(
-                    text = if (showEmptyState) "No countries match your search" else "No countries found",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (showEmptyState) {
-                    Text(
-                        text = "Try a different search term",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        }
-    } else {
-        LazyColumn(
-            modifier = modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = countries,
-                key = { it.threeLetterCode }
-            ) { country ->
-                CountryCard(
-                    country = country,
-                    onClick = { onCountryClick(country) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CountryCard(
-    country: Country,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val context = LocalContext.current
-    val flagResourceName = "${country.twoLetterCode.lowercase(Locale.US)}_flag"
-    val flagResourceId = context.resources.getIdentifier(
-        flagResourceName,
-        "drawable",
-        context.packageName
-    )
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Country flag using Coil
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
-                if (flagResourceId != 0) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(flagResourceId)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Flag of ${country.name}",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
-                    )
-                } else {
-                    // Fallback if flag not found
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = country.twoLetterCode,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = country.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "${country.capital} • ${country.region}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ErrorContent(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Error,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Button(onClick = onRetry) {
-                Text("Retry")
-            }
-        }
-    }
-}
-
-// Preview Data
-private fun getSampleCountries() = listOf(
-    Country(
-        name = "United States",
-        capital = "Washington, D.C.",
-        region = "Americas",
-        population = 331002651,
-        twoLetterCode = "US",
-        threeLetterCode = "USA",
-        callingCode = "+1",
-        currencies = listOf(Currency(code = "USD", name = "United States dollar", symbol = "$")),
-        languages = listOf(Language(name = "English")),
-        latitude = 38.8951,
-        longitude = -77.0364
-    ),
-    Country(
-        name = "United Kingdom",
-        capital = "London",
-        region = "Europe",
-        population = 67886011,
-        twoLetterCode = "GB",
-        threeLetterCode = "GBR",
-        callingCode = "+44",
-        currencies = listOf(Currency(code = "GBP", name = "British pound", symbol = "£")),
-        languages = listOf(Language(name = "English")),
-        latitude = 51.5074,
-        longitude = -0.1278
-    ),
-    Country(
-        name = "India",
-        capital = "New Delhi",
-        region = "Asia",
-        population = 1380004385,
-        twoLetterCode = "IN",
-        threeLetterCode = "IND",
-        callingCode = "+91",
-        currencies = listOf(Currency(code = "INR", name = "Indian rupee", symbol = "₹")),
-        languages = listOf(Language(name = "Hindi"), Language(name = "English")),
-        latitude = 28.6139,
-        longitude = 77.2090
-    )
-)
-
-// ========================================
-// Phase 3.10: Advanced Search UI Components
-// ========================================
-
-/**
- * Filter chips row for region filtering.
- *
- * @param selectedRegions Currently selected regions
- * @param onRegionToggle Callback when a region is toggled
- * @param modifier Modifier for the row
- */
-@Composable
-private fun RegionFilterChips(
+private fun RegionFilters(
     selectedRegions: Set<String>,
     onRegionToggle: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -552,26 +265,15 @@ private fun RegionFilterChips(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Filter by Region",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            Text(
+                text = "Filter by Region",
+                style = MaterialTheme.typography.labelLarge
+            )
             if (selectedRegions.isNotEmpty()) {
                 Text(
-                    text = "${selectedRegions.size} active",
+                    text = "${selectedRegions.size} selected",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -594,20 +296,13 @@ private fun RegionFilterChips(
     }
 }
 
-/**
- * Sort options dropdown/selector.
- *
- * @param currentSort Currently selected sort order
- * @param onSortChange Callback when sort order changes
- * @param modifier Modifier for the component
- */
 @Composable
 private fun SortSelector(
     currentSort: SortOrder,
-    @Suppress("UNUSED_PARAMETER")
     onSortChange: (SortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var isMenuOpen by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
@@ -617,79 +312,232 @@ private fun SortSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "Sort: ${currentSort.displayName}",
+            text = "Sort",
             style = MaterialTheme.typography.labelLarge
         )
-        // TODO: Add dropdown menu for sort options
+
+        Box {
+            OutlinedButton(onClick = { isMenuOpen = true }) {
+                Text(currentSort.humanReadableLabel())
+                Spacer(Modifier.width(4.dp))
+                Icon(Icons.Default.ArrowDropDown, contentDescription = "Change sort order")
+            }
+
+            DropdownMenu(
+                expanded = isMenuOpen,
+                onDismissRequest = { isMenuOpen = false }
+            ) {
+                SortOrder.entries.forEach { sortOption ->
+                    DropdownMenuItem(
+                        text = { Text(sortOption.humanReadableLabel()) },
+                        trailingIcon = {
+                            if (sortOption == currentSort) {
+                                Icon(Icons.Default.Check, contentDescription = null)
+                            }
+                        },
+                        onClick = {
+                            isMenuOpen = false
+                            if (sortOption != currentSort) {
+                                onSortChange(sortOption)
+                            }
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
-/**
- * Extension property for user-friendly sort order names.
- */
-private val SortOrder.displayName: String
-    get() = when (this) {
-        SortOrder.NAME_ASC -> "Name (A-Z)"
-        SortOrder.NAME_DESC -> "Name (Z-A)"
-        SortOrder.POPULATION_DESC -> "Population (High-Low)"
-        SortOrder.POPULATION_ASC -> "Population (Low-High)"
-        SortOrder.AREA_DESC -> "Area (Large-Small)"
-        SortOrder.AREA_ASC -> "Area (Small-Large)"
-    }
+private fun SortOrder.humanReadableLabel(): String = when (this) {
+    SortOrder.NAME_ASC -> "Name · A to Z"
+    SortOrder.NAME_DESC -> "Name · Z to A"
+    SortOrder.POPULATION_ASC -> "Population · Low to High"
+    SortOrder.POPULATION_DESC -> "Population · High to Low"
+    SortOrder.AREA_ASC -> "Area · Small to Large"
+    SortOrder.AREA_DESC -> "Area · Large to Small"
+}
 
-// ========================================
-// Previews
-// ========================================
-
-// Previews
-@Preview(name = "Countries List - Light", showBackground = true)
 @Composable
-private fun CountriesListPreview() {
-    MaterialTheme {
-        CountriesListContent(
-            countries = getSampleCountries(),
-            onCountryClick = {}
+private fun CountriesList(
+    countries: List<Country>,
+    favoriteCountryCodes: Set<String>,
+    onCountryClick: (Country) -> Unit,
+    onFavoriteClick: (Country) -> Unit,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        state = listState
+    ) {
+        items(countries, key = { it.threeLetterCode }) { country ->
+            CountryCard(
+                country = country,
+                isFavorite = favoriteCountryCodes.contains(country.threeLetterCode),
+                onClick = { onCountryClick(country) },
+                onFavoriteClick = { onFavoriteClick(country) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CountryCard(
+    country: Country,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val flagResourceName = "${country.twoLetterCode.lowercase()}_flag"
+    val flagResourceId = context.resources.getIdentifier(
+        flagResourceName,
+        "drawable",
+        context.packageName
+    )
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Flag
+            if (flagResourceId != 0) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(flagResourceId)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "${country.name} flag",
+                    modifier = Modifier.size(60.dp, 40.dp)
+                )
+            } else {
+                // Fallback
+                Box(
+                    modifier = Modifier.size(60.dp, 40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(country.twoLetterCode)
+                }
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            // Country info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = country.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = country.capital,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            // Favorite button
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                    tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LoadingContent(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorContent(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.error
+        )
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Icon(Icons.Default.Refresh, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Retry")
+        }
+    }
+}
+
+@Composable
+private fun EmptyState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "No countries found",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
-@Preview(name = "Country Card", showBackground = true)
 @Composable
-private fun CountryCardPreview() {
-    MaterialTheme {
-        CountryCard(
-            country = getSampleCountries().first(),
-            onClick = {}
+private fun EmptySearchResults(
+    query: String,
+    onClearSearch: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Preview(name = "Loading State", showBackground = true)
-@Composable
-private fun LoadingContentPreview() {
-    MaterialTheme {
-        CountriesListShimmer()
-    }
-}
-
-@Preview(name = "Error State", showBackground = true)
-@Composable
-private fun ErrorContentPreview() {
-    MaterialTheme {
-        ErrorContent(
-            message = "Failed to load countries. Please check your internet connection.",
-            onRetry = {}
+        Spacer(Modifier.height(16.dp))
+        Text(
+            text = "No results for \"$query\"",
+            style = MaterialTheme.typography.titleMedium
         )
-    }
-}
-
-@Preview(name = "Empty List", showBackground = true)
-@Composable
-private fun EmptyListPreview() {
-    MaterialTheme {
-        CountriesListContent(
-            countries = emptyList(),
-            onCountryClick = {}
-        )
+        Spacer(Modifier.height(8.dp))
+        TextButton(onClick = onClearSearch) {
+            Text("Clear search")
+        }
     }
 }

@@ -15,20 +15,19 @@ import javax.inject.Inject
  * @param code The three-letter ISO 3166-1 alpha-3 country code (e.g., "USA", "GBR")
  * @param policy The cache strategy to use (default: CACHE_FIRST)
  *
- * @since 2.0.0 (Phase 3)
+ * @since 2.0.0
  */
 data class CountryByCodeParams(
     val code: String,
-    val policy: CachePolicy = CachePolicy.CACHE_FIRST
+    val policy: CachePolicy = CachePolicy.CACHE_FIRST,
 )
 
 /**
  * Use case for retrieving a single country by its three-letter code.
  *
- * ## Phase 3 Enhancement
- * 
- * Updated to support Phase 2.4 cache policies, allowing callers to control
- * data fetching strategy for country details:
+ * ## Cache Strategy Support
+ *
+ * Callers can control how data is fetched for country details:
  * - **CACHE_FIRST** (default): Instant with cache, updates if available
  * - **NETWORK_FIRST**: Prioritizes fresh data, falls back to cache
  * - **FORCE_REFRESH**: Always fetches fresh (pull-to-refresh)
@@ -42,7 +41,7 @@ data class CountryByCodeParams(
  * - Part of the Clean Architecture domain layer
  * - Returns reactive Flow for observing country changes
  * - Handles both cached and fresh data scenarios
- * - Supports all 4 cache policies from Phase 2.4
+ * - Supports all cache policies defined in [CachePolicy]
  *
  * **Performance:**
  * - Database query with indexed lookup (O(1) complexity)
@@ -112,13 +111,11 @@ data class CountryByCodeParams(
  */
 open class GetCountryByCodeUseCase @Inject constructor(
     private val repository: CountriesRepository,
-    @IoDispatcher ioDispatcher: CoroutineDispatcher
+    @IoDispatcher ioDispatcher: CoroutineDispatcher,
 ) : FlowUseCase<CountryByCodeParams, Country>(ioDispatcher) {
 
     /**
      * Executes the use case to retrieve a country by its three-letter code.
-     *
-     * **Phase 3 Enhancement:** Now accepts [CountryByCodeParams] with cache policy.
      *
      * **Flow Emissions:**
      * 1. [ApiResponse.Loading] - Initial loading state
@@ -151,7 +148,7 @@ open class GetCountryByCodeUseCase @Inject constructor(
     override fun execute(parameters: CountryByCodeParams): Flow<ApiResponse<Country>> {
         // Normalize country code to uppercase for consistent lookup
         val normalizedCode = parameters.code.uppercase().trim()
-        
+
         // Validate country code format (should be 3 letters)
         require(normalizedCode.length == 3) {
             "Country code must be exactly 3 characters (ISO 3166-1 alpha-3)"
@@ -159,7 +156,7 @@ open class GetCountryByCodeUseCase @Inject constructor(
         require(normalizedCode.all { it.isLetter() }) {
             "Country code must contain only letters"
         }
-        
+
         return repository.getCountryByCode(normalizedCode, parameters.policy)
     }
 }

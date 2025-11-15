@@ -14,6 +14,7 @@ android {
 
 dependencies {
     // Core modules
+    implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:model"))
@@ -45,4 +46,11 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation("app.cash.turbine:turbine:1.0.0")
 }

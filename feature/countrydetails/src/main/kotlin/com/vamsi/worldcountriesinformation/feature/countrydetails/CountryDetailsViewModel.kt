@@ -2,7 +2,6 @@ package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.UiState
 import com.vamsi.worldcountriesinformation.domain.core.onError
@@ -23,49 +22,10 @@ import javax.inject.Inject
 /**
  * ViewModel for the Country Details screen.
  *
- * ## Phase 3 Enhancement
- *
- * Updated to support Phase 2.4 cache policies and ApiResponse extensions:
- * - **Cache policy support** for different data fetching strategies
- * - **ApiResponse extensions** for cleaner code (.onSuccess, .onError, .onLoading)
- * - **Pull-to-refresh** with FORCE_REFRESH policy
- * - **Cache age tracking** for transparency
- * - **Refreshing state** management separate from loading
- *
- * This ViewModel manages the state and business logic for displaying detailed
- * information about a single country. It uses the [GetCountryByCodeUseCase] to
- * efficiently fetch a single country from the local database without loading
- * the entire countries list.
- *
- * **Architecture:**
- * - Follows MVVM pattern with unidirectional data flow
- * - Uses StateFlow for reactive UI updates
- * - Delegates business logic to use cases (Clean Architecture)
- * - Manages UI state with sealed [UiState] class
- * - Leverages Phase 2 cache policies for optimal performance
- *
- * **State Management:**
- * - [UiState.Idle] - Initial state before any data load
- * - [UiState.Loading] - Data is being fetched
- * - [UiState.Success] - Country data loaded successfully
- * - [UiState.Error] - Error occurred during data fetch
- *
- * **Cache Policies:**
- * - Default load: [CachePolicy.CACHE_FIRST] (instant with cache)
- * - Pull-to-refresh: [CachePolicy.FORCE_REFRESH] (always fetch fresh)
- * - Offline mode: [CachePolicy.CACHE_ONLY] (never hit network)
- *
- * **Performance:**
- * - Loads only the requested country (not entire list)
- * - Uses indexed database query for O(1) lookup
- * - Cancels ongoing operations when ViewModel is cleared
- * - Supports all 4 cache strategies from Phase 2.4
- *
- * **Error Handling:**
- * - Catches and logs all exceptions
- * - Provides user-friendly error messages
- * - Supports retry functionality
- * - Policy-specific error messages
+ * Responsibilities:
+ * - Load a single country by ISO code using [GetCountryByCodeUseCase]
+ * - Expose [UiState] plus pull-to-refresh and cache age indicators
+ * - Surface clear error messages, retry hooks, and cache policy controls
  *
  * @param getCountryByCodeUseCase Use case for fetching a single country
  *
@@ -76,33 +36,10 @@ import javax.inject.Inject
  * @see CountryByCodeParams
  *
  * @since 1.1.0 (Enhanced in 2.0.0)
- *
- * Example usage:
- * ```kotlin
- * @Composable
- * fun CountryDetailsRoute(
- *     countryCode: String,
- *     viewModel: CountryDetailsViewModel = hiltViewModel()
- * ) {
- *     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
- *     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
- *
- *     LaunchedEffect(countryCode) {
- *         viewModel.loadCountryDetails(countryCode)
- *     }
- *
- *     PullRefreshLayout(
- *         refreshing = isRefreshing,
- *         onRefresh = { viewModel.refresh(countryCode) }
- *     ) {
- *         // Render based on uiState
- *     }
- * }
- * ```
  */
 @HiltViewModel
 class CountryDetailsViewModel @Inject constructor(
-    private val getCountryByCodeUseCase: GetCountryByCodeUseCase
+    private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
 ) : ViewModel() {
 
     /**
@@ -145,8 +82,6 @@ class CountryDetailsViewModel @Inject constructor(
 
     /**
      * Loads country details for the specified country code with configurable cache policy.
-     *
-     * **Phase 3 Enhancement:** Uses ApiResponse extensions for cleaner code.
      *
      * This method initiates an asynchronous country fetch operation. It:
      * 1. Sets state to [UiState.Loading] (unless refreshing)
@@ -196,7 +131,7 @@ class CountryDetailsViewModel @Inject constructor(
      */
     fun loadCountryDetails(
         countryCode: String,
-        policy: CachePolicy = CachePolicy.CACHE_FIRST
+        policy: CachePolicy = CachePolicy.CACHE_FIRST,
     ) {
         viewModelScope.launch {
             Timber.d("Loading country details for: $countryCode with policy: $policy")
@@ -233,20 +168,24 @@ class CountryDetailsViewModel @Inject constructor(
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading country: $countryCode")
-                            
+
                             val errorMessage = when {
                                 exception.message?.contains("No cached data", ignoreCase = true) == true -> {
                                     "No cached data available. Please connect to the internet."
                                 }
+
                                 exception.message?.contains("not found", ignoreCase = true) == true -> {
                                     "Country with code '$countryCode' not found"
                                 }
+
                                 exception.message?.contains("timeout", ignoreCase = true) == true -> {
                                     "Connection timeout. Please check your internet and try again."
                                 }
+
                                 exception.message?.contains("network", ignoreCase = true) == true -> {
                                     "Network error. Please check your connection and try again."
                                 }
+
                                 else -> {
                                     "Failed to load country details. Please try again."
                                 }
@@ -265,8 +204,8 @@ class CountryDetailsViewModel @Inject constructor(
     /**
      * Refreshes country details from network (pull-to-refresh).
      *
-     * **Phase 3 Enhancement:** Always uses [CachePolicy.FORCE_REFRESH]
-     * to ensure fresh data on explicit user action.
+     * Always uses [CachePolicy.FORCE_REFRESH] to ensure fresh data on explicit
+     * user action.
      *
      * This method:
      * 1. Sets [isRefreshing] to true
@@ -323,8 +262,8 @@ class CountryDetailsViewModel @Inject constructor(
     /**
      * Gets human-readable cache age description.
      *
-     * **Phase 3 Enhancement:** Uses [CachePolicy.getCacheAgeDescription]
-     * for consistent formatting across the app.
+     * Uses [CachePolicy.getCacheAgeDescription] for consistent formatting
+     * across the app.
      *
      * @return Human-readable age string (e.g., "2 hours ago", "Just now")
      *

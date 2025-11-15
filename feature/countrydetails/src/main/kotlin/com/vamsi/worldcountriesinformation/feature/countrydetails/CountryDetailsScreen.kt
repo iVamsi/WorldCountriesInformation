@@ -59,13 +59,8 @@ import org.osmdroid.views.overlay.Marker
 import java.util.Locale
 
 /**
- * Country details route with pull-to-refresh support.
- *
- * ## Phase 3 Enhancement
- * - Pull-to-refresh for manual data updates
- * - Cache age indicator in TopAppBar
- * - Manual refresh button
- * - Enhanced error handling
+ * Country details route with pull-to-refresh, cache age indicators, and
+ * simple error handling hooks.
  */
 @Composable
 fun CountryDetailsRoute(

@@ -22,7 +22,6 @@ import javax.inject.Inject
  *    - Trims whitespace
  *    - Case-insensitive deduplication
  *
- * @since Phase 3.10
  */
 class ManageSearchHistoryUseCase @Inject constructor() {
 

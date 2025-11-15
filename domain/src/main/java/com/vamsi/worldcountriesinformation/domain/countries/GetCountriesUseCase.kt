@@ -15,12 +15,11 @@ import javax.inject.Inject
  * This use case provides a clean interface for fetching country data from the repository
  * with fine-grained control over caching behavior through [CachePolicy].
  *
- * ## Phase 3 Enhancement
+ * ## Cache Policy Support
  *
- * **Updated to support Phase 2.4 cache policies:**
- * - Parameter changed from `Boolean` to `CachePolicy`
- * - Supports all 4 cache strategies (CACHE_FIRST, NETWORK_FIRST, FORCE_REFRESH, CACHE_ONLY)
- * - Backward compatible with default [CachePolicy.CACHE_FIRST]
+ * - Parameter accepts [CachePolicy] (default: [CachePolicy.CACHE_FIRST])
+ * - Supports CACHE_FIRST, NETWORK_FIRST, FORCE_REFRESH, CACHE_ONLY
+ * - Backward compatible with earlier boolean toggle implementations
  *
  * ## Cache Policy Usage
  *
