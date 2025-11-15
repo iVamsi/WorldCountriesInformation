@@ -6,6 +6,7 @@ ksp = "2.2.20-2.0.3"
 compileSdk = "36"
 minSdk = "24"
 targetSdk = "36"
+snapnotify = "1.0.4"
 
 # AndroidX Core
 coreKtx = "1.17.0"
@@ -165,6 +166,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 # Maps - OpenStreetMap
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+snapnotify = { group = "io.github.ivamsi", name = "snapnotify", version.ref = "snapnotify" }
 
 # Testing Libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }

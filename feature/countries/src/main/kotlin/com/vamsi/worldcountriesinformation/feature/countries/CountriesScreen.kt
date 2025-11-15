@@ -61,6 +61,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
@@ -92,15 +93,15 @@ fun CountriesScreen(
                 }
 
                 is CountriesContract.Effect.ShowToast -> {
-                    // Show toast in real implementation
+                    SnapNotify.show(effect.message)
                 }
 
                 is CountriesContract.Effect.ShowError -> {
-                    // Show error snackbar in real implementation
+                    SnapNotify.showError(effect.message)
                 }
 
                 is CountriesContract.Effect.ShowSuccess -> {
-                    // Show success message
+                    SnapNotify.showSuccess(effect.message)
                 }
             }
         }
@@ -223,10 +224,6 @@ fun CountriesScreen(
         }
     }
 }
-
-// ============================================================================
-// UI Components
-// ============================================================================
 
 @Composable
 private fun SearchBar(

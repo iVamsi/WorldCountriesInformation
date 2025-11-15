@@ -34,6 +34,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.snapnotify)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Image loading

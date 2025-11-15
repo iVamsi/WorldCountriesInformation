@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.ui.compose.navigation.WorldCountriesNavigation
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,12 +27,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WorldCountriesTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    WorldCountriesNavigation(navController = navController)
+                SnapNotifyProvider {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        val navController = rememberNavController()
+                        WorldCountriesNavigation(navController = navController)
+                    }
                 }
             }
         }

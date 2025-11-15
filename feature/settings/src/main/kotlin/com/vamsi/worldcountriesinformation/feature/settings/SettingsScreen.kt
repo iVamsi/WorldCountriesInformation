@@ -28,8 +28,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,8 +45,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
-import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import java.util.concurrent.TimeUnit
 
 /**
@@ -68,20 +66,19 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val userPreferences by viewModel.userPreferences.collectAsState()
     val cacheStats by viewModel.cacheStats.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    val snackbarHostState = remember { SnackbarHostState() }
     var showClearCacheDialog by remember { mutableStateOf(false) }
 
     // Show error messages in snackbar
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            SnapNotify.showError(message)
             viewModel.clearError()
         }
     }
@@ -99,8 +96,7 @@ fun SettingsScreen(
                     }
                 }
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -161,7 +157,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSection(
     title: String,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Column {
         Text(
@@ -181,7 +177,7 @@ private fun SettingsSection(
 @Composable
 private fun CachePolicySelector(
     selectedPolicy: CachePolicy,
-    onPolicySelected: (CachePolicy) -> Unit
+    onPolicySelected: (CachePolicy) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -215,7 +211,7 @@ private fun CachePolicySelector(
 private fun CachePolicyOption(
     policy: CachePolicy,
     isSelected: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -276,7 +272,7 @@ private val CachePolicy.description: String
 @Composable
 private fun OfflineModeSwitch(
     enabled: Boolean,
-    onToggle: (Boolean) -> Unit
+    onToggle: (Boolean) -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -319,7 +315,7 @@ private fun CacheStatisticsCard(
     stats: CacheStats,
     isLoading: Boolean,
     onClearCache: () -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -384,7 +380,7 @@ private fun CacheStatisticsCard(
 @Composable
 private fun StatisticRow(
     label: String,
-    value: String
+    value: String,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -421,11 +417,11 @@ private fun formatSize(sizeKB: Int): String {
  */
 private fun formatAge(ageMs: Long): String {
     if (ageMs == 0L) return "No data"
-    
+
     val minutes = TimeUnit.MILLISECONDS.toMinutes(ageMs)
     val hours = TimeUnit.MILLISECONDS.toHours(ageMs)
     val days = TimeUnit.MILLISECONDS.toDays(ageMs)
-    
+
     return when {
         days > 0 -> "$days ${if (days == 1L) "day" else "days"} ago"
         hours > 0 -> "$hours ${if (hours == 1L) "hour" else "hours"} ago"
@@ -466,23 +462,23 @@ private fun AboutSection() {
                     fontWeight = FontWeight.Bold
                 )
             }
-            
+
             Text(
                 text = "Version 1.0.0",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
+
             Text(
                 text = "Features:",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            
+
             val features = listOf(
                 "• Cache policy management",
                 "• Offline mode support",
@@ -491,7 +487,7 @@ private fun AboutSection() {
                 "• Cache age indicators",
                 "• Comprehensive error handling"
             )
-            
+
             features.forEach { feature ->
                 Text(
                     text = feature,
@@ -509,7 +505,7 @@ private fun AboutSection() {
 @Composable
 private fun ClearCacheDialog(
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -525,7 +521,7 @@ private fun ClearCacheDialog(
         text = {
             Text(
                 "This will delete all cached country data. " +
-                "You'll need an internet connection to reload the data."
+                    "You'll need an internet connection to reload the data."
             )
         },
         confirmButton = {

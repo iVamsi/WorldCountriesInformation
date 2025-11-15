@@ -79,10 +79,6 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
     initialState: State,
 ) : ViewModel() {
 
-    // ============================================================================
-    // State Management
-    // ============================================================================
-
     /**
      * Internal mutable state.
      * Only accessible within this ViewModel for state updates.
@@ -99,10 +95,6 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
      * ```
      */
     val state: StateFlow<State> = _state.asStateFlow()
-
-    // ============================================================================
-    // Effect Management
-    // ============================================================================
 
     /**
      * Internal effect channel.
@@ -125,10 +117,6 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
      * ```
      */
     val effect = _effect.receiveAsFlow()
-
-    // ============================================================================
-    // Intent Processing
-    // ============================================================================
 
     /**
      * Processes user intents and triggers appropriate state changes.
@@ -175,10 +163,6 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
         handleIntent(intent)
     }
 
-    // ============================================================================
-    // State Update Functions
-    // ============================================================================
-
     /**
      * Updates the state using a reducer function.
      *
@@ -208,10 +192,6 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
     protected fun setState(state: State) {
         _state.value = state
     }
-
-    // ============================================================================
-    // Effect Emission Functions
-    // ============================================================================
 
     /**
      * Emits a one-time effect to the UI.
