@@ -1,7 +1,7 @@
 package com.vamsi.worldcountriesinformation.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 /**
  * REST Countries API v3.1 Response Model
@@ -17,188 +17,188 @@ import com.squareup.moshi.JsonClass
  * - idd contains calling code information
  * - flags includes png, svg, and alt text
  */
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CountriesV3ResponseItem(
     // Country codes
-    @Json(name = "cca2")
+    @SerialName("cca2")
     val cca2: String? = null, // Two-letter country code (ISO 3166-1 alpha-2)
 
-    @Json(name = "cca3")
+    @SerialName("cca3")
     val cca3: String? = null, // Three-letter country code (ISO 3166-1 alpha-3)
 
-    @Json(name = "ccn3")
+    @SerialName("ccn3")
     val ccn3: String? = null, // Numeric country code
 
     // Names
-    @Json(name = "name")
+    @SerialName("name")
     val name: NameV3? = null,
 
     // Capital cities (can be multiple)
-    @Json(name = "capital")
+    @SerialName("capital")
     val capital: List<String>? = null,
 
     // Region and location
-    @Json(name = "region")
+    @SerialName("region")
     val region: String? = null,
 
-    @Json(name = "subregion")
+    @SerialName("subregion")
     val subregion: String? = null,
 
-    @Json(name = "continents")
+    @SerialName("continents")
     val continents: List<String>? = null,
 
-    @Json(name = "latlng")
+    @SerialName("latlng")
     val latlng: List<Double>? = null,
 
     // Population and demographics
-    @Json(name = "population")
+    @SerialName("population")
     val population: Long? = null,
 
-    @Json(name = "area")
+    @SerialName("area")
     val area: Double? = null,
 
     // Currencies (Map with currency code as key)
-    @Json(name = "currencies")
+    @SerialName("currencies")
     val currencies: Map<String, CurrencyV3>? = null,
 
     // Languages (Map with language code as key, language name as value)
-    @Json(name = "languages")
+    @SerialName("languages")
     val languages: Map<String, String>? = null,
 
     // International Direct Dialing
-    @Json(name = "idd")
+    @SerialName("idd")
     val idd: IddV3? = null,
 
     // Flags
-    @Json(name = "flags")
+    @SerialName("flags")
     val flags: FlagsV3? = null,
 
     // Coat of Arms
-    @Json(name = "coatOfArms")
+    @SerialName("coatOfArms")
     val coatOfArms: CoatOfArmsV3? = null,
 
     // Borders (country codes)
-    @Json(name = "borders")
+    @SerialName("borders")
     val borders: List<String>? = null,
 
     // Timezones
-    @Json(name = "timezones")
+    @SerialName("timezones")
     val timezones: List<String>? = null,
 
     // Maps
-    @Json(name = "maps")
+    @SerialName("maps")
     val maps: MapsV3? = null,
 
     // Translations
-    @Json(name = "translations")
+    @SerialName("translations")
     val translations: Map<String, TranslationV3>? = null,
 
     // Additional fields
-    @Json(name = "tld")
+    @SerialName("tld")
     val tld: List<String>? = null, // Top level domain
 
-    @Json(name = "independent")
+    @SerialName("independent")
     val independent: Boolean? = null,
 
-    @Json(name = "status")
+    @SerialName("status")
     val status: String? = null,
 
-    @Json(name = "unMember")
+    @SerialName("unMember")
     val unMember: Boolean? = null,
 
-    @Json(name = "landlocked")
+    @SerialName("landlocked")
     val landlocked: Boolean? = null,
 
-    @Json(name = "fifa")
+    @SerialName("fifa")
     val fifa: String? = null,
 
-    @Json(name = "startOfWeek")
+    @SerialName("startOfWeek")
     val startOfWeek: String? = null,
 
-    @Json(name = "capitalInfo")
-    val capitalInfo: CapitalInfoV3? = null
+    @SerialName("capitalInfo")
+    val capitalInfo: CapitalInfoV3? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class NameV3(
-    @Json(name = "common")
+    @SerialName("common")
     val common: String? = null,
 
-    @Json(name = "official")
+    @SerialName("official")
     val official: String? = null,
 
-    @Json(name = "nativeName")
-    val nativeName: Map<String, NativeNameV3>? = null
+    @SerialName("nativeName")
+    val nativeName: Map<String, NativeNameV3>? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class NativeNameV3(
-    @Json(name = "official")
+    @SerialName("official")
     val official: String? = null,
 
-    @Json(name = "common")
-    val common: String? = null
+    @SerialName("common")
+    val common: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CurrencyV3(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
 
-    @Json(name = "symbol")
-    val symbol: String? = null
+    @SerialName("symbol")
+    val symbol: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class IddV3(
-    @Json(name = "root")
+    @SerialName("root")
     val root: String? = null,
 
-    @Json(name = "suffixes")
-    val suffixes: List<String>? = null
+    @SerialName("suffixes")
+    val suffixes: List<String>? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class FlagsV3(
-    @Json(name = "png")
+    @SerialName("png")
     val png: String? = null,
 
-    @Json(name = "svg")
+    @SerialName("svg")
     val svg: String? = null,
 
-    @Json(name = "alt")
-    val alt: String? = null
+    @SerialName("alt")
+    val alt: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CoatOfArmsV3(
-    @Json(name = "png")
+    @SerialName("png")
     val png: String? = null,
 
-    @Json(name = "svg")
-    val svg: String? = null
+    @SerialName("svg")
+    val svg: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class MapsV3(
-    @Json(name = "googleMaps")
+    @SerialName("googleMaps")
     val googleMaps: String? = null,
 
-    @Json(name = "openStreetMaps")
-    val openStreetMaps: String? = null
+    @SerialName("openStreetMaps")
+    val openStreetMaps: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class TranslationV3(
-    @Json(name = "official")
+    @SerialName("official")
     val official: String? = null,
 
-    @Json(name = "common")
-    val common: String? = null
+    @SerialName("common")
+    val common: String? = null,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CapitalInfoV3(
-    @Json(name = "latlng")
-    val latlng: List<Double>? = null
+    @SerialName("latlng")
+    val latlng: List<Double>? = null,
 )

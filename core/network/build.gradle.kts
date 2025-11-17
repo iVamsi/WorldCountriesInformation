@@ -18,12 +18,10 @@ dependencies {
 
     // Networking - Use api for Hilt visibility
     api(libs.retrofit)
-    api(libs.retrofit.converter.moshi)
     api(libs.okhttp)
     api(libs.okhttp.logging)
-
-    // JSON - Moshi
-    api(libs.moshi)
+    implementation(libs.retrofit.kotlinx.serialization)
+    implementation(libs.kotlinx.serialization.json)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

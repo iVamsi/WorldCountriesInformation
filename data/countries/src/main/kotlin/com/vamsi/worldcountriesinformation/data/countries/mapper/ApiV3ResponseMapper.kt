@@ -21,13 +21,13 @@ import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
  * Convert list of v3.1 API responses to domain Country list
  */
 fun List<CountriesV3ResponseItem>.toCountries(): List<Country> {
-    return this.mapNotNull { it.toCountry() }
+    return this.map { it.toCountry() }
 }
 
 /**
  * Convert single v3.1 API response to domain Country
  */
-fun CountriesV3ResponseItem.toCountry(): Country? {
+fun CountriesV3ResponseItem.toCountry(): Country {
     // Extract languages from Map to List
     val languages = this.languages?.map { (code, name) ->
         Language(

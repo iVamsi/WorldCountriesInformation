@@ -1,14 +1,14 @@
 package com.vamsi.worldcountriesinformation.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CurrencyResponseItem(
-    @Json(name = "code")
+    @SerialName("code")
     val code: String? = null,
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
-    @Json(name = "symbol")
-    val symbol: String? = null
+    @SerialName("symbol")
+    val symbol: String? = null,
 )

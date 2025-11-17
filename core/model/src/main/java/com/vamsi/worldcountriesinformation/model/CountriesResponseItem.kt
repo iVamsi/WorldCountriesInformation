@@ -1,56 +1,56 @@
 package com.vamsi.worldcountriesinformation.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CountriesResponseItem(
-    @Json(name = "alpha2Code")
+    @SerialName("alpha2Code")
     val alpha2Code: String? = null,
-    @Json(name = "alpha3Code")
+    @SerialName("alpha3Code")
     val alpha3Code: String? = null,
-    @Json(name = "altSpellings")
+    @SerialName("altSpellings")
     val altSpellings: List<String>? = null,
-    @Json(name = "area")
+    @SerialName("area")
     val area: Double? = null,
-    @Json(name = "borders")
+    @SerialName("borders")
     val borders: List<String>? = null,
-    @Json(name = "callingCodes")
+    @SerialName("callingCodes")
     val callingCodes: List<String>? = null,
-    @Json(name = "capital")
+    @SerialName("capital")
     val capital: String? = null,
-    @Json(name = "cioc")
+    @SerialName("cioc")
     val cioc: String? = null,
-    @Json(name = "currencies")
+    @SerialName("currencies")
     val currencies: List<CurrencyResponseItem>? = null,
-    @Json(name = "demonym")
+    @SerialName("demonym")
     val demonym: String? = null,
-    @Json(name = "flag")
+    @SerialName("flag")
     val flag: String? = null,
-    @Json(name = "gini")
-    val gini: Any? = null,
-    @Json(name = "languages")
+    @SerialName("gini")
+    val gini: Double? = null,
+    @SerialName("languages")
     val languages: List<LanguageResponseItem>? = null,
-    @Json(name = "latlng")
+    @SerialName("latlng")
     val latlng: List<Double>? = null,
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
-    @Json(name = "nativeName")
+    @SerialName("nativeName")
     val nativeName: String? = null,
-    @Json(name = "numericCode")
+    @SerialName("numericCode")
     val numericCode: String? = null,
-    @Json(name = "population")
+    @SerialName("population")
     val population: Int? = null,
-    @Json(name = "region")
+    @SerialName("region")
     val region: String? = null,
-    @Json(name = "regionalBlocs")
+    @SerialName("regionalBlocs")
     val regionalBlocs: List<RegionalBlocResponseItem>? = null,
-    @Json(name = "subregion")
+    @SerialName("subregion")
     val subregion: String? = null,
-    @Json(name = "timezones")
+    @SerialName("timezones")
     val timezones: List<String>? = null,
-    @Json(name = "topLevelDomain")
+    @SerialName("topLevelDomain")
     val topLevelDomain: List<String>? = null,
-    @Json(name = "translations")
-    val translations: TranslationsResponseItem? = null
+    @SerialName("translations")
+    val translations: TranslationsResponseItem? = null,
 )

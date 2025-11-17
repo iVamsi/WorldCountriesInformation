@@ -1,16 +1,16 @@
 package com.vamsi.worldcountriesinformation.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class RegionalBlocResponseItem(
-    @Json(name = "acronym")
+    @SerialName("acronym")
     val acronym: String? = null,
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
-    @Json(name = "otherAcronyms")
-    val otherAcronyms: List<Any>? = null,
-    @Json(name = "otherNames")
-    val otherNames: List<String>? = null
+    @SerialName("otherAcronyms")
+    val otherAcronyms: List<String>? = null,
+    @SerialName("otherNames")
+    val otherNames: List<String>? = null,
 )

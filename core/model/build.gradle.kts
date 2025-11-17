@@ -1,10 +1,8 @@
 plugins {
     id("worldcountries.jvm.library")
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 dependencies {
-    // JSON - Moshi
-    implementation(libs.moshi)
-    ksp(libs.moshi.codegen)
+    implementation(libs.kotlinx.serialization.json)
 }

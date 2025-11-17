@@ -90,7 +90,7 @@ worldcountriesinformation/
 ### Data & Networking
 - **Retrofit** 3.0.0 - REST API client
 - **OkHttp** 5.2.1 - HTTP client
-- **Moshi** 1.15.2 - JSON parsing
+- **Kotlinx Serialization** 1.7.3 - JSON parsing
 - **Room** 2.8.2 - Local database
 - **Coroutines** 1.10.2 - Asynchronous programming
 

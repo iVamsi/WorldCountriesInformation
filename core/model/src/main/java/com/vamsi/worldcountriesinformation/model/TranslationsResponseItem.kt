@@ -1,28 +1,28 @@
 package com.vamsi.worldcountriesinformation.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class TranslationsResponseItem(
-    @Json(name = "br")
+    @SerialName("br")
     val br: String? = null,
-    @Json(name = "de")
+    @SerialName("de")
     val de: String? = null,
-    @Json(name = "es")
+    @SerialName("es")
     val es: String? = null,
-    @Json(name = "fa")
+    @SerialName("fa")
     val fa: String? = null,
-    @Json(name = "fr")
+    @SerialName("fr")
     val fr: String? = null,
-    @Json(name = "hr")
+    @SerialName("hr")
     val hr: String? = null,
-    @Json(name = "it")
+    @SerialName("it")
     val `it`: String? = null,
-    @Json(name = "ja")
+    @SerialName("ja")
     val ja: String? = null,
-    @Json(name = "nl")
+    @SerialName("nl")
     val nl: String? = null,
-    @Json(name = "pt")
-    val pt: String? = null
+    @SerialName("pt")
+    val pt: String? = null,
 )

@@ -43,7 +43,7 @@ interface WorldCountriesApi {
      */
     @GET(ALL)
     suspend fun fetchWorldCountriesInformation(
-        @Query("fields") fields: String = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng",
+        @Query("fields") fields: String = COUNTRY_LIST_FIELDS,
     ): List<CountriesV3ResponseItem>
 
     /**
@@ -57,7 +57,7 @@ interface WorldCountriesApi {
     @GET("name/{name}")
     suspend fun fetchCountriesByName(
         @Path("name") countryName: String,
-        @Query("fields") fields: String = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng",
+        @Query("fields") fields: String = COUNTRY_LIST_FIELDS,
     ): List<CountriesV3ResponseItem>
 
     /**
@@ -77,9 +77,12 @@ interface WorldCountriesApi {
      *
      * Note: Returns a single-item list for consistency with other endpoints
      */
-    @GET("alpha/{code}")
+    @GET("alpha")
     suspend fun fetchCountryByCode(
-        @Path("code") code: String,
-        @Query("fields") fields: String = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng",
+        @Query("codes") code: String,
+        @Query("fields") fields: String = COUNTRY_DETAIL_FIELDS,
     ): List<CountriesV3ResponseItem>
 }
+
+private const val COUNTRY_LIST_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng"
+private const val COUNTRY_DETAIL_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,idd,latlng"

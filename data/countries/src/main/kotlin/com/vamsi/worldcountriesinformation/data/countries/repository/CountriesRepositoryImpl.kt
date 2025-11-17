@@ -28,7 +28,7 @@ import javax.inject.Inject
  */
 class CountriesRepositoryImpl @Inject constructor(
     private val countriesApi: WorldCountriesApi,
-    private val countryDao: CountryDao
+    private val countryDao: CountryDao,
 ) : CountriesRepository {
 
     /**
@@ -153,7 +153,7 @@ class CountriesRepositoryImpl @Inject constructor(
                 if (cachedCountries.isNotEmpty()) {
                     Timber.d("CACHE_ONLY: Emitting ${cachedCountries.size} cached countries")
                     emit(ApiResponse.Success(cachedCountries.toDomainList()))
-                    
+
                     // Start reactive observation for any future database changes
                     emitAll(
                         countryDao.getAllCountries().map { entities ->
@@ -170,12 +170,15 @@ class CountriesRepositoryImpl @Inject constructor(
             // Step 2: Check cache for CACHE_FIRST and NETWORK_FIRST policies
             val cachedCountries = countryDao.getAllCountriesOnce()
             val hasCache = cachedCountries.isNotEmpty()
-            
+            val requiresCallingCodeRepair = cachedCountries.any { it.callingCode.isBlank() }
+
             // Determine cache staleness (only for CACHE_FIRST)
             val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
                 val oldestTimestamp = cachedCountries.minOfOrNull { it.lastUpdated } ?: 0L
                 val isFresh = CachePolicy.isCacheFresh(oldestTimestamp)
-                Timber.d("CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp)}, fresh=$isFresh")
+                Timber.d(
+                    "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp)}, fresh=$isFresh, requiresCallingCodeRepair=$requiresCallingCodeRepair"
+                )
                 isFresh
             } else {
                 false
@@ -196,7 +199,7 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Step 4: Determine if network fetch is needed
             val shouldFetchNetwork = when (policy) {
-                CachePolicy.CACHE_FIRST -> !isCacheFresh // Only if cache is stale or missing
+                CachePolicy.CACHE_FIRST -> !isCacheFresh || requiresCallingCodeRepair // Refresh stale caches or ones missing calling codes
                 CachePolicy.NETWORK_FIRST -> true // Always try network
                 CachePolicy.FORCE_REFRESH -> true // Always fetch
                 CachePolicy.CACHE_ONLY -> false // Never fetch
@@ -227,6 +230,7 @@ class CountriesRepositoryImpl @Inject constructor(
                             emit(ApiResponse.Error(exception))
                             return@flow // Exit early
                         }
+
                         CachePolicy.NETWORK_FIRST -> {
                             // NETWORK_FIRST: Fallback to cache if available
                             if (hasCache) {
@@ -238,6 +242,7 @@ class CountriesRepositoryImpl @Inject constructor(
                                 return@flow
                             }
                         }
+
                         CachePolicy.CACHE_FIRST -> {
                             // CACHE_FIRST: Continue with cached data if available
                             if (!hasCache) {
@@ -249,6 +254,7 @@ class CountriesRepositoryImpl @Inject constructor(
                                 // Continue to reactive observation
                             }
                         }
+
                         CachePolicy.CACHE_ONLY -> {
                             // Already handled above, shouldn't reach here
                         }
@@ -320,7 +326,7 @@ class CountriesRepositoryImpl @Inject constructor(
      */
     override fun getCountryByCode(
         code: String,
-        policy: CachePolicy
+        policy: CachePolicy,
     ): Flow<ApiResponse<Country>> {
         return flow {
             // Emit loading state
@@ -334,6 +340,7 @@ class CountriesRepositoryImpl @Inject constructor(
 
                 // Check cache based on policy
                 val cachedCountry = countryDao.getCountryByCodeOnce(normalizedCode)?.toDomain()
+                val needsCallingCodeRepair = cachedCountry?.callingCode.isNullOrBlank()
 
                 when (policy) {
                     CachePolicy.CACHE_ONLY -> {
@@ -352,21 +359,41 @@ class CountriesRepositoryImpl @Inject constructor(
                     }
 
                     CachePolicy.CACHE_FIRST -> {
-                        if (cachedCountry != null) {
-                            // Emit cached data immediately for instant UX
-                            Timber.d("Country found in cache (CACHE_FIRST): ${cachedCountry.name}")
+                        val shouldRepair = cachedCountry == null || needsCallingCodeRepair
+                        if (!shouldRepair) {
+                            Timber.d("Country found in cache (CACHE_FIRST): ${cachedCountry!!.name}")
                             emit(ApiResponse.Success(cachedCountry))
                         } else {
-                            // No cache, fetch from network
-                            Timber.d("Country not in cache, fetching from network: $normalizedCode")
-                            fetchCountryFromNetwork(normalizedCode)?.let { country ->
-                                emit(ApiResponse.Success(country))
-                            } ?: run {
-                                emit(
-                                    ApiResponse.Error(
-                                        Exception("Country with code '$normalizedCode' not found")
+                            Timber.d(
+                                "${if (cachedCountry == null) "Country not in cache" else "Cached country missing calling code"}, fetching from network: $normalizedCode"
+                            )
+                            try {
+                                val freshCountry = fetchCountryFromNetwork(normalizedCode)
+                                if (freshCountry != null) {
+                                    emit(ApiResponse.Success(freshCountry))
+                                } else if (cachedCountry != null) {
+                                    Timber.w("Network fetch returned null, falling back to cached country: ${cachedCountry.name}")
+                                    emit(ApiResponse.Success(cachedCountry))
+                                } else {
+                                    emit(
+                                        ApiResponse.Error(
+                                            Exception("Country with code '$normalizedCode' not found")
+                                        )
                                     )
-                                )
+                                }
+                            } catch (networkException: Exception) {
+                                Timber.e(networkException, "CACHE_FIRST repair failed for: $normalizedCode")
+                                if (cachedCountry != null) {
+                                    emit(ApiResponse.Success(cachedCountry))
+                                } else {
+                                    emit(
+                                        ApiResponse.Error(
+                                            Exception(
+                                                "Failed to fetch country '$normalizedCode': ${networkException.message}"
+                                            )
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -436,18 +463,18 @@ class CountriesRepositoryImpl @Inject constructor(
 
     /**
      * Helper function to fetch country from network and cache it.
-     * 
+     *
      * @param code The three-letter country code
      * @return The fetched country, or null if not found
      */
     private suspend fun fetchCountryFromNetwork(code: String): Country? {
         Timber.d("Fetching country from network: $code")
-        
+
         val networkCountries = countriesApi.fetchCountryByCode(code)
-        
+
         if (networkCountries.isNotEmpty()) {
-            val domainCountry = networkCountries.first().toCountry()
-            
+            val domainCountry = networkCountries.firstOrNull()?.toCountry()
+
             if (domainCountry != null) {
                 // Cache the fetched country
                 countryDao.insertCountries(listOf(domainCountry).toEntityList())
@@ -459,7 +486,7 @@ class CountriesRepositoryImpl @Inject constructor(
         } else {
             Timber.w("Country not found in API: $code")
         }
-        
+
         return null
     }
 
@@ -486,10 +513,10 @@ class CountriesRepositoryImpl @Inject constructor(
             Timber.d("Force refresh: Fetching fresh data from network")
             val networkCountries = countriesApi.fetchWorldCountriesInformation()
             val domainCountries = networkCountries.toCountries()
-            
+
             Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
             countryDao.refreshCountries(domainCountries.toEntityList())
-            
+
             Timber.d("Force refresh: Completed successfully")
             Result.success(Unit)
         } catch (exception: Exception) {
