@@ -103,6 +103,8 @@ class CountriesViewModel @Inject constructor(
             is CountriesContract.Intent.ToggleFavorite -> toggleFavorite(intent.countryCode)
             is CountriesContract.Intent.RefreshCountries -> refresh()
             is CountriesContract.Intent.ErrorShown -> clearError()
+            is CountriesContract.Intent.SearchFocusChanged -> onSearchFocusChanged(intent.isFocused)
+            is CountriesContract.Intent.SearchBackPressed -> onSearchBackPressed()
         }
     }
 
@@ -268,6 +270,25 @@ class CountriesViewModel @Inject constructor(
                 filteredCountries = applyFiltersAndSort(countries, currentFilters)
             )
         }
+    }
+
+    private fun onSearchFocusChanged(isFocused: Boolean) {
+        val focusLabel = if (isFocused) "focused" else "unfocused"
+        Timber.tag("Analytics").i("search_focus_$focusLabel")
+        setState {
+            val shouldBeActive = if (isFocused) {
+                true
+            } else {
+                searchQuery.isNotBlank()
+            }
+            copy(isSearchActive = shouldBeActive)
+        }
+    }
+
+    private fun onSearchBackPressed() {
+        Timber.tag("Analytics").i(
+            "search_back_pressed query_length=${state.value.searchQuery.length}"
+        )
     }
 
     /**

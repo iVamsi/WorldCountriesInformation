@@ -76,6 +76,16 @@ object CountriesContract {
          * Error message was shown (acknowledged).
          */
         data object ErrorShown : Intent
+
+        /**
+         * Search field focus changed (for analytics/UX state).
+         */
+        data class SearchFocusChanged(val isFocused: Boolean) : Intent
+
+        /**
+         * User pressed the search back button.
+         */
+        data object SearchBackPressed : Intent
     }
 
     // ============================================================================

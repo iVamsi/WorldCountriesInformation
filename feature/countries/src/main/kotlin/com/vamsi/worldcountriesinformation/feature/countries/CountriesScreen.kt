@@ -1,5 +1,13 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -54,7 +63,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -162,6 +173,14 @@ fun CountriesScreen(
                             onClearClick = {
                                 viewModel.processIntent(CountriesContract.Intent.ClearSearch)
                             },
+                            onFocusChanged = { isFocused ->
+                                viewModel.processIntent(
+                                    CountriesContract.Intent.SearchFocusChanged(isFocused)
+                                )
+                            },
+                            onBackClick = {
+                                viewModel.processIntent(CountriesContract.Intent.SearchBackPressed)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
@@ -230,25 +249,75 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onClearClick: () -> Unit,
+    onFocusChanged: (Boolean) -> Unit = {},
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier,
-        placeholder = { Text("Search countries...") },
-        leadingIcon = {
-            Icon(Icons.Default.Search, "Search")
-        },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = onClearClick) {
-                    Icon(Icons.Default.Clear, "Clear")
+    val focusManager = LocalFocusManager.current
+    var isFocused by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier.animateContentSize(
+            animationSpec = spring(
+                stiffness = Spring.StiffnessMediumLow,
+                dampingRatio = Spring.DampingRatioMediumBouncy
+            )
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AnimatedVisibility(
+            visible = isFocused,
+            enter = expandHorizontally(
+                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy)
+            ) + fadeIn(),
+            exit = shrinkHorizontally(
+                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy)
+            ) + fadeOut()
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = {
+                        if (query.isNotEmpty()) {
+                            onClearClick()
+                        }
+                        if (isFocused) {
+                            isFocused = false
+                        }
+                        focusManager.clearFocus(force = true)
+                        onBackClick()
+                    }
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
+                Spacer(Modifier.width(4.dp))
             }
-        },
-        singleLine = true
-    )
+        }
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .onFocusChanged { focusState ->
+                    if (isFocused != focusState.isFocused) {
+                        isFocused = focusState.isFocused
+                        onFocusChanged(focusState.isFocused)
+                    }
+                },
+            placeholder = { Text("Search countries...") },
+            leadingIcon = {
+                Icon(Icons.Default.Search, "Search")
+            },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(onClick = onClearClick) {
+                        Icon(Icons.Default.Clear, "Clear")
+                    }
+                }
+            },
+            singleLine = true
+        )
+    }
 }
 
 @Composable
