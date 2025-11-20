@@ -8,6 +8,7 @@ import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,10 +32,13 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -51,10 +55,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +74,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,7 +82,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.Currency
+import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
+import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import kotlinx.coroutines.flow.collectLatest
 
@@ -125,6 +136,22 @@ fun CountriesScreen(
         }
     }
 
+    CountriesScreenContent(
+        state = state,
+        listState = listState,
+        onNavigateToSettings = onNavigateToSettings,
+        onIntent = { intent -> viewModel.processIntent(intent) }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CountriesScreenContent(
+    state: CountriesContract.State,
+    listState: LazyListState,
+    onNavigateToSettings: () -> Unit,
+    onIntent: (CountriesContract.Intent) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -132,7 +159,7 @@ fun CountriesScreen(
                 actions = {
                     if (state.hasActiveFilters) {
                         IconButton(
-                            onClick = { viewModel.processIntent(CountriesContract.Intent.ClearFilters) }
+                            onClick = { onIntent(CountriesContract.Intent.ClearFilters) }
                         ) {
                             Icon(Icons.Default.FilterList, "Clear filters")
                         }
@@ -152,7 +179,7 @@ fun CountriesScreen(
             state.showError && state.countries.isEmpty() -> {
                 ErrorContent(
                     message = state.errorMessage ?: "Unknown error",
-                    onRetry = { viewModel.processIntent(CountriesContract.Intent.RetryLoading) },
+                    onRetry = { onIntent(CountriesContract.Intent.RetryLoading) },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -160,7 +187,7 @@ fun CountriesScreen(
             else -> {
                 PullToRefreshBox(
                     isRefreshing = state.isRefreshing,
-                    onRefresh = { viewModel.processIntent(CountriesContract.Intent.RefreshCountries) },
+                    onRefresh = { onIntent(CountriesContract.Intent.RefreshCountries) },
                     modifier = Modifier.padding(paddingValues)
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -168,73 +195,95 @@ fun CountriesScreen(
                         SearchBar(
                             query = state.searchQuery,
                             onQueryChange = {
-                                viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged(it))
+                                onIntent(CountriesContract.Intent.SearchQueryChanged(it))
                             },
                             onClearClick = {
-                                viewModel.processIntent(CountriesContract.Intent.ClearSearch)
+                                onIntent(CountriesContract.Intent.ClearSearch)
                             },
                             onFocusChanged = { isFocused ->
-                                viewModel.processIntent(
+                                onIntent(
                                     CountriesContract.Intent.SearchFocusChanged(isFocused)
                                 )
                             },
                             onBackClick = {
-                                viewModel.processIntent(CountriesContract.Intent.SearchBackPressed)
+                                onIntent(CountriesContract.Intent.SearchBackPressed)
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp)
                         )
 
-                        // Region filters
-                        if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
-                            RegionFilters(
-                                selectedRegions = state.selectedRegions,
-                                onRegionToggle = { region ->
-                                    viewModel.processIntent(CountriesContract.Intent.ToggleRegion(region))
-                                }
+                        if (state.shouldShowSearchHistory) {
+                            SearchHistorySection(
+                                history = state.searchHistory,
+                                onHistoryItemClick = { query ->
+                                    onIntent(
+                                        CountriesContract.Intent.SearchHistoryItemSelected(query)
+                                    )
+                                },
+                                onHistoryItemDelete = { query ->
+                                    onIntent(
+                                        CountriesContract.Intent.DeleteSearchHistoryItem(query)
+                                    )
+                                },
+                                onClearAll = {
+                                    onIntent(CountriesContract.Intent.ClearSearchHistory)
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp)
                             )
-                        }
-
-                        // Sort selector
-                        SortSelector(
-                            currentSort = state.sortOrder,
-                            onSortChange = { sortOrder ->
-                                viewModel.processIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
-                            }
-                        )
-
-                        // Countries list or empty state
-                        when {
-                            state.showEmptySearchResults -> {
-                                EmptySearchResults(
-                                    query = state.searchQuery,
-                                    onClearSearch = {
-                                        viewModel.processIntent(CountriesContract.Intent.ClearSearch)
+                        } else {
+                            // Region filters
+                            if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
+                                RegionFilters(
+                                    selectedRegions = state.selectedRegions,
+                                    onRegionToggle = { region ->
+                                        onIntent(CountriesContract.Intent.ToggleRegion(region))
                                     }
                                 )
                             }
 
-                            state.filteredCountries.isEmpty() && !state.isLoading -> {
-                                EmptyState()
-                            }
+                            // Sort selector
+                            SortSelector(
+                                currentSort = state.sortOrder,
+                                onSortChange = { sortOrder ->
+                                    onIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
+                                }
+                            )
 
-                            else -> {
-                                CountriesList(
-                                    countries = state.filteredCountries,
-                                    favoriteCountryCodes = state.favoriteCountryCodes,
-                                    onCountryClick = { country ->
-                                        viewModel.processIntent(
-                                            CountriesContract.Intent.CountryClicked(country.threeLetterCode)
-                                        )
-                                    },
-                                    onFavoriteClick = { country ->
-                                        viewModel.processIntent(
-                                            CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
-                                        )
-                                    },
-                                    listState = listState
-                                )
+                            // Countries list or empty state
+                            when {
+                                state.showEmptySearchResults -> {
+                                    EmptySearchResults(
+                                        query = state.searchQuery,
+                                        onClearSearch = {
+                                            onIntent(CountriesContract.Intent.ClearSearch)
+                                        }
+                                    )
+                                }
+
+                                state.filteredCountries.isEmpty() && !state.isLoading -> {
+                                    EmptyState()
+                                }
+
+                                else -> {
+                                    CountriesList(
+                                        countries = state.filteredCountries,
+                                        favoriteCountryCodes = state.favoriteCountryCodes,
+                                        onCountryClick = { country ->
+                                            onIntent(
+                                                CountriesContract.Intent.CountryClicked(country.threeLetterCode)
+                                            )
+                                        },
+                                        onFavoriteClick = { country ->
+                                            onIntent(
+                                                CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
+                                            )
+                                        },
+                                        listState = listState
+                                    )
+                                }
                             }
                         }
                     }
@@ -249,6 +298,7 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onClearClick: () -> Unit,
+    onMicClick: () -> Unit = {},
     onFocusChanged: (Boolean) -> Unit = {},
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -284,6 +334,7 @@ private fun SearchBar(
                             isFocused = false
                         }
                         focusManager.clearFocus(force = true)
+                        onFocusChanged(false)
                         onBackClick()
                     }
                 ) {
@@ -309,9 +360,17 @@ private fun SearchBar(
                 Icon(Icons.Default.Search, "Search")
             },
             trailingIcon = {
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = onClearClick) {
-                        Icon(Icons.Default.Clear, "Clear")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onMicClick) {
+                        Icon(Icons.Default.Mic, contentDescription = "Voice search")
+                    }
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = onClearClick) {
+                            Icon(Icons.Default.Clear, "Clear")
+                        }
                     }
                 }
             },
@@ -524,6 +583,108 @@ private fun CountryCard(
 }
 
 @Composable
+private fun SearchHistorySection(
+    history: List<SearchHistoryEntry>,
+    onHistoryItemClick: (String) -> Unit,
+    onHistoryItemDelete: (String) -> Unit,
+    onClearAll: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Recent searches",
+                style = MaterialTheme.typography.titleMedium
+            )
+            TextButton(onClick = onClearAll) {
+                Text("Clear all")
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(history, key = { it.query.lowercase() }) { entry ->
+                SearchHistoryItemRow(
+                    entry = entry,
+                    onClick = { onHistoryItemClick(entry.query) },
+                    onDelete = { onHistoryItemDelete(entry.query) }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchHistoryItemRow(
+    entry: SearchHistoryEntry,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+                    .background(MaterialTheme.colorScheme.errorContainer),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(end = 24.dp)
+                )
+            }
+        }
+    ) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.History,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(Modifier.width(16.dp))
+            Text(
+                text = entry.query,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -607,3 +768,76 @@ private fun EmptySearchResults(
         }
     }
 }
+
+// -----------------------------------------------------------------------------
+// Previews
+// -----------------------------------------------------------------------------
+
+@Preview(showBackground = true, name = "Countries • List")
+@Composable
+private fun CountriesScreenPreview() {
+    val previewState = CountriesContract.State(
+        countries = PreviewCountries,
+        filteredCountries = PreviewCountries,
+        favoriteCountryCodes = setOf("CAN"),
+        lastUpdated = System.currentTimeMillis()
+    )
+
+    CountriesScreenContent(
+        state = previewState,
+        listState = rememberLazyListState(),
+        onNavigateToSettings = {},
+        onIntent = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Countries • Search History")
+@Composable
+private fun CountriesScreenSearchHistoryPreview() {
+    val previewState = CountriesContract.State(
+        searchQuery = "",
+        isSearchActive = true,
+        isSearchFocused = true,
+        searchHistory = listOf(
+            SearchHistoryEntry("Canada"),
+            SearchHistoryEntry("Japan"),
+            SearchHistoryEntry("Australia")
+        )
+    )
+
+    CountriesScreenContent(
+        state = previewState,
+        listState = rememberLazyListState(),
+        onNavigateToSettings = {},
+        onIntent = {}
+    )
+}
+
+private val PreviewCountries = listOf(
+    Country(
+        name = "Canada",
+        capital = "Ottawa",
+        languages = listOf(Language(name = "English")),
+        twoLetterCode = "CA",
+        threeLetterCode = "CAN",
+        population = 38_000_000,
+        region = "Americas",
+        currencies = listOf(Currency(code = "CAD", name = "Canadian Dollar", symbol = "$")),
+        callingCode = "+1",
+        latitude = 56.0,
+        longitude = -106.0
+    ),
+    Country(
+        name = "Japan",
+        capital = "Tokyo",
+        languages = listOf(Language(name = "Japanese")),
+        twoLetterCode = "JP",
+        threeLetterCode = "JPN",
+        population = 125_000_000,
+        region = "Asia",
+        currencies = listOf(Currency(code = "JPY", name = "Yen", symbol = "¥")),
+        callingCode = "+81",
+        latitude = 36.0,
+        longitude = 138.0
+    )
+)

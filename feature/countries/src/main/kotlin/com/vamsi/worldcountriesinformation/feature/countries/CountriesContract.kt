@@ -4,6 +4,7 @@ import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 
 /**
@@ -86,6 +87,21 @@ object CountriesContract {
          * User pressed the search back button.
          */
         data object SearchBackPressed : Intent
+
+        /**
+         * User tapped a search history item.
+         */
+        data class SearchHistoryItemSelected(val query: String) : Intent
+
+        /**
+         * User dismissed a history entry via swipe delete.
+         */
+        data class DeleteSearchHistoryItem(val query: String) : Intent
+
+        /**
+         * User cleared the entire history list.
+         */
+        data object ClearSearchHistory : Intent
     }
 
     // ============================================================================
@@ -109,6 +125,8 @@ object CountriesContract {
         // Search
         val searchQuery: String = "",
         val isSearchActive: Boolean = false,
+        val isSearchFocused: Boolean = false,
+        val searchHistory: List<SearchHistoryEntry> = emptyList(),
 
         // Filters
         val selectedRegions: Set<String> = emptySet(),
@@ -153,6 +171,13 @@ object CountriesContract {
          */
         val showError: Boolean
             get() = errorMessage != null && !isLoading
+
+        /**
+         * True when search history panel should be visible.
+         */
+        val shouldShowSearchHistory: Boolean
+            get() =
+                searchHistory.isNotEmpty() && searchQuery.isBlank() && isSearchFocused
     }
 
     // ============================================================================

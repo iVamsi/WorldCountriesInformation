@@ -11,6 +11,7 @@ import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCa
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import io.mockk.Runs
 import io.mockk.clearMocks
@@ -157,6 +158,8 @@ class CountriesViewModelTest {
         assertEquals(emptyList<Country>(), state.filteredCountries)
         assertEquals("", state.searchQuery)
         assertFalse(state.isSearchActive)
+        assertFalse(state.isSearchFocused)
+        assertEquals(emptyList<SearchHistoryEntry>(), state.searchHistory)
         assertEquals(emptySet<String>(), state.selectedRegions)
         assertEquals(SortOrder.NAME_ASC, state.sortOrder)
         assertEquals(null, state.errorMessage)
@@ -462,11 +465,85 @@ class CountriesViewModelTest {
         advanceUntilIdle()
 
         // When
-        viewModel.clearSearchHistory()
+        viewModel.processIntent(CountriesContract.Intent.ClearSearchHistory)
         advanceUntilIdle()
 
         // Then
         coVerify { searchPreferencesDataSource.clearSearchHistory() }
+    }
+
+    @Test
+    fun `search history from preferences should update state`() = runTest {
+        // Given
+        val history = listOf(SearchHistoryEntry(query = "USA"))
+        coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
+            com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(
+                searchHistory = history
+            )
+        )
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+
+        // When
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // Then
+        assertEquals(history, viewModel.state.value.searchHistory)
+    }
+
+    @Test
+    fun `search history should show when focused with entries`() = runTest {
+        // Given
+        val history = listOf(SearchHistoryEntry(query = "USA"))
+        coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
+            com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(
+                searchHistory = history
+            )
+        )
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+
+        // When
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.processIntent(CountriesContract.Intent.SearchFocusChanged(true))
+        advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.state.value.shouldShowSearchHistory)
+    }
+
+    @Test
+    fun `delete history intent should remove entry`() = runTest {
+        // Given
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { searchPreferencesDataSource.removeFromSearchHistory(any()) } just Runs
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // When
+        viewModel.processIntent(CountriesContract.Intent.DeleteSearchHistoryItem("USA"))
+        advanceUntilIdle()
+
+        // Then
+        coVerify { searchPreferencesDataSource.removeFromSearchHistory("USA") }
+    }
+
+    @Test
+    fun `history item selection should restore query`() = runTest {
+        // Given
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
+        coEvery { searchPreferencesDataSource.addToSearchHistory(any()) } just Runs
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // When
+        viewModel.processIntent(CountriesContract.Intent.SearchHistoryItemSelected("Canada"))
+        advanceUntilIdle()
+
+        // Then
+        assertEquals("Canada", viewModel.state.value.searchQuery)
+        coVerify { searchPreferencesDataSource.addToSearchHistory("Canada") }
     }
 
     // ============================================================================

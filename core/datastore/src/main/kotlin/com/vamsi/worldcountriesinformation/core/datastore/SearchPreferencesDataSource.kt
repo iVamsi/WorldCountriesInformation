@@ -14,7 +14,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.IOException
 import javax.inject.Inject
@@ -43,11 +42,12 @@ private val Context.searchDataStore: DataStore<Preferences> by preferencesDataSt
 @Singleton
 class SearchPreferencesDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val json: Json
+    private val json: Json,
 ) {
     companion object {
         private const val MAX_HISTORY_SIZE = 10
     }
+
     /**
      * Preference keys for search-related data.
      */
@@ -131,11 +131,11 @@ class SearchPreferencesDataSource @Inject constructor(
      */
     suspend fun addToSearchHistory(query: String) {
         if (query.isBlank()) return
-        
+
         context.searchDataStore.edit { preferences ->
             val currentHistory = getSearchHistoryFromPreferences(preferences)
             val updatedHistory = addToHistoryInternal(query.trim(), currentHistory)
-            
+
             // Convert to DTOs for serialization
             val dtos = updatedHistory.map { it.toDto() }
             val historyJson = json.encodeToString(dtos)
@@ -144,11 +144,28 @@ class SearchPreferencesDataSource @Inject constructor(
     }
 
     /**
+     * Removes a single search history entry that matches the provided query.
+     */
+    suspend fun removeFromSearchHistory(query: String) {
+        if (query.isBlank()) return
+
+        context.searchDataStore.edit { preferences ->
+            val currentHistory = getSearchHistoryFromPreferences(preferences)
+            val updatedHistory = currentHistory.filterNot {
+                it.query.equals(query.trim(), ignoreCase = true)
+            }
+
+            val dtos = updatedHistory.map { it.toDto() }
+            preferences[Keys.SEARCH_HISTORY] = json.encodeToString(dtos)
+        }
+    }
+
+    /**
      * Internal method to add query to history with business logic.
      */
     private fun addToHistoryInternal(
         query: String,
-        currentHistory: List<SearchHistoryEntry>
+        currentHistory: List<SearchHistoryEntry>,
     ): List<SearchHistoryEntry> {
         // Remove existing entry with same query (case-insensitive)
         val filteredHistory = currentHistory.filterNot {

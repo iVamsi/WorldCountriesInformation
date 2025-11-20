@@ -16,6 +16,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -83,7 +84,8 @@ class CountriesViewModel @Inject constructor(
                     copy(
                         selectedRegions = prefs.filters.selectedRegions,
                         sortOrder = prefs.filters.sortOrder,
-                        filteredCountries = applyFiltersAndSort(countries, prefs.filters)
+                        filteredCountries = applyFiltersAndSort(countries, prefs.filters),
+                        searchHistory = prefs.searchHistory
                     )
                 }
             }
@@ -105,6 +107,9 @@ class CountriesViewModel @Inject constructor(
             is CountriesContract.Intent.ErrorShown -> clearError()
             is CountriesContract.Intent.SearchFocusChanged -> onSearchFocusChanged(intent.isFocused)
             is CountriesContract.Intent.SearchBackPressed -> onSearchBackPressed()
+            is CountriesContract.Intent.SearchHistoryItemSelected -> onSearchHistoryItemSelected(intent.query)
+            is CountriesContract.Intent.DeleteSearchHistoryItem -> deleteSearchHistoryEntry(intent.query)
+            is CountriesContract.Intent.ClearSearchHistory -> clearSearchHistory()
         }
     }
 
@@ -205,15 +210,16 @@ class CountriesViewModel @Inject constructor(
     private fun onSearchQueryChange(query: String) {
         Timber.d("Search query changed: $query")
         setState {
+            val currentlyFocused = isSearchFocused
             copy(
                 searchQuery = query,
-                isSearchActive = query.isNotBlank()
+                isSearchActive = query.isNotBlank() || currentlyFocused
             )
         }
 
         // Trigger search with debouncing
         viewModelScope.launch {
-            kotlinx.coroutines.delay(300L)
+            delay(300L)
             if (state.value.searchQuery == query) {
                 performSearch(query)
             }
@@ -264,9 +270,10 @@ class CountriesViewModel @Inject constructor(
         Timber.d("Clearing search query")
         setState {
             val currentFilters = searchPreferencesFlow.value.filters
+            val focused = isSearchFocused
             copy(
                 searchQuery = "",
-                isSearchActive = false,
+                isSearchActive = focused,
                 filteredCountries = applyFiltersAndSort(countries, currentFilters)
             )
         }
@@ -281,7 +288,10 @@ class CountriesViewModel @Inject constructor(
             } else {
                 searchQuery.isNotBlank()
             }
-            copy(isSearchActive = shouldBeActive)
+            copy(
+                isSearchFocused = isFocused,
+                isSearchActive = shouldBeActive
+            )
         }
     }
 
@@ -343,6 +353,20 @@ class CountriesViewModel @Inject constructor(
         }
 
         setEffect { CountriesContract.Effect.NavigateToDetails(countryCode) }
+    }
+
+    private fun onSearchHistoryItemSelected(query: String) {
+        Timber.d("Search history item selected: $query")
+        selectSearchQuery(query)
+    }
+
+    private fun deleteSearchHistoryEntry(query: String) {
+        if (query.isBlank()) return
+
+        viewModelScope.launch {
+            Timber.d("Deleting search history entry: $query")
+            searchPreferencesDataSource.removeFromSearchHistory(query)
+        }
     }
 
     /**
@@ -410,12 +434,15 @@ class CountriesViewModel @Inject constructor(
      * Saves current search query to history.
      */
     fun saveSearchToHistory() {
-        val query = state.value.searchQuery
-        if (query.isNotBlank()) {
-            viewModelScope.launch {
-                Timber.d("Saving search to history: $query")
-                searchPreferencesDataSource.addToSearchHistory(query)
-            }
+        persistSearchQuery(state.value.searchQuery)
+    }
+
+    private fun persistSearchQuery(query: String) {
+        if (query.isBlank()) return
+
+        viewModelScope.launch {
+            Timber.d("Saving search to history: $query")
+            searchPreferencesDataSource.addToSearchHistory(query)
         }
     }
 
@@ -435,7 +462,7 @@ class CountriesViewModel @Inject constructor(
     fun selectSearchQuery(query: String) {
         Timber.d("Selecting search query: $query")
         onSearchQueryChange(query)
-        saveSearchToHistory()
+        persistSearchQuery(query)
     }
 
     /**
