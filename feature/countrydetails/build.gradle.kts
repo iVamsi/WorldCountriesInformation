@@ -14,6 +14,7 @@ android {
 
 dependencies {
     // Core modules
+    implementation(project(":core:common"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:model"))
@@ -32,6 +33,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.snapnotify)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Image loading

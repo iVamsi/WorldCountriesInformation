@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -45,11 +47,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.vamsi.worldcountriesinformation.domain.core.UiState
+import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.feature.countrydetails.component.CountryDetailsShimmer
+import kotlinx.coroutines.flow.collectLatest
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -68,44 +71,88 @@ fun CountryDetailsRoute(
     onNavigateBack: () -> Unit,
     viewModel: CountryDetailsViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(countryCode) {
-        viewModel.loadCountryDetails(countryCode)
+    // Handle effects
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is CountryDetailsContract.Effect.NavigateBack -> {
+                    onNavigateBack()
+                }
+
+                is CountryDetailsContract.Effect.ShowToast -> {
+                    SnapNotify.show(effect.message)
+                }
+
+                is CountryDetailsContract.Effect.ShowError -> {
+                    SnapNotify.showError(effect.message)
+                }
+
+                is CountryDetailsContract.Effect.ShowSuccess -> {
+                    SnapNotify.showSuccess(effect.message)
+                }
+            }
+        }
     }
 
-    when (val state = uiState) {
-        is UiState.Idle -> {
+    LaunchedEffect(countryCode) {
+        viewModel.processIntent(CountryDetailsContract.Intent.LoadCountryDetails(countryCode))
+    }
+
+    CountryDetailsScreenContent(
+        state = state,
+        countryCode = countryCode,
+        onIntent = { intent -> viewModel.processIntent(intent) },
+        cacheAge = viewModel.getCacheAge(),
+        isCacheFresh = viewModel.isCacheFresh()
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CountryDetailsScreenContent(
+    state: CountryDetailsContract.State,
+    countryCode: String,
+    onIntent: (CountryDetailsContract.Intent) -> Unit,
+    cacheAge: String,
+    isCacheFresh: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    when {
+        state.showLoading -> {
+            CountryDetailsShimmer()
+        }
+
+        state.showError -> {
+            CountryDetailsErrorContent(
+                message = state.errorMessage ?: "An error occurred",
+                onRetry = { onIntent(CountryDetailsContract.Intent.RetryLoading(countryCode)) },
+                onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) }
+            )
+        }
+
+        state.hasData && state.country != null -> {
+            CountryDetailsScreen(
+                country = state.country,
+                isFavorite = state.isFavorite,
+                onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) },
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onIntent(CountryDetailsContract.Intent.RefreshCountry(countryCode)) },
+                onFavoriteClick = { onIntent(CountryDetailsContract.Intent.ToggleFavorite) },
+                cacheAge = cacheAge,
+                isCacheFresh = isCacheFresh,
+                modifier = modifier
+            )
+        }
+
+        else -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text("Initializing...")
             }
-        }
-
-        is UiState.Loading -> {
-            CountryDetailsShimmer()
-        }
-
-        is UiState.Success -> {
-            CountryDetailsScreen(
-                country = state.data,
-                onNavigateBack = onNavigateBack,
-                isRefreshing = isRefreshing,
-                onRefresh = { viewModel.refresh(countryCode) },
-                cacheAge = viewModel.getCacheAge(),
-                isCacheFresh = viewModel.isCacheFresh()
-            )
-        }
-
-        is UiState.Error -> {
-            CountryDetailsErrorContent(
-                message = state.message ?: "An error occurred",
-                onRetry = { viewModel.retry(countryCode) },
-                onNavigateBack = onNavigateBack
-            )
         }
     }
 }
@@ -114,9 +161,11 @@ fun CountryDetailsRoute(
 @Composable
 private fun CountryDetailsScreen(
     country: Country,
+    isFavorite: Boolean,
     onNavigateBack: () -> Unit,
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
+    onFavoriteClick: () -> Unit = {},
     cacheAge: String = "Never",
     isCacheFresh: Boolean = false,
     modifier: Modifier = Modifier,
@@ -150,6 +199,14 @@ private fun CountryDetailsScreen(
                     }
                 },
                 actions = {
+                    // Favorite button
+                    IconButton(onClick = onFavoriteClick) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                     // Manual refresh button
                     IconButton(
                         onClick = onRefresh,
@@ -465,60 +522,26 @@ private fun CountryDetailsScreenPreview() {
     MaterialTheme {
         // Preview version without map (to avoid osmdroid rendering issues)
         val country = getSampleCountry()
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(country.name) },
-                    navigationIcon = {
-                        IconButton(onClick = {}) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Navigate back"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                )
-            }
-        ) { paddingValues ->
-            val detailsList = getCountryDetailsList(country)
+        CountryDetailsScreen(
+            country = country,
+            isFavorite = false,
+            onNavigateBack = {},
+            onFavoriteClick = {}
+        )
+    }
+}
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Country Flag
-                item {
-                    CountryFlagCard(country = country)
-                }
-
-                // Skip map in preview to avoid osmdroid errors
-
-                // Country Details
-                item {
-                    Text(
-                        text = "Country Information",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-
-                items(detailsList) { detail ->
-                    CountryDetailItem(
-                        label = detail.label,
-                        value = detail.value
-                    )
-                }
-            }
-        }
+@Preview(name = "Country Details Screen - Favorite", showBackground = true)
+@Composable
+private fun CountryDetailsScreenFavoritePreview() {
+    MaterialTheme {
+        val country = getSampleCountry()
+        CountryDetailsScreen(
+            country = country,
+            isFavorite = true,
+            onNavigateBack = {},
+            onFavoriteClick = {}
+        )
     }
 }
 
