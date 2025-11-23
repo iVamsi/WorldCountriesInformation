@@ -30,5 +30,6 @@ include(
     ":data:countries",
     ":feature:countries",
     ":feature:countrydetails",
-    ":feature:settings"
+    ":feature:settings",
+    ":feature:widget"
 )

@@ -1,6 +1,7 @@
 # 🌍 World Countries Information
 
-A modern Android application that provides comprehensive information about countries around the world, built with the latest Android development best practices and Jetpack components.
+A modern Android application that provides comprehensive information about countries around the world, built with the latest Android
+development best practices and Jetpack components.
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-blue.svg)](https://kotlinlang.org)
 [![AGP](https://img.shields.io/badge/AGP-8.13.0-green.svg)](https://developer.android.com/studio/releases/gradle-plugin)
@@ -12,11 +13,16 @@ A modern Android application that provides comprehensive information about count
 
 - **Browse Countries**: View a comprehensive list of all countries worldwide
 - **Country Details**: Access detailed information including:
-  - Country name, capital, and region
-  - Population and calling code
-  - Official languages and currencies
-  - Interactive map showing country location (powered by OpenStreetMap)
-  - Country flag display
+    - Country name, capital, and region
+    - Population and calling code
+    - Official languages and currencies
+    - Interactive map showing country location (powered by OpenStreetMap)
+    - Country flag display
+- **Home Screen Widget**: Display "Country of the Day" on your home screen
+    - Automatic daily rotation of featured countries
+    - Shows flag, name, capital, region, and population
+    - Updates every 6 hours automatically
+    - Built with Jetpack Compose Glance
 - **Offline-First**: Data is cached locally for offline access
 - **Modern UI**: Built with Jetpack Compose and Material Design 3
 - **Dark Mode**: Automatic theme support based on system settings
@@ -42,23 +48,28 @@ worldcountriesinformation/
 ├── domain/                       # Use cases & repository interfaces
 ├── feature/
 │   ├── countries/                # Countries list feature
-│   └── countrydetails/           # Country details feature
+│   ├── countrydetails/           # Country details feature
+│   ├── settings/                 # Settings feature
+│   └── widget/                   # Home screen widget
 └── tests-shared/                 # Shared test utilities
 ```
 
 ### Architecture Layers
 
 #### Presentation Layer
+
 - **UI**: Jetpack Compose with Material 3
 - **ViewModels**: State management with Kotlin Flow
 - **Navigation**: Type-safe navigation with Compose Navigation
 
 #### Domain Layer
+
 - **Use Cases**: Business logic encapsulation
 - **Repository Interfaces**: Data abstraction
 - **Models**: Domain entities
 
 #### Data Layer
+
 - **Repository**: Implements domain interfaces
 - **Data Sources**: Remote (API) and Local (Room)
 - **Offline-First**: Database as single source of truth
@@ -66,28 +77,34 @@ worldcountriesinformation/
 ## 🛠️ Tech Stack
 
 ### Core
+
 - **Kotlin** 2.2.20 - Programming language
 - **Gradle** 8.13.0 - Build system
 - **Convention Plugins** - Shared build configuration
 
 ### Android
+
 - **Min SDK**: 24 (Android 7.0 Nougat)
 - **Target SDK**: 36
 - **Compile SDK**: 36
 
 ### UI
+
 - **Jetpack Compose** - Declarative UI framework
 - **Material 3** - Design system
 - **Compose BOM** 2025.01.00
+- **Glance** 1.1.1 - Widget framework
 - **Coil** 2.7.0 - Image loading
 
 ### Architecture Components
+
 - **Hilt** 2.57.2 - Dependency injection
 - **Navigation Compose** 2.9.5 - Navigation
 - **Lifecycle** 2.9.4 - Lifecycle management
 - **ViewModel** - State preservation
 
 ### Data & Networking
+
 - **Retrofit** 3.0.0 - REST API client
 - **OkHttp** 5.2.1 - HTTP client
 - **Kotlinx Serialization** 1.7.3 - JSON parsing
@@ -95,17 +112,20 @@ worldcountriesinformation/
 - **Coroutines** 1.10.2 - Asynchronous programming
 
 ### Maps
+
 - **osmdroid** 6.1.20 - OpenStreetMap integration
 - No API keys required
 - Free and open source
 
 ### Testing
+
 - **JUnit** 4.13.2 - Unit testing framework
 - **MockK** 1.13.13 - Mocking library
 - **Espresso** 3.7.0 - UI testing
 - **Hilt Testing** - DI testing utilities
 
 ### Code Quality
+
 - **Timber** 5.0.1 - Logging
 - **StrictMode** - Runtime checks (debug builds)
 
@@ -216,6 +236,7 @@ sdk.dir=/path/to/your/Android/sdk
 ### Test Coverage
 
 The project uses:
+
 - **MockK** for mocking in unit tests
 - **Hilt Testing** for dependency injection in tests
 - **Espresso** for UI testing
@@ -275,16 +296,22 @@ com.vamsi.worldcountriesinformation/
 ### Screens
 
 1. **Countries List Screen**
-   - Displays all countries in a scrollable list
-   - Search functionality (if implemented)
-   - Pull-to-refresh support
-   - Offline indicator
+    - Displays all countries in a scrollable list
+    - Search functionality (if implemented)
+    - Pull-to-refresh support
+    - Offline indicator
 
 2. **Country Details Screen**
-   - Country flag display
-   - Interactive map with country marker
-   - Detailed country information
-   - Back navigation
+    - Country flag display
+    - Interactive map with country marker
+    - Detailed country information
+    - Back navigation
+
+3. **Home Screen Widget**
+    - Country of the Day display
+    - Resizable widget (2x2 to 4x5)
+    - Auto-updates every 6 hours
+    - Shows country flag, name, capital, region, and population
 
 ### Design System
 
@@ -295,6 +322,7 @@ com.vamsi.worldcountriesinformation/
 ## 🌐 Data Source
 
 This app fetches country data from the **REST Countries API v3.1** (latest version):
+
 - Base URL: `https://restcountries.com/v3.1/`
 - **Version**: 3.1 (upgraded from v2)
 - Free to use
@@ -302,6 +330,7 @@ This app fetches country data from the **REST Countries API v3.1** (latest versi
 - No rate limits
 
 ### API v3.1 Features
+
 - **Improved Data Structure**: More detailed country information
 - **Better Currency Support**: Currency data as key-value pairs
 - **Enhanced Language Data**: Language codes mapped to names
@@ -310,7 +339,9 @@ This app fetches country data from the **REST Countries API v3.1** (latest versi
 - **Map Links**: Direct links to Google Maps and OpenStreetMap
 
 ### Migration from v2 to v3.1
+
 This project uses the latest REST Countries API v3.1, which offers improved data structure compared to v2:
+
 - **currencies**: Changed from List to Map for better access
 - **languages**: Changed from List to Map with language codes
 - **name**: Now includes common, official, and native names
@@ -324,6 +355,7 @@ This project uses the latest REST Countries API v3.1, which offers improved data
 This app uses **osmdroid** for maps instead of Google Maps:
 
 **Advantages:**
+
 - ✅ Completely free and open source
 - ✅ No API keys required
 - ✅ No usage limits or quotas
@@ -331,18 +363,21 @@ This app uses **osmdroid** for maps instead of Google Maps:
 - ✅ Offline map support
 
 **Attribution:**
-Maps are provided by OpenStreetMap contributors. The app automatically displays the required copyright notice: "© OpenStreetMap contributors"
+Maps are provided by OpenStreetMap contributors. The app automatically displays the required copyright notice: "© OpenStreetMap
+contributors"
 
 **License:** OpenStreetMap data is available under the Open Database License (ODbL)
 
 ## 📱 Minimum Requirements
 
 ### Device Requirements
+
 - Android 7.0 (API 24) or higher
 - Internet connection (for initial data fetch)
 - ~50 MB storage space
 
 ### Recommended
+
 - Android 12 (API 31) or higher
 - Stable internet connection
 - GPS/Location services (optional, for map features)
@@ -350,18 +385,22 @@ Maps are provided by OpenStreetMap contributors. The app automatically displays 
 ## 🔨 Build Variants
 
 ### Debug Build
+
 ```bash
 ./gradlew assembleDebug
 ```
+
 - Includes debugging tools
 - Timber logging enabled
 - StrictMode enabled
 - No obfuscation
 
 ### Release Build
+
 ```bash
 ./gradlew assembleRelease
 ```
+
 - Optimized and obfuscated
 - No logging
 - Smaller APK size
@@ -377,6 +416,7 @@ Contributions are welcome! Please follow these steps:
 5. Open a Pull Request
 
 ### Code Style
+
 - Follow [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html)
 - Use meaningful variable and function names
 - Write unit tests for new features
@@ -408,6 +448,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## 🗺️ Roadmap
 
 ### Current Version (v1.0.0)
+
 - ✅ Browse countries list
 - ✅ View country details
 - ✅ Interactive maps
@@ -415,13 +456,14 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - ✅ Material 3 UI
 
 ### Future Enhancements
+
 - 🔄 Search and filter countries
 - 🔄 Favorite countries
 - 🔄 Dark/Light theme toggle
 - 🔄 Multi-language support
 - 🔄 Country comparison feature
 - 🔄 Export country data
-- 🔄 Widget support
+- ✅ Widget support (Completed)
 
 ## 📊 Project Stats
 

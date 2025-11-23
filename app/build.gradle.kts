@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":feature:countries"))
     implementation(project(":feature:countrydetails"))
     implementation(project(":feature:settings"))
+    implementation(project(":feature:widget"))
 
     // Domain (for DI bindings)
     implementation(project(":domain"))

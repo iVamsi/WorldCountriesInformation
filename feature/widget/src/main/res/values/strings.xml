@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget Strings -->
+    <string name="widget_name">Country of the Day</string>
+    <string name="widget_description">Display a featured country with details on your home screen</string>
+    <string name="widget_loading">Loading country information...</string>
+    <string name="widget_error">Failed to load data</string>
+    <string name="widget_no_data">No data available</string>
+    <string name="widget_tap_to_open">Tap to open app</string>
+
+    <!-- Country Details -->
+    <string name="country_capital">Capital</string>
+    <string name="country_region">Region</string>
+    <string name="country_population">Population</string>
+    <string name="total_countries">Total Countries</string>
+</resources>
+

@@ -80,10 +80,6 @@ sealed class ApiResponse<out R> {
     }
 }
 
-// ============================================================================
-// Extension Properties
-// ============================================================================
-
 /**
  * Returns `true` if [ApiResponse] is [Success] and holds non-null data.
  *
@@ -127,10 +123,6 @@ val <T> ApiResponse<T>.data: T?
  */
 val ApiResponse<*>.exception: Exception?
     get() = (this as? ApiResponse.Error)?.exception
-
-// ============================================================================
-// Extension Functions
-// ============================================================================
 
 /**
  * Returns the data if [Success], or the provided fallback value otherwise.
@@ -258,10 +250,6 @@ inline fun <T> ApiResponse<T>.onLoading(action: () -> Unit): ApiResponse<T> {
     return this
 }
 
-// ============================================================================
-// Conversion Functions: Result<T> ↔ ApiResponse<T>
-// ============================================================================
-
 /**
  * Converts Kotlin's [Result]<T> to [ApiResponse]<T>.
  *
@@ -279,8 +267,8 @@ inline fun <T> ApiResponse<T>.onLoading(action: () -> Unit): ApiResponse<T> {
  */
 fun <T> Result<T>.toApiResponse(): ApiResponse<T> {
     return fold(
-        onSuccess = { ApiResponse.Success(it) },
-        onFailure = { 
+        onSuccess = { Success(it) },
+        onFailure = {
             ApiResponse.Error(
                 when (it) {
                     is Exception -> it

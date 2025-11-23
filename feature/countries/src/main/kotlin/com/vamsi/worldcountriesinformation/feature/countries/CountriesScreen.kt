@@ -81,13 +81,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.mvi.collectAsEffect
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
-import kotlinx.coroutines.flow.collectLatest
 
 /**
  * Countries list UI that wires search, filtering, favorites, and navigation hooks.
@@ -107,24 +107,22 @@ fun CountriesScreen(
     val listState = rememberLazyListState()
 
     // Handle effects
-    LaunchedEffect(Unit) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is CountriesContract.Effect.NavigateToDetails -> {
-                    onNavigateToDetails(effect.countryCode)
-                }
+    viewModel.effect.collectAsEffect { effect ->
+        when (effect) {
+            is CountriesContract.Effect.NavigateToDetails -> {
+                onNavigateToDetails(effect.countryCode)
+            }
 
-                is CountriesContract.Effect.ShowToast -> {
-                    SnapNotify.show(effect.message)
-                }
+            is CountriesContract.Effect.ShowToast -> {
+                SnapNotify.show(effect.message)
+            }
 
-                is CountriesContract.Effect.ShowError -> {
-                    SnapNotify.showError(effect.message)
-                }
+            is CountriesContract.Effect.ShowError -> {
+                SnapNotify.showError(effect.message)
+            }
 
-                is CountriesContract.Effect.ShowSuccess -> {
-                    SnapNotify.showSuccess(effect.message)
-                }
+            is CountriesContract.Effect.ShowSuccess -> {
+                SnapNotify.showSuccess(effect.message)
             }
         }
     }

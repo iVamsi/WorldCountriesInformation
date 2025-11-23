@@ -2,6 +2,7 @@ package com.vamsi.worldcountriesinformation.feature.countries
 
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
@@ -11,10 +12,12 @@ import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountr
 import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +36,7 @@ import javax.inject.Inject
  * stream for the UI. Supports cache policies, advanced search, filters, suggestions, and
  * persisted preferences.
  */
-@OptIn(FlowPreview::class, kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CountriesViewModel @Inject constructor(
     private val getCountriesUseCase: GetCountriesUseCase,
@@ -41,7 +44,7 @@ class CountriesViewModel @Inject constructor(
     private val filteredSearchUseCase: FilteredSearchCountriesUseCase,
     private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
     private val searchPreferencesDataSource: SearchPreferencesDataSource,
-    private val searchFiltersUseCase: com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase,
+    private val searchFiltersUseCase: SearchFiltersUseCase,
 ) : MVIViewModel<CountriesContract.Intent, CountriesContract.State, CountriesContract.Effect>(
     initialState = CountriesContract.State()
 ) {
@@ -49,7 +52,7 @@ class CountriesViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences()
+            initialValue = SearchPreferences()
         )
 
     private val searchSuggestionsFlow: StateFlow<List<String>> = combine(
@@ -475,7 +478,7 @@ class CountriesViewModel @Inject constructor(
     /**
      * Gets search preferences including history and filters.
      */
-    fun getSearchPreferences(): com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences {
+    fun getSearchPreferences(): SearchPreferences {
         return searchPreferencesFlow.value
     }
 
