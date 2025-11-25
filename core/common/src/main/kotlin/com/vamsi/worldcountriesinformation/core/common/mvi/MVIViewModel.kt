@@ -104,14 +104,16 @@ abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEf
 
     /**
      * Public effect flow exposed to the UI.
-     * UI components should collect effects using collectAsEffect extension.
+     * UI components should collect effects using collectLatest.
      *
      * ## Usage in UI
      * ```kotlin
-     * viewModel.effect.collectAsEffect { effect ->
-     *     when (effect) {
-     *         is MyEffect.NavigateToDetails -> navigate(effect.id)
-     *         is MyEffect.ShowToast -> showToast(effect.message)
+     * LaunchedEffect(Unit) {
+     *     viewModel.effect.collectLatest { effect ->
+     *         when (effect) {
+     *             is MyEffect.NavigateToDetails -> navigate(effect.id)
+     *             is MyEffect.ShowToast -> showToast(effect.message)
+     *         }
      *     }
      * }
      * ```

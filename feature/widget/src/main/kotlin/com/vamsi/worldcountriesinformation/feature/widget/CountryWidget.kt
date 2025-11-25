@@ -286,7 +286,11 @@ private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domai
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .clickable(onClick = actionStartActivity(getLaunchIntent(context))),
+            .clickable(
+                onClick = actionStartActivity(
+                    getCountryDetailsIntent(context, country.threeLetterCode)
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -320,7 +324,11 @@ private fun MediumWidgetLayout(
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .clickable(onClick = actionStartActivity(getLaunchIntent(context))),
+            .clickable(
+                onClick = actionStartActivity(
+                    getCountryDetailsIntent(context, country.threeLetterCode)
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -385,7 +393,11 @@ private fun LargeWidgetLayout(
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .clickable(onClick = actionStartActivity(getLaunchIntent(context))),
+            .clickable(
+                onClick = actionStartActivity(
+                    getCountryDetailsIntent(context, country.threeLetterCode)
+                )
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Header
@@ -518,4 +530,20 @@ private fun getLaunchIntent(context: Context): Intent {
             )
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
+}
+
+/**
+ * Get launch intent for opening a specific country's details screen
+ * @param context Android context
+ * @param countryCode Three-letter ISO country code
+ */
+private fun getCountryDetailsIntent(context: Context, countryCode: String): Intent {
+    return Intent().apply {
+        setClassName(
+            context.packageName,
+            "${context.packageName}.ui.MainActivity"
+        )
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        putExtra("extra_country_code", countryCode)
+    }
 }

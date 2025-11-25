@@ -43,16 +43,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
-import com.vamsi.worldcountriesinformation.core.common.mvi.collectAsEffect
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.feature.countrydetails.component.CountryDetailsShimmer
+import kotlinx.coroutines.flow.collectLatest
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -74,22 +74,24 @@ fun CountryDetailsRoute(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     // Handle effects
-    viewModel.effect.collectAsEffect { effect ->
-        when (effect) {
-            is CountryDetailsContract.Effect.NavigateBack -> {
-                onNavigateBack()
-            }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is CountryDetailsContract.Effect.NavigateBack -> {
+                    onNavigateBack()
+                }
 
-            is CountryDetailsContract.Effect.ShowToast -> {
-                SnapNotify.show(effect.message)
-            }
+                is CountryDetailsContract.Effect.ShowToast -> {
+                    SnapNotify.show(effect.message)
+                }
 
-            is CountryDetailsContract.Effect.ShowError -> {
-                SnapNotify.showError(effect.message)
-            }
+                is CountryDetailsContract.Effect.ShowError -> {
+                    SnapNotify.showError(effect.message)
+                }
 
-            is CountryDetailsContract.Effect.ShowSuccess -> {
-                SnapNotify.showSuccess(effect.message)
+                is CountryDetailsContract.Effect.ShowSuccess -> {
+                    SnapNotify.showSuccess(effect.message)
+                }
             }
         }
     }
