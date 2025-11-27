@@ -40,10 +40,13 @@ class CountryDetailsViewModel @Inject constructor(
 
     /**
      * Loads country details for the specified country code with configurable cache policy.
+     *
+     * Uses NETWORK_FIRST by default to ensure we get complete data including calling code (idd),
+     * which is not included in the country list API response due to API limitations.
      */
     private fun loadCountryDetails(
         countryCode: String,
-        policy: CachePolicy = CachePolicy.CACHE_FIRST,
+        policy: CachePolicy = CachePolicy.NETWORK_FIRST,
     ) {
         viewModelScope.launch {
             Timber.d("Loading country details for: $countryCode with policy: $policy")
@@ -132,7 +135,7 @@ class CountryDetailsViewModel @Inject constructor(
      */
     private fun retry(countryCode: String) {
         Timber.d("Retry requested for country: $countryCode")
-        loadCountryDetails(countryCode, CachePolicy.CACHE_FIRST)
+        loadCountryDetails(countryCode, CachePolicy.NETWORK_FIRST)
     }
 
     /**
