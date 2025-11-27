@@ -73,10 +73,31 @@ fun CountriesV3ResponseItem.toCountry(): Country {
 
 /**
  * Build calling code from IDD root and suffixes
- * Example: root = "+9", suffixes = ["1", "2"] -> "+91" (first suffix is used)
+ *
+ * Logic:
+ * 1. If no suffixes or empty suffix exists, use root only (e.g., Canada: +1)
+ * 2. For short suffixes (1-2 chars), append to root (e.g., India: +91, UK: +44)
+ * 3. For long suffixes only (3+ chars, typically area codes), use root only (e.g., USA: +1)
+ * 4. When multiple suffixes exist, prefer the shortest one (e.g., Vatican: +379 not +3906698)
+ *
+ * Examples:
+ * - root = "+9", suffixes = ["1"] -> "+91" (India)
+ * - root = "+3", suffixes = ["906698", "79"] -> "+379" (Vatican - shortest suffix)
+ * - root = "+1", suffixes = ["201", "202", ...] -> "+1" (USA - all are area codes)
+ * - root = "+1", suffixes = [""] -> "+1" (Canada - empty suffix)
  */
 private fun buildCallingCode(root: String?, suffixes: List<String>?): String {
     if (root == null) return EMPTY
-    val suffix = suffixes?.firstOrNull() ?: return root
-    return "$root$suffix"
+    if (suffixes.isNullOrEmpty()) return root
+
+    // Find the shortest suffix
+    val shortestSuffix = suffixes.minByOrNull { it.length } ?: return root
+
+    // If empty suffix or suffix is 3+ digits (area codes), just use root
+    // Area codes are typically 3 digits and shouldn't be part of the country calling code
+    if (shortestSuffix.isEmpty() || shortestSuffix.length >= 3) {
+        return root
+    }
+
+    return "$root$shortestSuffix"
 }
