@@ -2,7 +2,7 @@
 # Gradle and Android
 agp = "8.13.1"
 kotlin = "2.2.21"
-ksp = "2.2.20-2.0.3"
+ksp = "2.3.3"
 compileSdk = "36"
 minSdk = "24"
 targetSdk = "36"
@@ -10,11 +10,11 @@ snapnotify = "1.0.5"
 
 # AndroidX Core
 coreKtx = "1.17.0"
-lifecycleRuntimeKtx = "2.9.4"
-activityKtx = "1.11.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityKtx = "1.12.0"
 fragmentKtx = "1.8.9"
 appcompat = "1.7.1"
-splashScreen = "1.0.1"
+splashScreen = "1.2.0"
 profileinstaller = "1.4.1"
 
 # UI Components
@@ -27,15 +27,15 @@ lottie = "6.6.10"
 pageIndicator = "1.3.0"
 
 # Compose
-composeBom = "2025.01.00"
-activityCompose = "1.9.3"
-lifecycleRuntimeCompose = "2.9.4"
+composeBom = "2025.11.01"
+activityCompose = "1.12.0"
+lifecycleRuntimeCompose = "2.10.0"
 glance = "1.1.1"
 glanceAppwidget = "1.1.1"
 
 # Architecture Components
-lifecycleViewmodelKtx = "2.9.4"
-navigationVersion = "2.9.5"
+lifecycleViewmodelKtx = "2.10.0"
+navigationVersion = "2.9.6"
 hiltNavigationCompose = "1.3.0"
 
 # Dependency Injection
@@ -43,7 +43,7 @@ hilt = "2.57.2"
 javax-inject = "1"
 
 # Database
-room = "2.8.2"
+room = "2.8.4"
 
 # Networking
 retrofit = "3.0.0"
@@ -59,10 +59,10 @@ coroutines = "1.10.2"
 
 # JSON & Serialization
 gson = "2.13.2"
-kotlinx-serialization = "1.8.0"
+kotlinx-serialization = "1.9.0"
 
 # DataStore
-datastore = "1.1.2"
+datastore = "1.2.0"
 
 # Logging
 timber = "5.0.1"
