@@ -11,13 +11,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
-import com.vamsi.worldcountriesinformation.core.navigation.Screen
+import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
+import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
+import com.vamsi.worldcountriesinformation.core.navigation.Navigator
+import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
 import com.vamsi.worldcountriesinformation.ui.compose.navigation.WorldCountriesNavigation
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -52,17 +54,22 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        val navController = rememberNavController()
+                        // Create navigation state and navigator
+                        val navigationState = rememberNavigationState(startRoute = CountriesRoute)
+                        val navigator = remember { Navigator(navigationState) }
 
                         // Handle deep link navigation from widget
                         // Observes currentIntent to re-trigger on new intents
                         LaunchedEffect(currentIntent) {
                             currentIntent?.let { intent ->
-                                handleDeepLink(intent, navController)
+                                handleDeepLink(intent, navigator)
                             }
                         }
 
-                        WorldCountriesNavigation(navController = navController)
+                        WorldCountriesNavigation(
+                            navigationState = navigationState,
+                            navigator = navigator
+                        )
                     }
                 }
             }
@@ -79,13 +86,13 @@ class MainActivity : ComponentActivity() {
     /**
      * Handles deep link navigation from widgets and other sources
      */
-    private fun handleDeepLink(intent: Intent, navController: NavHostController) {
+    private fun handleDeepLink(intent: Intent, navigator: Navigator) {
         val countryCode = intent.getStringExtra(EXTRA_COUNTRY_CODE)
         if (countryCode != null) {
             Timber.d("Deep link: Navigating to country details for code: $countryCode")
             try {
-                val route = Screen.CountryDetails.createRoute(countryCode)
-                navController.navigate(route)
+                // Navigate to country details, clearing any intermediate screens
+                navigator.navigateAndClear(CountryDetailsRoute(countryCode))
             } catch (e: Exception) {
                 Timber.e(e, "Failed to navigate to country details")
             }

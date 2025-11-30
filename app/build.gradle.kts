@@ -58,7 +58,6 @@ dependencies {
     // AndroidX Core (for MainActivity)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.navigation.compose)
 
     // Splash Screen
     implementation(libs.androidx.core.splashscreen)

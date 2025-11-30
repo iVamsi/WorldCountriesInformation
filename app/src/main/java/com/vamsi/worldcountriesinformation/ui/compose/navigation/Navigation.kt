@@ -1,28 +1,33 @@
 package com.vamsi.worldcountriesinformation.ui.compose.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import com.vamsi.worldcountriesinformation.core.navigation.Screen
+import androidx.compose.runtime.remember
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
+import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
+import com.vamsi.worldcountriesinformation.core.navigation.NavigationState
+import com.vamsi.worldcountriesinformation.core.navigation.Navigator
+import com.vamsi.worldcountriesinformation.core.navigation.SettingsRoute
+import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
+import com.vamsi.worldcountriesinformation.core.navigation.toEntries
 import com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen
-import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
+import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute as CountryDetailsScreen
 
 /**
- * Main navigation configuration for the World Countries application.
+ * Main navigation configuration for the World Countries application using Navigation 3.
  *
- * This composable sets up the navigation graph using Jetpack Compose Navigation.
+ * This composable sets up the navigation graph using Jetpack Navigation 3.
  * It serves as the single source of navigation logic in the app, connecting
  * feature modules while keeping them independent of each other.
  *
- * **Architecture:**
- * - Uses [Screen] from `:core:navigation` as single source of truth for routes
- * - Features remain decoupled - they only know about their own screens
- * - App module is the only place where navigation graph is composed
- * - Follows single responsibility principle
+ * **Navigation 3 Architecture:**
+ * - Uses [NavigationState] to hold the back stack
+ * - Uses [Navigator] to handle navigation events
+ * - Uses [NavDisplay] to display the current destination
+ * - Uses [entryProvider] DSL to define destinations
  *
  * **Navigation Flow:**
  * ```
@@ -33,89 +38,71 @@ import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
  * Countries List Screen
  * ```
  *
- * **Deep Link Support:**
- * Routes defined in [Screen] can be used for deep linking:
- * - `countries` → Countries list
- * - `country_details/{countryCode}` → Specific country details
- *
  * **Type Safety:**
- * - Uses sealed class [Screen] for compile-time route safety
- * - Navigation arguments are type-safe through NavType
+ * - Uses sealed data classes implementing NavKey for compile-time route safety
+ * - Navigation arguments are type-safe through data class properties
  * - No string-based route errors
  *
- * @param navController The navigation controller for managing app navigation
+ * @param navigationState The navigation state holder (optional, created internally if not provided)
+ * @param navigator The navigator for handling navigation events (optional, created internally if not provided)
  *
- * @see Screen for route definitions
- * @see CountriesMviScreen for the countries list screen (MVI pattern)
- * @see CountryDetailsRoute for the country details screen
+ * @see NavigationState for state management
+ * @see Navigator for navigation events
+ * @see CountriesRoute for the countries list screen route
+ * @see CountryDetailsRoute for the country details screen route
  *
- * @since 1.0.0
+ * @since 2.0.0
  *
  * Example usage:
  * ```kotlin
  * @Composable
  * fun MyApp() {
- *     val navController = rememberNavController()
- *     WorldCountriesNavigation(navController = navController)
+ *     WorldCountriesNavigation()
  * }
  * ```
  */
 @Composable
 fun WorldCountriesNavigation(
-    navController: NavHostController
+    navigationState: NavigationState = rememberNavigationState(startRoute = CountriesRoute),
+    navigator: Navigator = remember { Navigator(navigationState) }
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Countries.route
-    ) {
+    // Define the entry provider that maps routes to content
+    val entryProvider = entryProvider<NavKey> {
         // Countries List Screen
-        composable(Screen.Countries.route) {
+        entry<CountriesRoute> {
             CountriesScreen(
                 onNavigateToDetails = { countryCode ->
-                    // Navigate to country details using type-safe route creation
-                    navController.navigate(
-                        Screen.CountryDetails.createRoute(countryCode)
-                    )
+                    navigator.navigate(CountryDetailsRoute(countryCode))
                 },
                 onNavigateToSettings = {
-                    // Navigate to settings screen
-                    navController.navigate(Screen.Settings.route)
+                    navigator.navigate(SettingsRoute)
                 }
             )
         }
 
         // Settings Screen
-        composable(Screen.Settings.route) {
+        entry<SettingsRoute> {
             SettingsScreen(
                 onNavigateBack = {
-                    // Pop back stack to return to countries list
-                    navController.popBackStack()
+                    navigator.goBack()
                 }
             )
         }
 
         // Country Details Screen
-        composable(
-            route = Screen.CountryDetails.route,
-            arguments = listOf(
-                navArgument(Screen.CountryDetails.ARG_COUNTRY_CODE) {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            )
-        ) { backStackEntry ->
-            // Extract country code from navigation arguments
-            val countryCode = backStackEntry.arguments?.getString(
-                Screen.CountryDetails.ARG_COUNTRY_CODE
-            ) ?: ""
-            
-            CountryDetailsRoute(
-                countryCode = countryCode,
+        entry<CountryDetailsRoute> { key ->
+            CountryDetailsScreen(
+                countryCode = key.countryCode,
                 onNavigateBack = {
-                    // Pop back stack to return to countries list
-                    navController.popBackStack()
+                    navigator.goBack()
                 }
             )
         }
     }
+
+    // Display the navigation stack
+    NavDisplay(
+        entries = navigationState.toEntries(entryProvider),
+        onBack = { navigator.goBack() }
+    )
 }

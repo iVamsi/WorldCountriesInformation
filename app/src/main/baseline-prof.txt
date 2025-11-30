@@ -25,7 +25,11 @@ HSPLcom/vamsi/worldcountriesinformation/feature/settings/SettingsViewModel;-><in
 
 # Navigation
 Lcom/vamsi/worldcountriesinformation/ui/compose/navigation/WorldCountriesNavigation;
-HSPLcom/vamsi/worldcountriesinformation/ui/compose/navigation/WorldCountriesNavigation;->WorldCountriesNavigation(Landroidx/navigation/NavHostController;Landroidx/compose/runtime/Composer;I)V
+HSPLcom/vamsi/worldcountriesinformation/ui/compose/navigation/WorldCountriesNavigation;->WorldCountriesNavigation(Lcom/vamsi/worldcountriesinformation/core/navigation/NavigationState;Lcom/vamsi/worldcountriesinformation/core/navigation/Navigator;Landroidx/compose/runtime/Composer;II)V
+
+# Navigation State
+Lcom/vamsi/worldcountriesinformation/core/navigation/NavigationState;
+Lcom/vamsi/worldcountriesinformation/core/navigation/Navigator;
 
 # Design system theme
 Lcom/vamsi/worldcountriesinformation/core/designsystem/WorldCountriesTheme;
