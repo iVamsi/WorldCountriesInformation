@@ -5,6 +5,9 @@ import android.os.StrictMode
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
+/**
+ * Application class for World Countries Information app.
+ */
 @HiltAndroidApp
 class WorldCountriesApplication : Application() {
 

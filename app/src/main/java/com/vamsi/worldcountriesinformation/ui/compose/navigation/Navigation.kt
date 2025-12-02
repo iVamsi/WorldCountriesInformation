@@ -2,7 +2,6 @@ package com.vamsi.worldcountriesinformation.ui.compose.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
@@ -67,7 +66,7 @@ fun WorldCountriesNavigation(
     navigator: Navigator = remember { Navigator(navigationState) }
 ) {
     // Define the entry provider that maps routes to content
-    val entryProvider = entryProvider<NavKey> {
+    val entryProvider = entryProvider {
         // Countries List Screen
         entry<CountriesRoute> {
             CountriesScreen(

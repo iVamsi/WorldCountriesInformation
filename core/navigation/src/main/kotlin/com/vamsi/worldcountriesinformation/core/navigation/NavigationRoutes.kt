@@ -91,37 +91,3 @@ data object SettingsRoute : NavKey
  */
 @Serializable
 data class CountryDetailsRoute(val countryCode: String) : NavKey
-
-/**
- * Legacy Screen sealed class - DEPRECATED
- *
- * This class is kept for backward compatibility during migration.
- * Use the new route objects (CountriesRoute, SettingsRoute, CountryDetailsRoute) instead.
- *
- * @deprecated Use Navigation 3 route objects instead
- */
-@Deprecated("Use Navigation 3 route objects (CountriesRoute, SettingsRoute, CountryDetailsRoute)")
-sealed class Screen(val route: String) {
-
-    @Deprecated("Use CountriesRoute instead")
-    data object Countries : Screen("countries")
-
-    @Deprecated("Use SettingsRoute instead")
-    data object Settings : Screen("settings")
-
-    @Deprecated("Use CountryDetailsRoute instead")
-    data object CountryDetails : Screen("country_details/{countryCode}") {
-        const val ARG_COUNTRY_CODE = "countryCode"
-        fun createRoute(countryCode: String): String = "country_details/$countryCode"
-    }
-}
-
-/**
- * Object containing constants for navigation argument keys.
- *
- * @deprecated With Navigation 3, arguments are now properties on route data classes
- */
-@Deprecated("Arguments are now properties on route data classes in Navigation 3")
-object NavigationArgs {
-    const val COUNTRY_CODE = "countryCode"
-}
