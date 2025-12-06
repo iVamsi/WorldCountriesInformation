@@ -76,6 +76,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Handles new intents for deep link navigation
+     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
