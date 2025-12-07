@@ -92,9 +92,6 @@ rules = "1.7.0"
 # Android Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
-androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentKtx" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 
@@ -126,12 +123,6 @@ androidx-glance-material3 = { group = "androidx.glance", name = "glance-material
 
 # UI Components
 material-components = { group = "com.google.android.material", name = "material", version.ref = "material" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintLayout" }
-androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
-androidx-drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout", version.ref = "drawerLayout" }
-flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
-lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
-ink-page-indicator = { group = "com.pacioianu.david", name = "ink-page-indicator", version.ref = "pageIndicator" }
 
 # Architecture Components
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
@@ -170,7 +161,6 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 
 # JSON & Serialization
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 # Preferences
@@ -186,9 +176,6 @@ snapnotify = { group = "io.github.ivamsi", name = "snapnotify", version.ref = "s
 
 # Testing Libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
-mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
-mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref = "mockito" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 hamcrest = { group = "org.hamcrest", name = "hamcrest", version.ref = "hamcrest" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
