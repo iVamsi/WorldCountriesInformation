@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
@@ -46,6 +47,7 @@ class SearchPreferencesDataSource @Inject constructor(
 ) {
     companion object {
         private const val MAX_HISTORY_SIZE = 10
+        private const val MAX_RECENTLY_VIEWED_SIZE = 20
     }
 
     /**
@@ -56,6 +58,7 @@ class SearchPreferencesDataSource @Inject constructor(
         val SELECTED_SUBREGIONS = stringPreferencesKey("selected_subregions")
         val SORT_ORDER = stringPreferencesKey("sort_order")
         val SEARCH_HISTORY = stringPreferencesKey("search_history")
+        val RECENTLY_VIEWED = stringPreferencesKey("recently_viewed")
         val ENABLE_SUGGESTIONS = booleanPreferencesKey("enable_suggestions")
     }
 
@@ -144,6 +147,50 @@ class SearchPreferencesDataSource @Inject constructor(
     }
 
     /**
+     * Adds a country code to recently viewed list.
+     *
+     * Maintains a maximum of 20 recent countries.
+     */
+    suspend fun addToRecentlyViewedCountry(countryCode: String) {
+        val normalizedCode = countryCode.trim().uppercase()
+        if (normalizedCode.isBlank()) return
+
+        context.searchDataStore.edit { preferences ->
+            val currentRecent = getRecentlyViewedFromPreferences(preferences)
+            val updatedRecent = addToRecentlyViewedInternal(normalizedCode, currentRecent)
+            val dtos = updatedRecent.map { it.toDto() }
+            preferences[Keys.RECENTLY_VIEWED] = json.encodeToString(dtos)
+        }
+    }
+
+    /**
+     * Removes a country from recently viewed list.
+     */
+    suspend fun removeFromRecentlyViewedCountry(countryCode: String) {
+        val normalizedCode = countryCode.trim().uppercase()
+        if (normalizedCode.isBlank()) return
+
+        context.searchDataStore.edit { preferences ->
+            val currentRecent = getRecentlyViewedFromPreferences(preferences)
+            val updatedRecent = currentRecent.filterNot {
+                it.countryCode.equals(normalizedCode, ignoreCase = true)
+            }
+            val dtos = updatedRecent.map { it.toDto() }
+            preferences[Keys.RECENTLY_VIEWED] = json.encodeToString(dtos)
+        }
+    }
+
+    /**
+     * Clears all recently viewed countries.
+     */
+    suspend fun clearRecentlyViewed() {
+        context.searchDataStore.edit { preferences ->
+            preferences[Keys.RECENTLY_VIEWED] =
+                json.encodeToString(emptyList<RecentlyViewedEntryDto>())
+        }
+    }
+
+    /**
      * Removes a single search history entry that matches the provided query.
      */
     suspend fun removeFromSearchHistory(query: String) {
@@ -180,11 +227,26 @@ class SearchPreferencesDataSource @Inject constructor(
     }
 
     /**
+     * Internal method to add country to recently viewed list with business logic.
+     */
+    private fun addToRecentlyViewedInternal(
+        countryCode: String,
+        currentRecent: List<RecentlyViewedEntry>,
+    ): List<RecentlyViewedEntry> {
+        val filtered = currentRecent.filterNot {
+            it.countryCode.equals(countryCode, ignoreCase = true)
+        }
+        val newRecent = listOf(RecentlyViewedEntry(countryCode)) + filtered
+        return newRecent.take(MAX_RECENTLY_VIEWED_SIZE)
+    }
+
+    /**
      * Clears all search history.
      */
     suspend fun clearSearchHistory() {
         context.searchDataStore.edit { preferences ->
-            preferences[Keys.SEARCH_HISTORY] = json.encodeToString(emptyList<SearchHistoryEntryDto>())
+            preferences[Keys.SEARCH_HISTORY] =
+                json.encodeToString(emptyList<SearchHistoryEntryDto>())
         }
     }
 
@@ -241,6 +303,9 @@ class SearchPreferencesDataSource @Inject constructor(
         // Parse search history
         val searchHistory = getSearchHistoryFromPreferences(preferences)
 
+        // Parse recently viewed
+        val recentlyViewed = getRecentlyViewedFromPreferences(preferences)
+
         // Parse suggestions enabled
         val enableSuggestions = preferences[Keys.ENABLE_SUGGESTIONS] ?: true
 
@@ -251,7 +316,8 @@ class SearchPreferencesDataSource @Inject constructor(
                 sortOrder = sortOrder
             ),
             searchHistory = searchHistory,
-            enableSuggestions = enableSuggestions
+            enableSuggestions = enableSuggestions,
+            recentlyViewed = recentlyViewed
         )
     }
 
@@ -264,6 +330,23 @@ class SearchPreferencesDataSource @Inject constructor(
             try {
                 // Decode DTOs and convert to domain models
                 val dtos = json.decodeFromString<List<SearchHistoryEntryDto>>(historyJson)
+                dtos.map { it.toDomain() }
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    /**
+     * Extracts recently viewed countries from preferences.
+     */
+    private fun getRecentlyViewedFromPreferences(preferences: Preferences): List<RecentlyViewedEntry> {
+        val recentJson = preferences[Keys.RECENTLY_VIEWED] ?: ""
+        return if (recentJson.isNotBlank()) {
+            try {
+                val dtos = json.decodeFromString<List<RecentlyViewedEntryDto>>(recentJson)
                 dtos.map { it.toDomain() }
             } catch (e: Exception) {
                 emptyList()

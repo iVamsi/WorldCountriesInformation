@@ -234,6 +234,21 @@ private fun CountriesScreenContent(
                                     .padding(horizontal = 16.dp)
                             )
                         } else {
+                            if (
+                                state.recentlyViewedCountries.isNotEmpty() &&
+                                state.searchQuery.isBlank() &&
+                                !state.isSearchFocused
+                            ) {
+                                RecentlyViewedSection(
+                                    countries = state.recentlyViewedCountries,
+                                    onCountryClick = { country ->
+                                        onIntent(
+                                            CountriesContract.Intent.CountryClicked(country.threeLetterCode)
+                                        )
+                                    }
+                                )
+                            }
+
                             // Region filters
                             if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
                                 RegionFilters(
@@ -480,6 +495,85 @@ private fun SortOrder.humanReadableLabel(): String = when (this) {
     SortOrder.POPULATION_DESC -> "Population · High to Low"
     SortOrder.AREA_ASC -> "Area · Small to Large"
     SortOrder.AREA_DESC -> "Area · Large to Small"
+}
+
+@Composable
+private fun RecentlyViewedSection(
+    countries: List<Country>,
+    onCountryClick: (Country) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = "Recently viewed",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(countries, key = { it.threeLetterCode }) { country ->
+                RecentlyViewedCard(
+                    country = country,
+                    onClick = { onCountryClick(country) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentlyViewedCard(
+    country: Country,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val flagResourceName = "${country.twoLetterCode.lowercase()}_flag"
+    val flagResourceId = context.resources.getIdentifier(
+        flagResourceName,
+        "drawable",
+        context.packageName
+    )
+
+    Card(
+        modifier = modifier
+            .size(width = 140.dp, height = 110.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (flagResourceId != 0) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(flagResourceId)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "${country.name} flag",
+                    modifier = Modifier
+                        .size(56.dp, 36.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier.size(56.dp, 36.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(country.twoLetterCode)
+                }
+            }
+
+            Text(
+                text = country.name,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2
+            )
+        }
+    }
 }
 
 @Composable

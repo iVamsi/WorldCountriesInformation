@@ -1,10 +1,10 @@
 package com.vamsi.worldcountriesinformation.core.database.converter
 
+import android.util.Log
 import androidx.room.TypeConverter
 import com.vamsi.worldcountriesinformation.core.database.entity.CurrencyEntity
 import com.vamsi.worldcountriesinformation.core.database.entity.LanguageEntity
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /**
@@ -34,7 +34,7 @@ import kotlinx.serialization.json.Json
  * - **Serialization**: O(n) where n = list size
  * - **Deserialization**: O(n) where n = list size
  * - **Memory**: Minimal - no reflection, direct code generation
- * - **Typical times**: 
+ * - **Typical times**:
  *   - Small lists (1-5 items): < 1ms
  *   - Medium lists (5-20 items): 1-3ms
  *   - Large lists (20+ items): 3-10ms
@@ -102,7 +102,7 @@ class Converters {
             // In production, this would log to Android's Log system
             // In tests, this is a no-op to avoid RuntimeException from Log class
             try {
-                println("$tag: $message${throwable?.let { " - ${it.message}" } ?: ""}")
+                Log.d(tag, "$message${throwable?.let { " - ${it.message}" } ?: ""}")
             } catch (e: Exception) {
                 // Silently ignore logging errors - we still want the fallback to work
             }

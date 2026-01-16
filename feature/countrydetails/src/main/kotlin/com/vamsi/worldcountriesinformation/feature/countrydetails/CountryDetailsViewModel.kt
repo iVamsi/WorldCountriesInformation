@@ -2,6 +2,7 @@ package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
@@ -23,6 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
+    private val searchPreferencesDataSource: SearchPreferencesDataSource,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
     initialState = CountryDetailsContract.State()
 ) {
@@ -80,6 +82,11 @@ class CountryDetailsViewModel @Inject constructor(
                                     country = country,
                                     lastUpdated = System.currentTimeMillis(),
                                     errorMessage = null
+                                )
+                            }
+                            viewModelScope.launch {
+                                searchPreferencesDataSource.addToRecentlyViewedCountry(
+                                    country.threeLetterCode
                                 )
                             }
                         }

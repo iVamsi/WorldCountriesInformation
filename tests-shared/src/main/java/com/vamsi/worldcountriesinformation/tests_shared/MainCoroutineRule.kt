@@ -44,7 +44,7 @@ class MainCoroutineRule(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-fun MainCoroutineRule.runBlockingTest(block: suspend () -> Unit) =
+fun runBlockingTest(block: suspend () -> Unit) =
     runTest {
         block()
     }

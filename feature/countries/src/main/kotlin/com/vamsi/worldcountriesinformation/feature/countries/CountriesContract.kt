@@ -4,6 +4,7 @@ import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 
@@ -127,6 +128,10 @@ object CountriesContract {
         val isSearchActive: Boolean = false,
         val isSearchFocused: Boolean = false,
         val searchHistory: List<SearchHistoryEntry> = emptyList(),
+
+        // Recently viewed
+        val recentlyViewedEntries: List<RecentlyViewedEntry> = emptyList(),
+        val recentlyViewedCountries: List<Country> = emptyList(),
 
         // Filters
         val selectedRegions: Set<String> = emptySet(),

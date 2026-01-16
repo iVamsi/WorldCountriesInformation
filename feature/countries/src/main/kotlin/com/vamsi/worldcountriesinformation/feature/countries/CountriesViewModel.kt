@@ -14,6 +14,7 @@ import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -84,11 +85,17 @@ class CountriesViewModel @Inject constructor(
         viewModelScope.launch {
             searchPreferencesFlow.collect { prefs ->
                 setState {
+                    val recentCountries = mapRecentlyViewedCountries(
+                        entries = prefs.recentlyViewed,
+                        countries = countries
+                    )
                     copy(
                         selectedRegions = prefs.filters.selectedRegions,
                         sortOrder = prefs.filters.sortOrder,
                         filteredCountries = applyFiltersAndSort(countries, prefs.filters),
-                        searchHistory = prefs.searchHistory
+                        searchHistory = prefs.searchHistory,
+                        recentlyViewedEntries = prefs.recentlyViewed,
+                        recentlyViewedCountries = recentCountries
                     )
                 }
             }
@@ -146,12 +153,17 @@ class CountriesViewModel @Inject constructor(
                         .onSuccess { countries ->
                             Timber.d("Countries loaded: ${countries.size} countries")
                             val currentFilters = searchPreferencesFlow.value.filters
+                            val recentlyViewed = searchPreferencesFlow.value.recentlyViewed
                             setState {
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
                                     countries = countries,
                                     filteredCountries = applyFiltersAndSort(countries, currentFilters),
+                                    recentlyViewedCountries = mapRecentlyViewedCountries(
+                                        entries = recentlyViewed,
+                                        countries = countries
+                                    ),
                                     lastUpdated = System.currentTimeMillis(),
                                     errorMessage = null
                                 )
@@ -355,6 +367,10 @@ class CountriesViewModel @Inject constructor(
             }
         }
 
+        viewModelScope.launch {
+            searchPreferencesDataSource.addToRecentlyViewedCountry(countryCode)
+        }
+
         setEffect { CountriesContract.Effect.NavigateToDetails(countryCode) }
     }
 
@@ -402,6 +418,17 @@ class CountriesViewModel @Inject constructor(
      */
     private fun applyFiltersAndSort(countries: List<Country>, filters: SearchFilters): List<Country> {
         return filteredSearchUseCase.applyFiltersAndSort(countries, filters)
+    }
+
+    private fun mapRecentlyViewedCountries(
+        entries: List<RecentlyViewedEntry>,
+        countries: List<Country>,
+    ): List<Country> {
+        if (entries.isEmpty() || countries.isEmpty()) return emptyList()
+        val countryMap = countries.associateBy { it.threeLetterCode.uppercase() }
+        return entries.mapNotNull { entry ->
+            countryMap[entry.countryCode.uppercase()]
+        }
     }
 
     /**

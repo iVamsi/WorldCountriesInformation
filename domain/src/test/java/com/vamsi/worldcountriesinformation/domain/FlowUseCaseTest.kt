@@ -22,7 +22,7 @@ class FlowUseCaseTest {
     private val testDispatcher = coroutineRule.testDispatcher
 
     @Test
-    fun `exception emits ApiResponse#Error`() = coroutineRule.runBlockingTest {
+    fun `exception emits ApiResponse#Error`() = runBlockingTest {
         val useCase = ExceptionUseCase(testDispatcher)
         val result = useCase(Unit).first()
         MatcherAssert.assertThat(result, CoreMatchers.instanceOf(ApiResponse.Error::class.java))
