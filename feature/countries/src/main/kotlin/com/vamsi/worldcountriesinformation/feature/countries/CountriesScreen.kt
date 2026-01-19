@@ -67,6 +67,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -88,6 +89,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 /**
  * Countries list UI that wires search, filtering, favorites, and navigation hooks.
@@ -283,21 +285,31 @@ private fun CountriesScreenContent(
                                 }
 
                                 else -> {
-                                    CountriesList(
-                                        countries = state.filteredCountries,
-                                        favoriteCountryCodes = state.favoriteCountryCodes,
-                                        onCountryClick = { country ->
-                                            onIntent(
-                                                CountriesContract.Intent.CountryClicked(country.threeLetterCode)
-                                            )
-                                        },
-                                        onFavoriteClick = { country ->
-                                            onIntent(
-                                                CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
-                                            )
-                                        },
-                                        listState = listState
-                                    )
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        CountriesList(
+                                            countries = state.filteredCountries,
+                                            favoriteCountryCodes = state.favoriteCountryCodes,
+                                            onCountryClick = { country ->
+                                                onIntent(
+                                                    CountriesContract.Intent.CountryClicked(country.threeLetterCode)
+                                                )
+                                            },
+                                            onFavoriteClick = { country ->
+                                                onIntent(
+                                                    CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
+                                                )
+                                            },
+                                            listState = listState,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                        AlphabetJumpIndex(
+                                            countries = state.filteredCountries,
+                                            listState = listState,
+                                            modifier = Modifier
+                                                .align(Alignment.CenterEnd)
+                                                .padding(end = 8.dp)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -574,6 +586,56 @@ private fun RecentlyViewedCard(
             )
         }
     }
+}
+
+@Composable
+private fun AlphabetJumpIndex(
+    countries: List<Country>,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+) {
+    if (countries.size < 15) return
+
+    val indexMap = remember(countries) { buildAlphabetIndexMap(countries) }
+    if (indexMap.isEmpty()) return
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        indexMap.keys.forEach { letter ->
+            Text(
+                text = letter,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable {
+                        val targetIndex = indexMap[letter] ?: return@clickable
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(targetIndex)
+                        }
+                    }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+        }
+    }
+}
+
+private fun buildAlphabetIndexMap(countries: List<Country>): Map<String, Int> {
+    val letterToIndex = LinkedHashMap<String, Int>()
+    countries.forEachIndexed { index, country ->
+        val letter = country.name.trim().firstOrNull()?.uppercaseChar()
+        if (letter != null && letter.isLetter()) {
+            val key = letter.toString()
+            if (!letterToIndex.containsKey(key)) {
+                letterToIndex[key] = index
+            }
+        }
+    }
+    return letterToIndex
 }
 
 @Composable
