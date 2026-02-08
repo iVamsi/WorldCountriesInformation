@@ -46,6 +46,21 @@ object CountryDetailsContract {
          * Error message was shown (acknowledged).
          */
         data object ErrorShown : Intent
+
+        /**
+         * User clicked share button to share country information.
+         */
+        data object ShareCountry : Intent
+
+        /**
+         * User clicked "Open in Maps" to view the country location externally.
+         */
+        data object OpenInMaps : Intent
+
+        /**
+         * User clicked on a nearby country to navigate to its details.
+         */
+        data class NearbyCountryClicked(val countryCode: String) : Intent
     }
 
     /**
@@ -60,6 +75,10 @@ object CountryDetailsContract {
 
         // Data
         val country: Country? = null,
+
+        // Nearby countries
+        val nearbyCountries: List<Country> = emptyList(),
+        val isLoadingNearby: Boolean = false,
 
         // Favorite state
         val isFavorite: Boolean = false,
@@ -115,5 +134,24 @@ object CountryDetailsContract {
          * Show success message.
          */
         data class ShowSuccess(val message: String) : Effect
+
+        /**
+         * Launch the Android share sheet with formatted country information.
+         */
+        data class ShareCountryCard(val shareText: String) : Effect
+
+        /**
+         * Launch an external maps application at the country's coordinates.
+         */
+        data class OpenInMaps(
+            val latitude: Double,
+            val longitude: Double,
+            val countryName: String,
+        ) : Effect
+
+        /**
+         * Navigate to another country's details screen.
+         */
+        data class NavigateToCountryDetails(val countryCode: String) : Effect
     }
 }

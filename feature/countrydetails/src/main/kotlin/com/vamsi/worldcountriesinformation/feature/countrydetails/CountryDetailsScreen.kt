@@ -1,5 +1,8 @@
 package com.vamsi.worldcountriesinformation.feature.countrydetails
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,18 +13,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +49,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -62,16 +73,18 @@ import org.osmdroid.views.overlay.Marker
 import java.util.Locale
 
 /**
- * Country details route with pull-to-refresh, cache age indicators, and
- * simple error handling hooks.
+ * Country details route with pull-to-refresh, cache age indicators, sharing,
+ * maps integration, nearby countries, and simple error handling hooks.
  */
 @Composable
 fun CountryDetailsRoute(
     countryCode: String,
     onNavigateBack: () -> Unit,
+    onNavigateToCountry: (String) -> Unit = {},
     viewModel: CountryDetailsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     // Handle effects
     LaunchedEffect(Unit) {
@@ -91,6 +104,49 @@ fun CountryDetailsRoute(
 
                 is CountryDetailsContract.Effect.ShowSuccess -> {
                     SnapNotify.showSuccess(effect.message)
+                }
+
+                is CountryDetailsContract.Effect.ShareCountryCard -> {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, effect.shareText)
+                        putExtra(Intent.EXTRA_SUBJECT, "Country Information")
+                    }
+                    context.startActivity(
+                        Intent.createChooser(shareIntent, "Share country info")
+                    )
+                }
+
+                is CountryDetailsContract.Effect.OpenInMaps -> {
+                    val geoUri = Uri.parse(
+                        "geo:${effect.latitude},${effect.longitude}?q=${effect.latitude},${effect.longitude}(${
+                            Uri.encode(
+                                effect.countryName
+                            )
+                        })"
+                    )
+                    val mapIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+                        setPackage("com.google.android.apps.maps")
+                    }
+                    // Fallback to any maps app if Google Maps is not installed
+                    if (mapIntent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(mapIntent)
+                    } else {
+                        val fallbackIntent = Intent(Intent.ACTION_VIEW, geoUri)
+                        if (fallbackIntent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(fallbackIntent)
+                        } else {
+                            // Ultimate fallback: open Google Maps in browser
+                            val browserUri = Uri.parse(
+                                "https://www.google.com/maps/search/?api=1&query=${effect.latitude},${effect.longitude}"
+                            )
+                            context.startActivity(Intent(Intent.ACTION_VIEW, browserUri))
+                        }
+                    }
+                }
+
+                is CountryDetailsContract.Effect.NavigateToCountryDetails -> {
+                    onNavigateToCountry(effect.countryCode)
                 }
             }
         }
@@ -136,10 +192,17 @@ private fun CountryDetailsScreenContent(
             CountryDetailsScreen(
                 country = state.country,
                 isFavorite = state.isFavorite,
+                nearbyCountries = state.nearbyCountries,
+                isLoadingNearby = state.isLoadingNearby,
                 onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) },
                 isRefreshing = state.isRefreshing,
                 onRefresh = { onIntent(CountryDetailsContract.Intent.RefreshCountry(countryCode)) },
                 onFavoriteClick = { onIntent(CountryDetailsContract.Intent.ToggleFavorite) },
+                onShareClick = { onIntent(CountryDetailsContract.Intent.ShareCountry) },
+                onOpenInMapsClick = { onIntent(CountryDetailsContract.Intent.OpenInMaps) },
+                onNearbyCountryClick = { code ->
+                    onIntent(CountryDetailsContract.Intent.NearbyCountryClicked(code))
+                },
                 cacheAge = cacheAge,
                 isCacheFresh = isCacheFresh,
                 modifier = modifier
@@ -162,10 +225,15 @@ private fun CountryDetailsScreenContent(
 private fun CountryDetailsScreen(
     country: Country,
     isFavorite: Boolean,
+    nearbyCountries: List<Country> = emptyList(),
+    isLoadingNearby: Boolean = false,
     onNavigateBack: () -> Unit,
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
     onFavoriteClick: () -> Unit = {},
+    onShareClick: () -> Unit = {},
+    onOpenInMapsClick: () -> Unit = {},
+    onNearbyCountryClick: (String) -> Unit = {},
     cacheAge: String = "Never",
     isCacheFresh: Boolean = false,
     modifier: Modifier = Modifier,
@@ -199,6 +267,14 @@ private fun CountryDetailsScreen(
                     }
                 },
                 actions = {
+                    // Share button
+                    IconButton(onClick = onShareClick) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = "Share country information",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
                     // Favorite button
                     IconButton(onClick = onFavoriteClick) {
                         Icon(
@@ -245,9 +321,16 @@ private fun CountryDetailsScreen(
                     CountryFlagCard(country = country)
                 }
 
-                // Map
+                // Map with "Open in Maps" button
                 item {
                     CountryMapCard(country = country)
+                }
+
+                // "Open in Maps" action button
+                if (country.latitude != 0.0 || country.longitude != 0.0) {
+                    item {
+                        OpenInMapsButton(onClick = onOpenInMapsClick)
+                    }
                 }
 
                 // Country Details
@@ -264,6 +347,16 @@ private fun CountryDetailsScreen(
                     CountryDetailItem(
                         label = detail.label,
                         value = detail.value
+                    )
+                }
+
+                // Nearby Countries section
+                item {
+                    NearbyCountriesSection(
+                        region = country.region,
+                        nearbyCountries = nearbyCountries,
+                        isLoading = isLoadingNearby,
+                        onCountryClick = onNearbyCountryClick
                     )
                 }
             }
@@ -380,6 +473,186 @@ private fun CountryMapCard(country: Country) {
                     text = "Location data not available",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/**
+ * "Open in Maps" button placed below the map card.
+ */
+@Composable
+private fun OpenInMapsButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Icon(
+            imageVector = Icons.Default.Map,
+            contentDescription = null,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Open in Maps")
+    }
+}
+
+/**
+ * Section showing nearby countries in the same region.
+ */
+@Composable
+private fun NearbyCountriesSection(
+    region: String,
+    nearbyCountries: List<Country>,
+    isLoading: Boolean,
+    onCountryClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Nearby Countries ($region)",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                }
+            }
+
+            nearbyCountries.isEmpty() -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No nearby countries found",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            else -> {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(end = 4.dp)
+                ) {
+                    items(
+                        items = nearbyCountries,
+                        key = { it.threeLetterCode }
+                    ) { country ->
+                        NearbyCountryCard(
+                            country = country,
+                            onClick = { onCountryClick(country.threeLetterCode) }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+/**
+ * Compact country card for the nearby countries horizontal list.
+ */
+@Composable
+private fun NearbyCountryCard(
+    country: Country,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    val flagResourceName = "${country.twoLetterCode.lowercase(Locale.US)}_flag"
+    val flagResourceId = context.resources.getIdentifier(
+        flagResourceName,
+        "drawable",
+        context.packageName
+    )
+
+    Card(
+        modifier = modifier
+            .width(120.dp)
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Flag
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                if (flagResourceId != 0) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(flagResourceId)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Flag of ${country.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = CountryDetailsViewModel.countryCodeToFlagEmoji(country.twoLetterCode),
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Country name
+            Text(
+                text = country.name,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Capital
+            if (country.capital.isNotEmpty()) {
+                Text(
+                    text = country.capital,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -520,13 +793,16 @@ private fun getSampleCountry() = Country(
 @Composable
 private fun CountryDetailsScreenPreview() {
     MaterialTheme {
-        // Preview version without map (to avoid osmdroid rendering issues)
         val country = getSampleCountry()
         CountryDetailsScreen(
             country = country,
             isFavorite = false,
+            nearbyCountries = getSampleNearbyCountries(),
             onNavigateBack = {},
-            onFavoriteClick = {}
+            onFavoriteClick = {},
+            onShareClick = {},
+            onOpenInMapsClick = {},
+            onNearbyCountryClick = {}
         )
     }
 }
@@ -539,8 +815,12 @@ private fun CountryDetailsScreenFavoritePreview() {
         CountryDetailsScreen(
             country = country,
             isFavorite = true,
+            nearbyCountries = getSampleNearbyCountries(),
             onNavigateBack = {},
-            onFavoriteClick = {}
+            onFavoriteClick = {},
+            onShareClick = {},
+            onOpenInMapsClick = {},
+            onNearbyCountryClick = {}
         )
     }
 }
@@ -564,6 +844,19 @@ private fun CountryDetailItemPreview() {
     }
 }
 
+@Preview(name = "Nearby Countries Section", showBackground = true)
+@Composable
+private fun NearbyCountriesSectionPreview() {
+    MaterialTheme {
+        NearbyCountriesSection(
+            region = "Americas",
+            nearbyCountries = getSampleNearbyCountries(),
+            isLoading = false,
+            onCountryClick = {}
+        )
+    }
+}
+
 @Preview(name = "Error Content", showBackground = true)
 @Composable
 private fun CountryDetailsErrorContentPreview() {
@@ -575,3 +868,45 @@ private fun CountryDetailsErrorContentPreview() {
         )
     }
 }
+
+private fun getSampleNearbyCountries() = listOf(
+    Country(
+        name = "Canada",
+        capital = "Ottawa",
+        region = "Americas",
+        population = 38005238,
+        twoLetterCode = "CA",
+        threeLetterCode = "CAN",
+        callingCode = "+1",
+        currencies = listOf(Currency(code = "CAD", name = "Canadian dollar", symbol = "$")),
+        languages = listOf(Language(name = "English"), Language(name = "French")),
+        latitude = 56.1304,
+        longitude = -106.3468
+    ),
+    Country(
+        name = "Mexico",
+        capital = "Mexico City",
+        region = "Americas",
+        population = 128932753,
+        twoLetterCode = "MX",
+        threeLetterCode = "MEX",
+        callingCode = "+52",
+        currencies = listOf(Currency(code = "MXN", name = "Mexican peso", symbol = "$")),
+        languages = listOf(Language(name = "Spanish")),
+        latitude = 23.6345,
+        longitude = -102.5528
+    ),
+    Country(
+        name = "Brazil",
+        capital = "Brasília",
+        region = "Americas",
+        population = 212559417,
+        twoLetterCode = "BR",
+        threeLetterCode = "BRA",
+        callingCode = "+55",
+        currencies = listOf(Currency(code = "BRL", name = "Brazilian real", symbol = "R$")),
+        languages = listOf(Language(name = "Portuguese")),
+        latitude = -14.235,
+        longitude = -51.9253
+    )
+)

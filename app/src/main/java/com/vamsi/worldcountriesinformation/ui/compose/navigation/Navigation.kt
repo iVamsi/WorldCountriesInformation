@@ -94,6 +94,9 @@ fun WorldCountriesNavigation(
                 countryCode = key.countryCode,
                 onNavigateBack = {
                     navigator.goBack()
+                },
+                onNavigateToCountry = { countryCode ->
+                    navigator.navigate(CountryDetailsRoute(countryCode))
                 }
             )
         }

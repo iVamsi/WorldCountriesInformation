@@ -9,21 +9,27 @@ import com.vamsi.worldcountriesinformation.domain.core.onLoading
 import com.vamsi.worldcountriesinformation.domain.core.onSuccess
 import com.vamsi.worldcountriesinformation.domain.countries.CountryByCodeParams
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseCase
+import com.vamsi.worldcountriesinformation.domain.countries.GetNearbyCountriesUseCase
+import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.text.NumberFormat
+import java.util.Locale
 import javax.inject.Inject
 
 /**
  * Central state holder for the country details experience.
  *
  * Reacts to user intents, coordinates domain use cases, and emits a single immutable state
- * stream for the UI. Supports cache policies, pull-to-refresh, and error handling.
+ * stream for the UI. Supports cache policies, pull-to-refresh, sharing, maps integration,
+ * nearby countries, and error handling.
  */
 @HiltViewModel
 class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
+    private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase,
     private val searchPreferencesDataSource: SearchPreferencesDataSource,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
     initialState = CountryDetailsContract.State()
@@ -37,6 +43,9 @@ class CountryDetailsViewModel @Inject constructor(
             is CountryDetailsContract.Intent.ToggleFavorite -> toggleFavorite()
             is CountryDetailsContract.Intent.NavigateBack -> navigateBack()
             is CountryDetailsContract.Intent.ErrorShown -> clearError()
+            is CountryDetailsContract.Intent.ShareCountry -> shareCountry()
+            is CountryDetailsContract.Intent.OpenInMaps -> openInMaps()
+            is CountryDetailsContract.Intent.NearbyCountryClicked -> navigateToCountry(intent.countryCode)
         }
     }
 
@@ -89,6 +98,8 @@ class CountryDetailsViewModel @Inject constructor(
                                     country.threeLetterCode
                                 )
                             }
+                            // Load nearby countries once we have the country data
+                            loadNearbyCountries(country.region, country.threeLetterCode)
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading country: $countryCode")
@@ -129,6 +140,30 @@ class CountryDetailsViewModel @Inject constructor(
     }
 
     /**
+     * Loads nearby countries in the same region, excluding the current country.
+     */
+    private fun loadNearbyCountries(region: String, currentCountryCode: String) {
+        viewModelScope.launch {
+            setState { copy(isLoadingNearby = true) }
+
+            getNearbyCountriesUseCase(region, currentCountryCode)
+                .catch { exception ->
+                    Timber.e(exception, "Error loading nearby countries for region: $region")
+                    setState { copy(isLoadingNearby = false) }
+                }
+                .collect { countries ->
+                    Timber.d("Loaded ${countries.size} nearby countries in $region")
+                    setState {
+                        copy(
+                            nearbyCountries = countries,
+                            isLoadingNearby = false
+                        )
+                    }
+                }
+        }
+    }
+
+    /**
      * Refreshes country details from network (pull-to-refresh).
      */
     private fun refresh(countryCode: String) {
@@ -152,6 +187,46 @@ class CountryDetailsViewModel @Inject constructor(
         setState { copy(isFavorite = !isFavorite) }
         val message = if (state.value.isFavorite) "Added to favorites" else "Removed from favorites"
         setEffect { CountryDetailsContract.Effect.ShowToast(message) }
+    }
+
+    /**
+     * Formats and shares country information via the Android share sheet.
+     */
+    private fun shareCountry() {
+        val country = state.value.country ?: return
+        Timber.d("Share requested for country: ${country.name}")
+
+        val shareText = formatShareText(country)
+        setEffect { CountryDetailsContract.Effect.ShareCountryCard(shareText) }
+    }
+
+    /**
+     * Opens the country's location in an external maps application.
+     */
+    private fun openInMaps() {
+        val country = state.value.country ?: return
+        Timber.d("Open in Maps requested for: ${country.name}")
+
+        if (country.latitude == 0.0 && country.longitude == 0.0) {
+            setEffect { CountryDetailsContract.Effect.ShowError("Location data not available for ${country.name}") }
+            return
+        }
+
+        setEffect {
+            CountryDetailsContract.Effect.OpenInMaps(
+                latitude = country.latitude,
+                longitude = country.longitude,
+                countryName = country.name
+            )
+        }
+    }
+
+    /**
+     * Navigates to another country's details screen.
+     */
+    private fun navigateToCountry(countryCode: String) {
+        Timber.d("Navigate to country: $countryCode")
+        setEffect { CountryDetailsContract.Effect.NavigateToCountryDetails(countryCode) }
     }
 
     /**
@@ -190,6 +265,59 @@ class CountryDetailsViewModel @Inject constructor(
             CachePolicy.isCacheFresh(timestamp)
         } else {
             false
+        }
+    }
+
+    companion object {
+
+        /**
+         * Converts a two-letter country code to a flag emoji.
+         *
+         * Uses Unicode Regional Indicator Symbols to render the flag.
+         * Example: "US" → "🇺🇸", "GB" → "🇬🇧"
+         */
+        internal fun countryCodeToFlagEmoji(code: String): String {
+            if (code.length != 2) return ""
+            val upperCode = code.uppercase(Locale.US)
+            val firstLetter = Character.codePointAt(upperCode, 0) - 0x41 + 0x1F1E6
+            val secondLetter = Character.codePointAt(upperCode, 1) - 0x41 + 0x1F1E6
+            return String(Character.toChars(firstLetter)) + String(Character.toChars(secondLetter))
+        }
+
+        /**
+         * Formats country data into a shareable text card.
+         */
+        internal fun formatShareText(country: Country): String {
+            val flag = countryCodeToFlagEmoji(country.twoLetterCode)
+            val populationFormatted = NumberFormat.getNumberInstance(Locale.US)
+                .format(country.population)
+            val languages = country.languages
+                .mapNotNull { it.name }
+                .joinToString(", ")
+                .ifEmpty { "N/A" }
+            val currencies = country.currencies
+                .mapNotNull { currency ->
+                    currency.name?.let { name ->
+                        if (currency.code != null) "$name (${currency.code})" else name
+                    }
+                }
+                .joinToString(", ")
+                .ifEmpty { "N/A" }
+
+            return buildString {
+                appendLine("$flag ${country.name}")
+                appendLine()
+                appendLine("Capital: ${country.capital.ifEmpty { "N/A" }}")
+                appendLine("Region: ${country.region}")
+                appendLine("Population: $populationFormatted")
+                appendLine("Languages: $languages")
+                appendLine("Currencies: $currencies")
+                if (country.callingCode.isNotEmpty()) {
+                    appendLine("Calling Code: ${country.callingCode}")
+                }
+                appendLine()
+                append("Shared via World Countries Info")
+            }
         }
     }
 }
