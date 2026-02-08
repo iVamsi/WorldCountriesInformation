@@ -41,11 +41,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.testing.TestTags
 import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
 import java.util.concurrent.TimeUnit
 
@@ -84,11 +86,15 @@ fun SettingsScreen(
     }
 
     Scaffold(
+        modifier = Modifier.testTag(TestTags.Settings.SCREEN),
         topBar = {
             TopAppBar(
                 title = { Text("Settings") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag(TestTags.Settings.BACK_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Navigate back"
@@ -301,7 +307,8 @@ private fun OfflineModeSwitch(
             }
             Switch(
                 checked = enabled,
-                onCheckedChange = onToggle
+                onCheckedChange = onToggle,
+                modifier = Modifier.testTag(TestTags.Settings.OFFLINE_MODE_SWITCH)
             )
         }
     }
@@ -360,7 +367,9 @@ private fun CacheStatisticsCard(
                 // Clear Cache Button
                 TextButton(
                     onClick = onClearCache,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(TestTags.Settings.CLEAR_CACHE_BUTTON)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -509,6 +518,7 @@ private fun ClearCacheDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.testTag(TestTags.Settings.CLEAR_CACHE_DIALOG),
         icon = {
             Icon(
                 imageVector = Icons.Default.Delete,
@@ -521,16 +531,22 @@ private fun ClearCacheDialog(
         text = {
             Text(
                 "This will delete all cached country data. " +
-                    "You'll need an internet connection to reload the data."
+                        "You'll need an internet connection to reload the data."
             )
         },
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(
+                onClick = onConfirm,
+                modifier = Modifier.testTag(TestTags.Settings.CLEAR_CACHE_CONFIRM)
+            ) {
                 Text("Clear")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.testTag(TestTags.Settings.CLEAR_CACHE_CANCEL)
+            ) {
                 Text("Cancel")
             }
         }

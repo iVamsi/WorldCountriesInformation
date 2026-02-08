@@ -41,9 +41,10 @@ dependencies {
     // Data module (provides repository implementation)
     implementation(project(":data:countries"))
 
-    // Core modules (for MainActivity)
+    // Core modules (for MainActivity and tests)
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
+    implementation(project(":core:common"))
 
     // Core infrastructure (needed for Hilt DI)
     implementation(project(":core:network"))
@@ -73,4 +74,16 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
+
+    // Compose UI Testing
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Coroutines testing for async operations
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+
+    // Test runner and rules
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
 }

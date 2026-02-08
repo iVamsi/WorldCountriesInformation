@@ -74,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -82,6 +83,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.testing.TestTags
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -155,18 +157,23 @@ private fun CountriesScreenContent(
     onIntent: (CountriesContract.Intent) -> Unit,
 ) {
     Scaffold(
+        modifier = Modifier.testTag(TestTags.Countries.SCREEN),
         topBar = {
             TopAppBar(
                 title = { Text("Countries") },
                 actions = {
                     if (state.hasActiveFilters) {
                         IconButton(
-                            onClick = { onIntent(CountriesContract.Intent.ClearFilters) }
+                            onClick = { onIntent(CountriesContract.Intent.ClearFilters) },
+                            modifier = Modifier.testTag(TestTags.Countries.CLEAR_FILTERS_BUTTON)
                         ) {
                             Icon(Icons.Default.FilterList, "Clear filters")
                         }
                     }
-                    IconButton(onClick = onNavigateToSettings) {
+                    IconButton(
+                        onClick = onNavigateToSettings,
+                        modifier = Modifier.testTag(TestTags.Countries.SETTINGS_BUTTON)
+                    ) {
                         Icon(Icons.Default.Settings, "Settings")
                     }
                 }
@@ -376,6 +383,7 @@ private fun SearchBar(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .weight(1f)
+                .testTag(TestTags.Countries.SEARCH_FIELD)
                 .onFocusChanged { focusState ->
                     if (isFocused != focusState.isFocused) {
                         isFocused = focusState.isFocused
@@ -648,7 +656,9 @@ private fun CountriesList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Countries.COUNTRIES_LIST),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         state = listState
@@ -658,7 +668,8 @@ private fun CountriesList(
                 country = country,
                 isFavorite = favoriteCountryCodes.contains(country.threeLetterCode),
                 onClick = { onCountryClick(country) },
-                onFavoriteClick = { onFavoriteClick(country) }
+                onFavoriteClick = { onFavoriteClick(country) },
+                modifier = Modifier.testTag(TestTags.Countries.countryCard(country.threeLetterCode))
             )
         }
     }
@@ -727,7 +738,10 @@ private fun CountryCard(
             }
 
             // Favorite button
-            IconButton(onClick = onFavoriteClick) {
+            IconButton(
+                onClick = onFavoriteClick,
+                modifier = Modifier.testTag(TestTags.Countries.favoriteButton(country.threeLetterCode))
+            ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
@@ -843,7 +857,9 @@ private fun SearchHistoryItemRow(
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Countries.LOADING_INDICATOR),
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator()
@@ -857,7 +873,9 @@ private fun ErrorContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Countries.ERROR_STATE),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -874,7 +892,10 @@ private fun ErrorContent(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry) {
+        Button(
+            onClick = onRetry,
+            modifier = Modifier.testTag(TestTags.Countries.ERROR_RETRY_BUTTON)
+        ) {
             Icon(Icons.Default.Refresh, null)
             Spacer(Modifier.width(8.dp))
             Text("Retry")
@@ -885,7 +906,9 @@ private fun ErrorContent(
 @Composable
 private fun EmptyState(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Countries.EMPTY_STATE),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -903,7 +926,9 @@ private fun EmptySearchResults(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag(TestTags.Countries.EMPTY_SEARCH_STATE),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

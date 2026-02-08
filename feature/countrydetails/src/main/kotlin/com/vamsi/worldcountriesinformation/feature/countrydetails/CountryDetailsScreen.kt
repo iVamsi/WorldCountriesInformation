@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -59,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.testing.TestTags
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -239,11 +241,15 @@ private fun CountryDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
+        modifier = modifier.testTag(TestTags.CountryDetails.SCREEN),
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text(country.name)
+                        Text(
+                            text = country.name,
+                            modifier = Modifier.testTag(TestTags.CountryDetails.COUNTRY_NAME)
+                        )
                         // Cache age indicator
                         if (cacheAge != "Never") {
                             Text(
@@ -259,7 +265,10 @@ private fun CountryDetailsScreen(
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier.testTag(TestTags.CountryDetails.BACK_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Navigate back"
@@ -268,7 +277,10 @@ private fun CountryDetailsScreen(
                 },
                 actions = {
                     // Share button
-                    IconButton(onClick = onShareClick) {
+                    IconButton(
+                        onClick = onShareClick,
+                        modifier = Modifier.testTag(TestTags.CountryDetails.SHARE_BUTTON)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share country information",
@@ -276,7 +288,10 @@ private fun CountryDetailsScreen(
                         )
                     }
                     // Favorite button
-                    IconButton(onClick = onFavoriteClick) {
+                    IconButton(
+                        onClick = onFavoriteClick,
+                        modifier = Modifier.testTag(TestTags.CountryDetails.FAVORITE_BUTTON)
+                    ) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
@@ -286,7 +301,8 @@ private fun CountryDetailsScreen(
                     // Manual refresh button
                     IconButton(
                         onClick = onRefresh,
-                        enabled = !isRefreshing
+                        enabled = !isRefreshing,
+                        modifier = Modifier.testTag(TestTags.CountryDetails.REFRESH_BUTTON)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
