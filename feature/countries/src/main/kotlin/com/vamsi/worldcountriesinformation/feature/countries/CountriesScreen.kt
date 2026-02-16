@@ -7,9 +7,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +43,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -52,6 +55,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -191,6 +195,28 @@ private fun CountriesScreenContent(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            val showFab = !state.shouldShowSearchHistory &&
+                    (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0)
+            AnimatedVisibility(
+                visible = showFab,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                val coroutineScope = rememberCoroutineScope()
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    },
+                    icon = {
+                        Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+                    },
+                    text = { Text("Scroll to top") }
+                )
+            }
         }
     ) { paddingValues ->
         when {
@@ -256,78 +282,30 @@ private fun CountriesScreenContent(
                                     .padding(horizontal = 16.dp)
                             )
                         } else {
-                            if (
-                                state.recentlyViewedCountries.isNotEmpty() &&
-                                state.searchQuery.isBlank() &&
-                                !state.isSearchFocused
-                            ) {
-                                RecentlyViewedSection(
-                                    countries = state.recentlyViewedCountries,
-                                    onCountryClick = { country ->
-                                        onIntent(
-                                            CountriesContract.Intent.CountryClicked(country.threeLetterCode)
-                                        )
-                                    }
+                            // Single scrollable column: filters, recently viewed, list
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                ScrollableCountriesContent(
+                                    state = state,
+                                    listState = listState,
+                                    onIntent = onIntent
                                 )
-                            }
-
-                            // Region filters
-                            if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
-                                RegionFilters(
-                                    selectedRegions = state.selectedRegions,
-                                    onRegionToggle = { region ->
-                                        onIntent(CountriesContract.Intent.ToggleRegion(region))
-                                    }
-                                )
-                            }
-
-                            // Sort selector
-                            SortSelector(
-                                currentSort = state.sortOrder,
-                                onSortChange = { sortOrder ->
-                                    onIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
-                                }
-                            )
-
-                            // Countries list or empty state
-                            when {
-                                state.showEmptySearchResults -> {
-                                    EmptySearchResults(
-                                        query = state.searchQuery,
-                                        onClearSearch = {
-                                            onIntent(CountriesContract.Intent.ClearSearch)
-                                        }
-                                    )
-                                }
-
-                                state.filteredCountries.isEmpty() && !state.isLoading -> {
-                                    EmptyState()
-                                }
-
-                                else -> {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        CountriesList(
-                                            countries = state.filteredCountries,
-                                            favoriteCountryCodes = state.favoriteCountryCodes,
-                                            onCountryClick = { country ->
-                                                onIntent(
-                                                    CountriesContract.Intent.CountryClicked(country.threeLetterCode)
-                                                )
-                                            },
-                                            onFavoriteClick = { country ->
-                                                onIntent(
-                                                    CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)
-                                                )
-                                            },
-                                            listState = listState,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
+                                val showAlphabetIndex =
+                                    listState.firstVisibleItemIndex > 0 ||
+                                            listState.firstVisibleItemScrollOffset > 0
+                                Box(
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    contentAlignment = Alignment.CenterEnd
+                                ) {
+                                    AnimatedVisibility(
+                                        visible = showAlphabetIndex,
+                                        enter = fadeIn(),
+                                        exit = fadeOut()
+                                    ) {
                                         AlphabetJumpIndex(
                                             countries = state.filteredCountries,
                                             listState = listState,
-                                            modifier = Modifier
-                                                .align(Alignment.CenterEnd)
-                                                .padding(end = 8.dp)
+                                            headerItemCount = getHeaderItemCount(state),
+                                            modifier = Modifier.padding(end = 8.dp)
                                         )
                                     }
                                 }
@@ -428,6 +406,111 @@ private fun SearchBar(
             },
             singleLine = true
         )
+    }
+}
+
+private fun getHeaderItemCount(state: CountriesContract.State): Int {
+    var count = 0
+    if (
+        state.recentlyViewedCountries.isNotEmpty() &&
+        state.searchQuery.isBlank() &&
+        !state.isSearchFocused
+    ) count++
+    if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) count++
+    count++ // SortSelector
+    return count
+}
+
+@Composable
+private fun ScrollableCountriesContent(
+    state: CountriesContract.State,
+    listState: LazyListState,
+    onIntent: (CountriesContract.Intent) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        state = listState,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        if (
+            state.recentlyViewedCountries.isNotEmpty() &&
+            state.searchQuery.isBlank() &&
+            !state.isSearchFocused
+        ) {
+            item {
+                RecentlyViewedSection(
+                    countries = state.recentlyViewedCountries,
+                    onCountryClick = { country ->
+                        onIntent(CountriesContract.Intent.CountryClicked(country.threeLetterCode))
+                    }
+                )
+            }
+        }
+
+        if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
+            item {
+                RegionFilters(
+                    selectedRegions = state.selectedRegions,
+                    onRegionToggle = { region ->
+                        onIntent(CountriesContract.Intent.ToggleRegion(region))
+                    }
+                )
+            }
+        }
+
+        item {
+            SortSelector(
+                currentSort = state.sortOrder,
+                onSortChange = { sortOrder ->
+                    onIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
+                }
+            )
+        }
+
+        when {
+            state.showEmptySearchResults -> {
+                item {
+                    Box(Modifier.fillParentMaxHeight()) {
+                        EmptySearchResults(
+                            query = state.searchQuery,
+                            onClearSearch = {
+                                onIntent(CountriesContract.Intent.ClearSearch)
+                            },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+            }
+
+            state.filteredCountries.isEmpty() && !state.isLoading -> {
+                item {
+                    Box(Modifier.fillParentMaxHeight()) {
+                        EmptyState(modifier = Modifier.fillMaxSize())
+                    }
+                }
+            }
+
+            else -> {
+                itemsIndexed(
+                    items = state.filteredCountries,
+                    key = { _, country -> country.threeLetterCode }
+                ) { index, country ->
+                    var hasAppeared by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        delay((index * 25L).coerceAtMost(120))
+                        hasAppeared = true
+                    }
+                    CountryCard(
+                        country = country,
+                        isFavorite = state.favoriteCountryCodes.contains(country.threeLetterCode),
+                        onClick = { onIntent(CountriesContract.Intent.CountryClicked(country.threeLetterCode)) },
+                        onFavoriteClick = { onIntent(CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)) },
+                        modifier = Modifier.fadeInScaleUp(visible = hasAppeared)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -627,6 +710,7 @@ private fun RecentlyViewedCard(
 private fun AlphabetJumpIndex(
     countries: List<Country>,
     listState: LazyListState,
+    headerItemCount: Int = 0,
     modifier: Modifier = Modifier,
 ) {
     if (countries.size < 15) return
@@ -648,7 +732,8 @@ private fun AlphabetJumpIndex(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .clickable {
-                        val targetIndex = indexMap[letter] ?: return@clickable
+                        val countryIndex = indexMap[letter] ?: return@clickable
+                        val targetIndex = headerItemCount + countryIndex
                         coroutineScope.launch {
                             listState.animateScrollToItem(targetIndex)
                         }
@@ -671,41 +756,6 @@ private fun buildAlphabetIndexMap(countries: List<Country>): Map<String, Int> {
         }
     }
     return letterToIndex
-}
-
-@Composable
-private fun CountriesList(
-    countries: List<Country>,
-    favoriteCountryCodes: Set<String>,
-    onCountryClick: (Country) -> Unit,
-    onFavoriteClick: (Country) -> Unit,
-    listState: LazyListState,
-    modifier: Modifier = Modifier,
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        state = listState
-    ) {
-        itemsIndexed(
-            items = countries,
-            key = { _, country -> country.threeLetterCode }
-        ) { index, country ->
-            var hasAppeared by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) {
-                delay((index * 25L).coerceAtMost(120))
-                hasAppeared = true
-            }
-            CountryCard(
-                country = country,
-                isFavorite = favoriteCountryCodes.contains(country.threeLetterCode),
-                onClick = { onCountryClick(country) },
-                onFavoriteClick = { onFavoriteClick(country) },
-                modifier = Modifier.fadeInScaleUp(visible = hasAppeared)
-            )
-        }
-    }
 }
 
 @Composable
