@@ -3,7 +3,9 @@ package com.vamsi.worldcountriesinformation.feature.countries
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -26,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -44,6 +47,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -60,6 +64,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -71,7 +76,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
@@ -82,12 +89,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.designsystem.component.fadeInScaleUp
+import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
+import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -157,7 +168,16 @@ private fun CountriesScreenContent(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Countries") },
+                title = {
+                    Text(
+                        "Countries",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                ),
                 actions = {
                     if (state.hasActiveFilters) {
                         IconButton(
@@ -382,7 +402,12 @@ private fun SearchBar(
                         onFocusChanged(focusState.isFocused)
                     }
                 },
-            placeholder = { Text("Search countries...") },
+            placeholder = {
+                Text(
+                    "Search countries...",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
             leadingIcon = {
                 Icon(Icons.Default.Search, "Search")
             },
@@ -435,13 +460,14 @@ private fun RegionFilters(
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(Regions.ALL.toList()) { region ->
+            items(items = Regions.ALL.toList(), key = { it }) { region ->
                 FilterChip(
                     selected = selectedRegions.contains(region),
                     onClick = { onRegionToggle(region) },
-                    label = { Text(region) }
+                    label = { Text(region, style = MaterialTheme.typography.labelMedium) },
+                    shape = MaterialTheme.shapes.small
                 )
             }
         }
@@ -525,7 +551,7 @@ private fun RecentlyViewedSection(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(countries, key = { it.threeLetterCode }) { country ->
+            items(items = countries, key = { it.threeLetterCode }) { country ->
                 RecentlyViewedCard(
                     country = country,
                     onClick = { onCountryClick(country) }
@@ -548,11 +574,19 @@ private fun RecentlyViewedCard(
         "drawable",
         context.packageName
     )
+    val interactionSource = rememberPressScaleInteractionSource()
 
     Card(
         modifier = modifier
             .size(width = 140.dp, height = 110.dp)
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .pressScaleEffect(interactionSource),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -569,13 +603,17 @@ private fun RecentlyViewedCard(
                     contentDescription = "${country.name} flag",
                     modifier = Modifier
                         .size(56.dp, 36.dp)
+                        .clip(MaterialTheme.shapes.small)
                 )
             } else {
                 Box(
-                    modifier = Modifier.size(56.dp, 36.dp),
+                    modifier = Modifier
+                        .size(56.dp, 36.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(country.twoLetterCode)
+                    Text(country.twoLetterCode, style = MaterialTheme.typography.labelMedium)
                 }
             }
 
@@ -650,15 +688,24 @@ private fun CountriesList(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
         state = listState
     ) {
-        items(countries, key = { it.threeLetterCode }) { country ->
+        itemsIndexed(
+            items = countries,
+            key = { _, country -> country.threeLetterCode }
+        ) { index, country ->
+            var hasAppeared by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                delay((index * 25L).coerceAtMost(120))
+                hasAppeared = true
+            }
             CountryCard(
                 country = country,
                 isFavorite = favoriteCountryCodes.contains(country.threeLetterCode),
                 onClick = { onCountryClick(country) },
-                onFavoriteClick = { onFavoriteClick(country) }
+                onFavoriteClick = { onFavoriteClick(country) },
+                modifier = Modifier.fadeInScaleUp(visible = hasAppeared)
             )
         }
     }
@@ -679,19 +726,30 @@ private fun CountryCard(
         "drawable",
         context.packageName
     )
+    val interactionSource = rememberPressScaleInteractionSource()
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .pressScaleEffect(interactionSource),
+        shape = MaterialTheme.shapes.medium,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(20.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Flag
+            // Flag with rounded corners
             if (flagResourceId != 0) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -699,19 +757,26 @@ private fun CountryCard(
                         .crossfade(true)
                         .build(),
                     contentDescription = "${country.name} flag",
-                    modifier = Modifier.size(60.dp, 40.dp)
+                    modifier = Modifier
+                        .size(64.dp, 44.dp)
+                        .clip(MaterialTheme.shapes.small)
                 )
             } else {
-                // Fallback
                 Box(
-                    modifier = Modifier.size(60.dp, 40.dp),
+                    modifier = Modifier
+                        .size(64.dp, 44.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(country.twoLetterCode)
+                    Text(
+                        text = country.twoLetterCode,
+                        style = MaterialTheme.typography.labelMedium
+                    )
                 }
             }
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(20.dp))
 
             // Country info
             Column(modifier = Modifier.weight(1f)) {
@@ -726,8 +791,16 @@ private fun CountryCard(
                 )
             }
 
-            // Favorite button
-            IconButton(onClick = onFavoriteClick) {
+            // Favorite button with scale animation
+            val favoriteScale by animateFloatAsState(
+                targetValue = if (isFavorite) 1.1f else 1f,
+                animationSpec = tween(200),
+                label = "favoriteScale"
+            )
+            IconButton(
+                onClick = onFavoriteClick,
+                modifier = Modifier.graphicsLayer { scaleX = favoriteScale; scaleY = favoriteScale }
+            ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
@@ -768,7 +841,7 @@ private fun SearchHistorySection(
             contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(history, key = { it.query.lowercase() }) { entry ->
+            items(items = history, key = { it.query.lowercase() }) { entry ->
                 SearchHistoryItemRow(
                     entry = entry,
                     onClick = { onHistoryItemClick(entry.query) },
@@ -846,7 +919,18 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator()
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                strokeWidth = 3.dp
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "Loading countries...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

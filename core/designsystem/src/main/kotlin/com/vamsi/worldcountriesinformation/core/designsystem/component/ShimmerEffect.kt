@@ -52,7 +52,7 @@ fun ShimmerEffect(
         targetValue = 1000f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = 1200,
+                durationMillis = 1500,
                 easing = LinearEasing
             ),
             repeatMode = RepeatMode.Restart

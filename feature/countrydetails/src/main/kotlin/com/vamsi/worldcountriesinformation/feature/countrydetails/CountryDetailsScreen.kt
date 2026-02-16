@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +60,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
+import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -377,7 +380,8 @@ private fun CountryFlagCard(country: Country) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
+            .height(220.dp),
+        shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
@@ -391,8 +395,10 @@ private fun CountryFlagCard(country: Country) {
                         .crossfade(true)
                         .build(),
                     contentDescription = "Flag of ${country.name}",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(MaterialTheme.shapes.large),
+                    contentScale = ContentScale.FillBounds
                 )
             } else {
                 // Fallback if flag not found
@@ -424,6 +430,7 @@ private fun CountryMapCard(country: Country) {
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp),
+        shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         if (country.latitude != 0.0 && country.longitude != 0.0) {
@@ -490,6 +497,7 @@ private fun OpenInMapsButton(
     FilledTonalButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium
     ) {
         Icon(
             imageVector = Icons.Default.Map,
@@ -586,11 +594,18 @@ private fun NearbyCountryCard(
         "drawable",
         context.packageName
     )
+    val interactionSource = rememberPressScaleInteractionSource()
 
     Card(
         modifier = modifier
             .width(120.dp)
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .pressScaleEffect(interactionSource),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -667,6 +682,7 @@ private fun CountryDetailItem(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
