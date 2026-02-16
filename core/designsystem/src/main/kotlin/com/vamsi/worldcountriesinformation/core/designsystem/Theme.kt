@@ -89,8 +89,9 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun WorldCountriesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    /// When true, uses system accent on Android 12+. When false, uses our
+    /// accessibility-tested palette (WCAG AA contrast, Explorer theme).
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

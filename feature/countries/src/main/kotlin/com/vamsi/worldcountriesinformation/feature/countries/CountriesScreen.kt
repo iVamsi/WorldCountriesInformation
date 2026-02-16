@@ -76,7 +76,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -601,15 +600,12 @@ private fun RecentlyViewedCard(
                         .crossfade(true)
                         .build(),
                     contentDescription = "${country.name} flag",
-                    modifier = Modifier
-                        .size(56.dp, 36.dp)
-                        .clip(MaterialTheme.shapes.small)
+                    modifier = Modifier.size(56.dp, 36.dp)
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(56.dp, 36.dp)
-                        .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
@@ -749,7 +745,7 @@ private fun CountryCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Flag with rounded corners
+            // Flag
             if (flagResourceId != 0) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -757,15 +753,12 @@ private fun CountryCard(
                         .crossfade(true)
                         .build(),
                     contentDescription = "${country.name} flag",
-                    modifier = Modifier
-                        .size(64.dp, 44.dp)
-                        .clip(MaterialTheme.shapes.small)
+                    modifier = Modifier.size(64.dp, 44.dp)
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(64.dp, 44.dp)
-                        .clip(MaterialTheme.shapes.small)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentAlignment = Alignment.Center
                 ) {
