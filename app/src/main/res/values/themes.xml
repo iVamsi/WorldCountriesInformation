@@ -1,4 +1,9 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <!-- Base application theme for Compose-only app -->
     <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar" />
+
+    <!-- Splash screen theme - shown at app launch -->
+    <style name="Theme.WorldCountriesInformation.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+    </style>
 </resources>
