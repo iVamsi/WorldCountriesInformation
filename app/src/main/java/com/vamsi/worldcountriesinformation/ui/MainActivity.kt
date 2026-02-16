@@ -6,15 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.vamsi.snapnotify.SnapNotifyProvider
+import com.vamsi.worldcountriesinformation.R
+import com.vamsi.worldcountriesinformation.core.designsystem.GradientBackground
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
@@ -43,17 +44,16 @@ class MainActivity : ComponentActivity() {
     private var currentIntent by mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
+        setTheme(R.style.AppTheme)
         enableEdgeToEdge()
         currentIntent = intent
 
         setContent {
             WorldCountriesTheme {
                 SnapNotifyProvider {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
+                    GradientBackground(modifier = Modifier.fillMaxSize()) {
                         // Create navigation state and navigator
                         val navigationState = rememberNavigationState(startRoute = CountriesRoute)
                         val navigator = remember { Navigator(navigationState) }

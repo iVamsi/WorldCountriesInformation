@@ -169,6 +169,8 @@
     <color name="color_primary_dark_in_dark_mode">#00574B</color> <!-- colorPrimaryDark in Dark mode-->
     <color name="color_accent_in_dark_mode">#FAEBD7</color>
 
+    <color name="splash_background">#0D5C4A</color>
+
     <color name="teal">#069f86</color>
     <color name="bright_light_blue">#27e5fd</color>
     <color name="sun_yellow">#fcd230</color>
