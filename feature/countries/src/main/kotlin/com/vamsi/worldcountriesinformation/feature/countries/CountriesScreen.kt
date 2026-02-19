@@ -296,18 +296,13 @@ private fun CountriesScreenContent(
                                     modifier = Modifier.align(Alignment.CenterEnd),
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
-                                    AnimatedVisibility(
+                                    AlphabetJumpIndexWithVisibility(
                                         visible = showAlphabetIndex,
-                                        enter = fadeIn(),
-                                        exit = fadeOut()
-                                    ) {
-                                        AlphabetJumpIndex(
-                                            countries = state.filteredCountries,
-                                            listState = listState,
-                                            headerItemCount = getHeaderItemCount(state),
-                                            modifier = Modifier.padding(end = 8.dp)
-                                        )
-                                    }
+                                        countries = state.filteredCountries,
+                                        listState = listState,
+                                        headerItemCount = getHeaderItemCount(state),
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
                                 }
                             }
                         }
@@ -703,6 +698,28 @@ private fun RecentlyViewedCard(
                 maxLines = 2
             )
         }
+    }
+}
+
+@Composable
+private fun AlphabetJumpIndexWithVisibility(
+    visible: Boolean,
+    countries: List<Country>,
+    listState: LazyListState,
+    headerItemCount: Int,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        AlphabetJumpIndex(
+            countries = countries,
+            listState = listState,
+            headerItemCount = headerItemCount,
+            modifier = modifier
+        )
     }
 }
 
