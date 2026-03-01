@@ -340,6 +340,18 @@ private fun CountriesScreenContent(
                                     .fillMaxSize()
                                     .padding(horizontal = 16.dp)
                             )
+                        } else if (state.shouldShowSearchSuggestions) {
+                            SearchSuggestionsSection(
+                                suggestions = state.searchSuggestions,
+                                onSuggestionClick = { suggestion ->
+                                    onIntent(
+                                        CountriesContract.Intent.SearchSuggestionSelected(suggestion)
+                                    )
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp)
+                            )
                         } else {
                             // Single scrollable column: filters, recently viewed, list
                             Box(modifier = Modifier.fillMaxSize()) {
@@ -1035,6 +1047,67 @@ private fun SearchHistoryItemRow(
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+}
+
+@Composable
+private fun SearchSuggestionsSection(
+    suggestions: List<String>,
+    onSuggestionClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Suggestions",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = suggestions, key = { it.lowercase() }) { suggestion ->
+                SearchSuggestionItemRow(
+                    suggestion = suggestion,
+                    onClick = { onSuggestionClick(suggestion) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchSuggestionItemRow(
+    suggestion: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.width(16.dp))
+        Text(
+            text = suggestion,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 

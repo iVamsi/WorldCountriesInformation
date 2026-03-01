@@ -100,6 +100,15 @@ class CountriesViewModel @Inject constructor(
                 }
             }
         }
+
+        // Observe search suggestions and update state
+        viewModelScope.launch {
+            searchSuggestionsFlow.collect { suggestions ->
+                setState {
+                    copy(searchSuggestions = suggestions)
+                }
+            }
+        }
     }
 
     override fun handleIntent(intent: CountriesContract.Intent) {
@@ -118,6 +127,7 @@ class CountriesViewModel @Inject constructor(
             is CountriesContract.Intent.SearchFocusChanged -> onSearchFocusChanged(intent.isFocused)
             is CountriesContract.Intent.SearchBackPressed -> onSearchBackPressed()
             is CountriesContract.Intent.SearchHistoryItemSelected -> onSearchHistoryItemSelected(intent.query)
+            is CountriesContract.Intent.SearchSuggestionSelected -> selectSearchQuery(intent.suggestion)
             is CountriesContract.Intent.DeleteSearchHistoryItem -> deleteSearchHistoryEntry(intent.query)
             is CountriesContract.Intent.ClearSearchHistory -> clearSearchHistory()
         }

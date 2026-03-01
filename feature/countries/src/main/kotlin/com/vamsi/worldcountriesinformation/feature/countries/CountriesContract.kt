@@ -95,6 +95,11 @@ object CountriesContract {
         data class SearchHistoryItemSelected(val query: String) : Intent
 
         /**
+         * User tapped a search suggestion item.
+         */
+        data class SearchSuggestionSelected(val suggestion: String) : Intent
+
+        /**
          * User dismissed a history entry via swipe delete.
          */
         data class DeleteSearchHistoryItem(val query: String) : Intent
@@ -128,6 +133,7 @@ object CountriesContract {
         val isSearchActive: Boolean = false,
         val isSearchFocused: Boolean = false,
         val searchHistory: List<SearchHistoryEntry> = emptyList(),
+        val searchSuggestions: List<String> = emptyList(),
 
         // Recently viewed
         val recentlyViewedEntries: List<RecentlyViewedEntry> = emptyList(),
@@ -181,8 +187,13 @@ object CountriesContract {
          * True when search history panel should be visible.
          */
         val shouldShowSearchHistory: Boolean
-            get() =
-                searchHistory.isNotEmpty() && searchQuery.isBlank() && isSearchFocused
+            get() = searchHistory.isNotEmpty() && searchQuery.isBlank() && isSearchFocused
+
+        /**
+         * True when search suggestions panel should be visible.
+         */
+        val shouldShowSearchSuggestions: Boolean
+            get() = searchSuggestions.isNotEmpty() && isSearchFocused && searchQuery.isNotBlank()
     }
 
     // ============================================================================
