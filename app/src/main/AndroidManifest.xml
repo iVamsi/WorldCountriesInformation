@@ -4,6 +4,14 @@
     package="com.vamsi.worldcountriesinformation">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Required for Android 11+ to query speech recognition availability -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 
     <application
         android:name=".WorldCountriesApplication"

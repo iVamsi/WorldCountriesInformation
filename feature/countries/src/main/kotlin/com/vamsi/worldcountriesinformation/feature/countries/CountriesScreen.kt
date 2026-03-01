@@ -1,5 +1,11 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
+import android.app.Activity
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
@@ -84,6 +90,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -106,6 +113,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
+ * Extracts the spoken text from speech recognition results.
+ * Returns the trimmed text if the result code indicates success and the text is non-blank,
+ * or null otherwise.
+ */
+internal fun extractSpokenText(resultCode: Int, results: List<String>?): String? {
+    if (resultCode != Activity.RESULT_OK) return null
+    return results
+        ?.firstOrNull()
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
+}
+
+/**
  * Countries list UI that wires search, filtering, favorites, and navigation hooks.
  *
  * Collects state from the view model, renders the appropriate surface, and listens for
@@ -121,6 +141,27 @@ fun CountriesScreen(
     // Collect state
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
+
+    // Check if speech recognition is available on this device
+    val isVoiceSearchAvailable = remember {
+        SpeechRecognizer.isRecognitionAvailable(context)
+    }
+
+    // Speech recognition launcher
+    val speechLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val spokenText = extractSpokenText(
+            result.resultCode,
+            result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+        )
+        if (spokenText != null) {
+            viewModel.processIntent(
+                CountriesContract.Intent.SearchQueryChanged(spokenText)
+            )
+        }
+    }
 
     // Handle effects
     LaunchedEffect(Unit) {
@@ -152,11 +193,27 @@ fun CountriesScreen(
         }
     }
 
+    val searchHint = stringResource(R.string.search_countries_hint)
+
     CountriesScreenContent(
         state = state,
         listState = listState,
         onNavigateToSettings = onNavigateToSettings,
-        onIntent = { intent -> viewModel.processIntent(intent) }
+        onIntent = { intent -> viewModel.processIntent(intent) },
+        onMicClick = if (isVoiceSearchAvailable) {
+            {
+                val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(
+                        RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                    )
+                    putExtra(RecognizerIntent.EXTRA_PROMPT, searchHint)
+                }
+                speechLauncher.launch(speechIntent)
+            }
+        } else {
+            null
+        }
     )
 }
 
@@ -167,6 +224,7 @@ private fun CountriesScreenContent(
     listState: LazyListState,
     onNavigateToSettings: () -> Unit,
     onIntent: (CountriesContract.Intent) -> Unit,
+    onMicClick: (() -> Unit)? = null,
 ) {
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
@@ -248,6 +306,7 @@ private fun CountriesScreenContent(
                             onClearClick = {
                                 onIntent(CountriesContract.Intent.ClearSearch)
                             },
+                            onMicClick = onMicClick,
                             onFocusChanged = { isFocused ->
                                 onIntent(
                                     CountriesContract.Intent.SearchFocusChanged(isFocused)
@@ -318,7 +377,7 @@ private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onClearClick: () -> Unit,
-    onMicClick: () -> Unit = {},
+    onMicClick: (() -> Unit)? = null,
     onFocusChanged: (Boolean) -> Unit = {},
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -377,7 +436,7 @@ private fun SearchBar(
                 },
             placeholder = {
                 Text(
-                    "Search countries...",
+                    stringResource(R.string.search_countries_hint),
                     style = MaterialTheme.typography.bodyLarge
                 )
             },
@@ -389,8 +448,13 @@ private fun SearchBar(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = onMicClick) {
-                        Icon(Icons.Default.Mic, contentDescription = "Voice search")
+                    if (onMicClick != null) {
+                        IconButton(onClick = onMicClick) {
+                            Icon(
+                                Icons.Default.Mic,
+                                contentDescription = stringResource(R.string.voice_search)
+                            )
+                        }
                     }
                     if (query.isNotEmpty()) {
                         IconButton(onClick = onClearClick) {
