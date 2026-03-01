@@ -87,6 +87,7 @@ archCoreTesting = "2.2.0"
 coroutinesTest = "1.10.2"
 runner = "1.7.0"
 rules = "1.7.0"
+turbine = "1.2.1"
 
 [libraries]
 # Android Core
@@ -192,6 +193,7 @@ hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testi
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

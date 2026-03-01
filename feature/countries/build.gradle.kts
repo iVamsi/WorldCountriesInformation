@@ -1,7 +1,3 @@
-import org.gradle.kotlin.dsl.android
-import org.gradle.kotlin.dsl.libs
-import org.jetbrains.kotlin.gradle.internal.types.error.ErrorModuleDescriptor.platform
-
 plugins {
     id("worldcountries.android.library")
     id("worldcountries.android.hilt")
@@ -58,5 +54,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.androidx.arch.core.testing)
-    testImplementation("app.cash.turbine:turbine:1.0.0")
+    testImplementation(libs.turbine)
 }
