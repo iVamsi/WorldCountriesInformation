@@ -547,6 +547,70 @@ class CountriesViewModelTest {
     }
 
     // ============================================================================
+    // Search Suggestions Tests
+    // ============================================================================
+
+    @Test
+    fun `search suggestions should be generated when search query length is 2 or more`() = runTest {
+        // Given
+        val suggestions = listOf("United States", "United Kingdom")
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
+        every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // When
+        viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("Uni"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        // Then
+        assertEquals(suggestions, viewModel.state.value.searchSuggestions)
+    }
+
+    @Test
+    fun `search suggestions should show when focused with suggestions and non-blank query`() =
+        runTest {
+            // Given
+            val suggestions = listOf("United States")
+            coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+            coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
+            every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
+            viewModel = createViewModel()
+            advanceUntilIdle()
+
+            // When
+            viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("Uni"))
+            advanceTimeBy(400)
+            advanceUntilIdle()
+            viewModel.processIntent(CountriesContract.Intent.SearchFocusChanged(true))
+            advanceUntilIdle()
+
+            // Then
+            assertTrue(viewModel.state.value.shouldShowSearchSuggestions)
+        }
+
+    @Test
+    fun `search suggestion selection should restore query and save it`() = runTest {
+        // Given
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
+        coEvery { searchPreferencesDataSource.addToSearchHistory(any()) } just Runs
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        // When
+        viewModel.processIntent(CountriesContract.Intent.SearchSuggestionSelected("United States"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        // Then
+        assertEquals("United States", viewModel.state.value.searchQuery)
+        coVerify { searchPreferencesDataSource.addToSearchHistory("United States") }
+    }
+
+    // ============================================================================
     // Error Handling Tests
     // ============================================================================
 
