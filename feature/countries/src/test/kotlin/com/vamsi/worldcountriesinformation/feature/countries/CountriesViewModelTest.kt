@@ -7,11 +7,15 @@ import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
-import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.search.CountryQueryInterpreter
+import com.vamsi.worldcountriesinformation.domain.search.DirectionalRanking
+import com.vamsi.worldcountriesinformation.domain.search.ExecuteStructuredCountryQueryUseCase
+import com.vamsi.worldcountriesinformation.domain.search.StructuredCountryQuery
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
+import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import io.mockk.Runs
 import io.mockk.clearMocks
@@ -52,11 +56,12 @@ class CountriesViewModelTest {
 
     private lateinit var viewModel: CountriesViewModel
     private lateinit var getCountriesUseCase: GetCountriesUseCase
-    private lateinit var searchCountriesUseCase: SearchCountriesUseCase
     private lateinit var filteredSearchUseCase: FilteredSearchCountriesUseCase
     private lateinit var suggestionsUseCase: GenerateSearchSuggestionsUseCase
     private lateinit var searchPreferencesDataSource: SearchPreferencesDataSource
     private lateinit var searchFiltersUseCase: com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
+    private lateinit var countryQueryInterpreter: CountryQueryInterpreter
+    private lateinit var executeStructuredCountryQueryUseCase: ExecuteStructuredCountryQueryUseCase
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -107,11 +112,12 @@ class CountriesViewModelTest {
         Dispatchers.setMain(testDispatcher)
 
         getCountriesUseCase = mockk()
-        searchCountriesUseCase = mockk()
         filteredSearchUseCase = mockk()
         suggestionsUseCase = mockk()
         searchPreferencesDataSource = mockk(relaxed = true)
         searchFiltersUseCase = mockk()
+        countryQueryInterpreter = mockk()
+        executeStructuredCountryQueryUseCase = mockk()
 
         // Setup default mocks
         coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
@@ -121,6 +127,12 @@ class CountriesViewModelTest {
         every { filteredSearchUseCase.applyFiltersAndSort(any(), any()) } answers { firstArg() }
         every { searchFiltersUseCase.hasActiveFilters(any()) } returns false
         every { searchFiltersUseCase.getActiveFilterCount(any()) } returns 0
+        coEvery { countryQueryInterpreter.interpret(any()) } answers {
+            StructuredCountryQuery(textQuery = firstArg())
+        }
+        coEvery { executeStructuredCountryQueryUseCase(any()) } answers {
+            flowOf(testCountries.take(1))
+        }
     }
 
     @After
@@ -131,11 +143,12 @@ class CountriesViewModelTest {
     private fun createViewModel(): CountriesViewModel {
         return CountriesViewModel(
             getCountriesUseCase = getCountriesUseCase,
-            searchCountriesUseCase = searchCountriesUseCase,
             filteredSearchUseCase = filteredSearchUseCase,
             suggestionsUseCase = suggestionsUseCase,
             searchPreferencesDataSource = searchPreferencesDataSource,
-            searchFiltersUseCase = searchFiltersUseCase
+            searchFiltersUseCase = searchFiltersUseCase,
+            countryQueryInterpreter = countryQueryInterpreter,
+            executeStructuredCountryQueryUseCase = executeStructuredCountryQueryUseCase,
         )
     }
 
@@ -220,7 +233,6 @@ class CountriesViewModelTest {
     fun `search query change should update state`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         viewModel = createViewModel()
         advanceUntilIdle()
 
@@ -238,7 +250,6 @@ class CountriesViewModelTest {
     fun `clear search should reset search state`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         viewModel = createViewModel()
         advanceUntilIdle()
 
@@ -439,7 +450,6 @@ class CountriesViewModelTest {
     fun `saveSearchToHistory should save query`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         coEvery { searchPreferencesDataSource.addToSearchHistory(any()) } just Runs
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -532,7 +542,6 @@ class CountriesViewModelTest {
     fun `history item selection should restore query`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         coEvery { searchPreferencesDataSource.addToSearchHistory(any()) } just Runs
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -555,7 +564,6 @@ class CountriesViewModelTest {
         // Given
         val suggestions = listOf("United States", "United Kingdom")
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -575,7 +583,6 @@ class CountriesViewModelTest {
             // Given
             val suggestions = listOf("United States")
             coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-            coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
             every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
             viewModel = createViewModel()
             advanceUntilIdle()
@@ -595,7 +602,6 @@ class CountriesViewModelTest {
     fun `search suggestion selection should restore query and save it`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
         coEvery { searchPreferencesDataSource.addToSearchHistory(any()) } just Runs
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -651,5 +657,90 @@ class CountriesViewModelTest {
 
         // Then
         coVerify { getCountriesUseCase(CachePolicy.CACHE_FIRST) }
+    }
+
+    @Test
+    fun `natural language query should use interpreter and structured executor`() = runTest {
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        val structuredQuery = StructuredCountryQuery(
+            filters = SearchFilters(sortOrder = SortOrder.POPULATION_DESC),
+            limit = 1,
+        )
+        coEvery { countryQueryInterpreter.interpret("country with highest population") } returns structuredQuery
+        coEvery { executeStructuredCountryQueryUseCase(any()) } returns flowOf(listOf(testCountries.first()))
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("country with highest population"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        coVerify { countryQueryInterpreter.interpret("country with highest population") }
+        coVerify { executeStructuredCountryQueryUseCase(any()) }
+        assertEquals(listOf(testCountries.first()), viewModel.state.value.filteredCountries)
+    }
+
+    @Test
+    fun `interpreted region filter should override conflicting selected region preference`() = runTest {
+        coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
+            com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(
+                filters = SearchFilters(selectedRegions = setOf("Asia"))
+            )
+        )
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { countryQueryInterpreter.interpret("smallest country in Europe") } returns StructuredCountryQuery(
+            filters = SearchFilters(
+                selectedRegions = setOf("Europe"),
+                sortOrder = SortOrder.AREA_ASC,
+            ),
+            limit = 1,
+        )
+        coEvery { executeStructuredCountryQueryUseCase(any()) } returns flowOf(
+            listOf(testCountries.first())
+        )
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("smallest country in Europe"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        coVerify {
+            executeStructuredCountryQueryUseCase(
+                match { it.filters.selectedRegions == setOf("Europe") }
+            )
+        }
+    }
+
+    @Test
+    fun `directional natural language query should mark search mode and pass directional ranking`() = runTest {
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery {
+            countryQueryInterpreter.interpret("south most country in south america")
+        } returns StructuredCountryQuery(
+            filters = SearchFilters(selectedRegions = setOf("Americas")),
+            directionalRanking = DirectionalRanking.SOUTHERNMOST,
+            limit = 1,
+        )
+        coEvery { executeStructuredCountryQueryUseCase(any()) } returns flowOf(listOf(testCountries.first()))
+
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("south most country in south america"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+
+        coVerify {
+            executeStructuredCountryQueryUseCase(
+                match {
+                    it.directionalRanking == DirectionalRanking.SOUTHERNMOST &&
+                        it.filters.selectedRegions == setOf("Americas")
+                }
+            )
+        }
+        assertEquals(CountriesContract.SearchMode.NATURAL_LANGUAGE, viewModel.state.value.searchMode)
     }
 }

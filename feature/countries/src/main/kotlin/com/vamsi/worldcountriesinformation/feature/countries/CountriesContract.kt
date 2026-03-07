@@ -16,6 +16,11 @@ import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
  */
 object CountriesContract {
 
+    enum class SearchMode {
+        KEYWORD,
+        NATURAL_LANGUAGE,
+    }
+
     // ============================================================================
     // INTENTS - User Actions & Events
     // ============================================================================
@@ -132,6 +137,7 @@ object CountriesContract {
         val searchQuery: String = "",
         val isSearchActive: Boolean = false,
         val isSearchFocused: Boolean = false,
+        val searchMode: SearchMode = SearchMode.KEYWORD,
         val searchHistory: List<SearchHistoryEntry> = emptyList(),
         val searchSuggestions: List<String> = emptyList(),
 

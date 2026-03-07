@@ -84,5 +84,5 @@ interface WorldCountriesApi {
     ): List<CountriesV3ResponseItem>
 }
 
-private const val COUNTRY_LIST_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng"
-private const val COUNTRY_DETAIL_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,idd,latlng"
+private const val COUNTRY_LIST_FIELDS = "name,capital,region,subregion,population,area,languages,currencies,cca2,cca3,idd,latlng"
+private const val COUNTRY_DETAIL_FIELDS = "name,capital,region,subregion,population,area,languages,currencies,cca2,cca3,idd,latlng"

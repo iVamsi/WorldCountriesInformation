@@ -123,8 +123,11 @@ class FilteredSearchCountriesUseCase @Inject constructor(
             }
         }
 
-        // Note: Subregion filtering not implemented as Country model doesn't have subregion field
-        // Consider adding to Country model if needed
+        if (filters.selectedSubregions.isNotEmpty()) {
+            filtered = filtered.filter { country ->
+                filters.selectedSubregions.contains(country.subregion)
+            }
+        }
 
         // Apply sort order
         filtered = applySortOrder(filtered, filters.sortOrder)
@@ -148,10 +151,8 @@ class FilteredSearchCountriesUseCase @Inject constructor(
             SortOrder.NAME_DESC -> countries.sortedByDescending { it.name }
             SortOrder.POPULATION_DESC -> countries.sortedByDescending { it.population }
             SortOrder.POPULATION_ASC -> countries.sortedBy { it.population }
-            // Area sorting not implemented as Country model doesn't have area field
-            // Fallback to name sorting
-            SortOrder.AREA_DESC -> countries.sortedBy { it.name }
-            SortOrder.AREA_ASC -> countries.sortedBy { it.name }
+            SortOrder.AREA_DESC -> countries.sortedByDescending { it.area }
+            SortOrder.AREA_ASC -> countries.sortedBy { it.area }
         }
     }
 }

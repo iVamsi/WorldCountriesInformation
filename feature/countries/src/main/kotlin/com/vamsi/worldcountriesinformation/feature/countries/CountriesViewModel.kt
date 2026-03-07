@@ -11,8 +11,10 @@ import com.vamsi.worldcountriesinformation.domain.core.onSuccess
 import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
-import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.search.CountryQueryInterpreter
+import com.vamsi.worldcountriesinformation.domain.search.ExecuteStructuredCountryQueryUseCase
 import com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
+import com.vamsi.worldcountriesinformation.domain.search.StructuredCountryQuery
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
@@ -20,6 +22,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,14 +44,17 @@ import javax.inject.Inject
 @HiltViewModel
 class CountriesViewModel @Inject constructor(
     private val getCountriesUseCase: GetCountriesUseCase,
-    private val searchCountriesUseCase: SearchCountriesUseCase,
     private val filteredSearchUseCase: FilteredSearchCountriesUseCase,
     private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
     private val searchPreferencesDataSource: SearchPreferencesDataSource,
     private val searchFiltersUseCase: SearchFiltersUseCase,
+    private val countryQueryInterpreter: CountryQueryInterpreter,
+    private val executeStructuredCountryQueryUseCase: ExecuteStructuredCountryQueryUseCase,
 ) : MVIViewModel<CountriesContract.Intent, CountriesContract.State, CountriesContract.Effect>(
     initialState = CountriesContract.State()
 ) {
+    private var searchJob: Job? = null
+
     private val searchPreferencesFlow = searchPreferencesDataSource.searchPreferences
         .stateIn(
             scope = viewModelScope,
@@ -255,36 +261,49 @@ class CountriesViewModel @Inject constructor(
      * Performs the actual search operation.
      */
     private fun performSearch(query: String) {
-        viewModelScope.launch {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             val currentFilters = searchPreferencesFlow.value.filters
 
             if (query.isBlank()) {
-                // Empty query: show all countries with filters applied
                 setState {
-                    copy(filteredCountries = applyFiltersAndSort(countries, currentFilters))
+                    copy(
+                        filteredCountries = applyFiltersAndSort(countries, currentFilters),
+                        searchMode = CountriesContract.SearchMode.KEYWORD,
+                    )
                 }
-            } else {
-                // Non-empty query: search with filters
-                if (searchFiltersUseCase.hasActiveFilters(currentFilters)) {
-                    // Use filtered search
-                    filteredSearchUseCase(query, currentFilters)
-                        .catch { exception ->
-                            Timber.e(exception, "Search error for query: $query")
-                        }
-                        .collect { results ->
-                            setState { copy(filteredCountries = results) }
-                        }
-                } else {
-                    // Use basic search
-                    searchCountriesUseCase(query)
-                        .catch { exception ->
-                            Timber.e(exception, "Search error for query: $query")
-                        }
-                        .collect { results ->
-                            setState { copy(filteredCountries = results) }
-                        }
-                }
+                return@launch
             }
+
+            val interpretedQuery = runCatching {
+                countryQueryInterpreter.interpret(query)
+            }.getOrElse { exception ->
+                Timber.e(exception, "Falling back to keyword search for query: $query")
+                StructuredCountryQuery(textQuery = query)
+            }
+
+            val mergedQuery = interpretedQuery.copy(
+                filters = mergeFilters(
+                    userFilters = currentFilters,
+                    interpretedFilters = interpretedQuery.filters,
+                )
+            )
+
+            executeStructuredCountryQueryUseCase(mergedQuery)
+                .catch { exception ->
+                    Timber.e(exception, "Search error for query: $query")
+                }
+                .collect { results ->
+                    setState {
+                        copy(
+                            filteredCountries = results,
+                            searchMode = determineSearchMode(
+                                rawQuery = query,
+                                structuredQuery = interpretedQuery,
+                            ),
+                        )
+                    }
+                }
         }
     }
 
@@ -299,6 +318,7 @@ class CountriesViewModel @Inject constructor(
             copy(
                 searchQuery = "",
                 isSearchActive = focused,
+                searchMode = CountriesContract.SearchMode.KEYWORD,
                 filteredCountries = applyFiltersAndSort(countries, currentFilters)
             )
         }
@@ -428,6 +448,53 @@ class CountriesViewModel @Inject constructor(
      */
     private fun applyFiltersAndSort(countries: List<Country>, filters: SearchFilters): List<Country> {
         return filteredSearchUseCase.applyFiltersAndSort(countries, filters)
+    }
+
+    private fun mergeFilters(
+        userFilters: SearchFilters,
+        interpretedFilters: SearchFilters,
+    ): SearchFilters {
+        val mergedSortOrder = if (interpretedFilters.sortOrder != SortOrder.NAME_ASC) {
+            interpretedFilters.sortOrder
+        } else {
+            userFilters.sortOrder
+        }
+
+        val mergedRegions = if (interpretedFilters.selectedRegions.isNotEmpty()) {
+            interpretedFilters.selectedRegions
+        } else {
+            userFilters.selectedRegions
+        }
+
+        val mergedSubregions = if (interpretedFilters.selectedSubregions.isNotEmpty()) {
+            interpretedFilters.selectedSubregions
+        } else {
+            userFilters.selectedSubregions
+        }
+
+        return userFilters.copy(
+            selectedRegions = mergedRegions,
+            selectedSubregions = mergedSubregions,
+            sortOrder = mergedSortOrder,
+        )
+    }
+
+    private fun determineSearchMode(
+        rawQuery: String,
+        structuredQuery: StructuredCountryQuery,
+    ): CountriesContract.SearchMode {
+        val usesNaturalLanguageFeatures = structuredQuery.limit != null ||
+            structuredQuery.directionalRanking != null ||
+            structuredQuery.filters.selectedRegions.isNotEmpty() ||
+            structuredQuery.filters.selectedSubregions.isNotEmpty() ||
+            structuredQuery.filters.sortOrder != SortOrder.NAME_ASC ||
+            !structuredQuery.textQuery.equals(rawQuery.trim(), ignoreCase = true)
+
+        return if (usesNaturalLanguageFeatures) {
+            CountriesContract.SearchMode.NATURAL_LANGUAGE
+        } else {
+            CountriesContract.SearchMode.KEYWORD
+        }
     }
 
     private fun mapRecentlyViewedCountries(

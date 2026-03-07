@@ -64,6 +64,8 @@ fun CountriesV3ResponseItem.toCountry(): Country {
         threeLetterCode = this.cca3 ?: EMPTY,
         population = this.population?.toInt() ?: 0,
         region = this.region ?: EMPTY,
+        subregion = this.subregion ?: EMPTY,
+        area = this.area ?: 0.0,
         currencies = currencies,
         callingCode = callingCode,
         latitude = latitude,

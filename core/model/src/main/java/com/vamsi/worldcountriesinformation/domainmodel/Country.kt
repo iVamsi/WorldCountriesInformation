@@ -10,6 +10,8 @@ data class Country(
     val threeLetterCode: String,
     val population: Int,
     val region: String,
+    val subregion: String = "",
+    val area: Double = 0.0,
     val currencies: List<Currency>,
     val callingCode: String,
     val latitude: Double,

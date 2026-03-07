@@ -29,6 +29,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 testOptions {
                     unitTests {
                         isIncludeAndroidResources = true
+                        all {
+                            it.failOnNoDiscoveredTests.set(false)
+                        }
                     }
                 }
             }

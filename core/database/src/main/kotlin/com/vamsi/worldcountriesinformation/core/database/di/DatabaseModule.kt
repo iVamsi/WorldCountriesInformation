@@ -31,7 +31,7 @@ object DatabaseModule {
             WorldCountriesDatabase::class.java,
             WorldCountriesDatabase.DATABASE_NAME
         )
-            .fallbackToDestructiveMigration()
+            .addMigrations(WorldCountriesDatabase.MIGRATION_1_2)
             .build()
     }
 

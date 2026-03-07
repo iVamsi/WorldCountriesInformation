@@ -21,8 +21,32 @@ object TestData {
 
     fun getCountries(): List<Country> {
         return listOf(
-            Country("India", "New Delhi", languages, "IN", "IND", 1295210000, "Asia", currencies, "91", 20.0, 77.0),
-            Country("United States of America", "Washington, D.C.", languages, "US", "USA", 323947000, "Americas", currencies, "1", 38.0, -97.0)
+            Country(
+                name = "India",
+                capital = "New Delhi",
+                languages = languages,
+                twoLetterCode = "IN",
+                threeLetterCode = "IND",
+                population = 1295210000,
+                region = "Asia",
+                currencies = currencies,
+                callingCode = "91",
+                latitude = 20.0,
+                longitude = 77.0,
+            ),
+            Country(
+                name = "United States of America",
+                capital = "Washington, D.C.",
+                languages = languages,
+                twoLetterCode = "US",
+                threeLetterCode = "USA",
+                population = 323947000,
+                region = "Americas",
+                currencies = currencies,
+                callingCode = "1",
+                latitude = 38.0,
+                longitude = -97.0,
+            )
         )
     }
 }
