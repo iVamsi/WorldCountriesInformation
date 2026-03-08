@@ -196,6 +196,7 @@ fabric.properties
 
 # VS Code configuration folder (kept local only)
 .vscode/
+.worktrees/
 
 # Temporary files
 *.tmp
