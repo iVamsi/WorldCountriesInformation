@@ -27,7 +27,7 @@ lottie = "6.6.10"
 pageIndicator = "1.3.0"
 
 # Compose
-composeBom = "2026.02.00"
+composeBom = "2026.02.01"
 activityCompose = "1.12.4"
 lifecycleRuntimeCompose = "2.10.0"
 glance = "1.1.1"
