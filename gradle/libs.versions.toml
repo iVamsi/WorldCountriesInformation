@@ -1,7 +1,7 @@
 [versions]
 # Gradle and Android
 agp = "9.1.0"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 ksp = "2.3.6"
 compileSdk = "36"
 minSdk = "24"
@@ -9,7 +9,7 @@ targetSdk = "36"
 snapnotify = "1.0.5"
 
 # AndroidX Core
-coreKtx = "1.17.0"
+coreKtx = "1.18.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityKtx = "1.12.0"
 fragmentKtx = "1.8.9"
@@ -27,8 +27,8 @@ lottie = "6.6.10"
 pageIndicator = "1.3.0"
 
 # Compose
-composeBom = "2026.02.01"
-activityCompose = "1.12.4"
+composeBom = "2026.03.00"
+activityCompose = "1.13.0"
 lifecycleRuntimeCompose = "2.10.0"
 glance = "1.1.1"
 glanceAppwidget = "1.1.1"
@@ -67,7 +67,7 @@ gson = "2.13.2"
 kotlinx-serialization = "1.10.0"
 
 # DataStore
-datastore = "1.2.0"
+datastore = "1.2.1"
 
 # Logging
 timber = "5.0.1"
