@@ -222,43 +222,4 @@ class NavigationRoutesTest {
         // Then
         assertEquals(route1.hashCode(), route2.hashCode())
     }
-
-    // ==================== Legacy Screen tests (for backward compatibility) ====================
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `legacy countries route is correct`() {
-        val route = Screen.Countries.route
-        assertEquals("countries", route)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `legacy country details route pattern is correct`() {
-        val route = Screen.CountryDetails.route
-        assertEquals("country_details/{countryCode}", route)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `legacy country details createRoute substitutes parameter correctly`() {
-        val countryCode = "USA"
-        val route = Screen.CountryDetails.createRoute(countryCode)
-        assertEquals("country_details/USA", route)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `legacy country details argument key is correct`() {
-        val argKey = Screen.CountryDetails.ARG_COUNTRY_CODE
-        assertEquals("countryCode", argKey)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test
-    fun `legacy navigation args country code matches screen constant`() {
-        val argsKey = NavigationArgs.COUNTRY_CODE
-        val screenKey = Screen.CountryDetails.ARG_COUNTRY_CODE
-        assertEquals(screenKey, argsKey)
-    }
 }
