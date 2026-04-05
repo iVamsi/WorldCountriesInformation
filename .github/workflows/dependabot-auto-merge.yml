@@ -6,7 +6,8 @@ name: Dependabot auto-merge
 
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review]
+    # synchronize: Dependabot may push new commits; re-apply auto-merge if GitHub cleared it.
+    types: [opened, reopened, ready_for_review, synchronize]
 
 permissions:
   contents: write
