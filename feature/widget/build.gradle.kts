@@ -47,7 +47,7 @@ dependencies {
     implementation(libs.timber)
 
     // WorkManager (for periodic updates)
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
     implementation("androidx.hilt:hilt-work:1.2.0")
 
     // Testing
