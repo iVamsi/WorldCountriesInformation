@@ -6,7 +6,7 @@ ksp = "2.3.6"
 compileSdk = "36"
 minSdk = "24"
 targetSdk = "36"
-snapnotify = "1.0.5"
+snapnotify = "1.0.6"
 
 # AndroidX Core
 coreKtx = "1.18.0"
