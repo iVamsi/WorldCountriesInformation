@@ -43,6 +43,7 @@ dependencies {
 
     // Core modules (for MainActivity)
     implementation(project(":core:designsystem"))
+    implementation(project(":core:datastore"))
     implementation(project(":core:navigation"))
 
     // Core infrastructure (needed for Hilt DI)
@@ -58,6 +59,7 @@ dependencies {
     // AndroidX Core (for MainActivity)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Splash Screen
     implementation(libs.androidx.core.splashscreen)

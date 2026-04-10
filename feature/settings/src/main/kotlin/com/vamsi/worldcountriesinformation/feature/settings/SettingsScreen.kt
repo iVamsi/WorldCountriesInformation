@@ -124,6 +124,13 @@ fun SettingsScreen(
                 )
             }
 
+            SettingsSection(title = "Appearance") {
+                DynamicColorSwitch(
+                    enabled = userPreferences.useDynamicColor,
+                    onToggle = { viewModel.updateUseDynamicColor(it) }
+                )
+            }
+
             // Cache Statistics Section
             SettingsSection(title = "Cache Statistics") {
                 CacheStatisticsCard(
@@ -269,8 +276,47 @@ private val CachePolicy.description: String
     }
 
 /**
- * Offline mode toggle switch.
+ * Material You dynamic colors (Android 12+). When off, uses the app Refined Explorer palette.
  */
+@Composable
+private fun DynamicColorSwitch(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Dynamic colors",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Match wallpaper accents on Android 12+. Turn off to always use Explorer theme colors.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle
+            )
+        }
+    }
+}
+
 @Composable
 private fun OfflineModeSwitch(
     enabled: Boolean,

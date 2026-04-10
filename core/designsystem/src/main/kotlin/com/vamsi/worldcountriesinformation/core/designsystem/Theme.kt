@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
 private val AppShapes = Shapes(
@@ -115,9 +116,14 @@ fun WorldCountriesTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.surface.toArgb()
+            val surfaceArgb = colorScheme.surface.toArgb()
+            window.statusBarColor = surfaceArgb
+            window.navigationBarColor = surfaceArgb
             val insetsController = WindowCompat.getInsetsController(window, view)
-            insetsController.isAppearanceLightStatusBars = !darkTheme
+            // Follow wallpaper / dynamic schemes: use surface luminance, not only light/dark mode.
+            val useLightStatusBarIcons = ColorUtils.calculateLuminance(surfaceArgb) > 0.5
+            insetsController.isAppearanceLightStatusBars = useLightStatusBarIcons
+            insetsController.isAppearanceLightNavigationBars = useLightStatusBarIcons
         }
     }
 

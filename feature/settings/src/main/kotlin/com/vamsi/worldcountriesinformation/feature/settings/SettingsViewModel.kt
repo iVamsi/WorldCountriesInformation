@@ -146,6 +146,16 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun updateUseDynamicColor(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesDataSource.updateUseDynamicColor(enabled)
+            } catch (e: Exception) {
+                _errorMessage.value = "Failed to update appearance: ${e.message}"
+            }
+        }
+    }
+
     /**
      * Clears all cached data from the database.
      *

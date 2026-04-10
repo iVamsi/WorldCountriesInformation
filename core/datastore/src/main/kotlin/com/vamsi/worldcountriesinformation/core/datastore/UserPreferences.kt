@@ -14,12 +14,16 @@ package com.vamsi.worldcountriesinformation.core.datastore
  *                                   cache was last manually cleared by the user.
  * @property themeMode The theme preference (SYSTEM, LIGHT, DARK).
  *                     Reserved for future implementation.
+ * @property useDynamicColor When true (default), Android 12+ uses Material You
+ *                           colors from the wallpaper; when false, the app uses
+ *                           the static Refined Explorer palette from the design system.
  */
 data class UserPreferences(
     val cachePolicy: CachePolicy = CachePolicy.CACHE_FIRST,
     val offlineMode: Boolean = false,
     val lastCacheClearTimestamp: Long = 0L,
-    val themeMode: ThemeMode = ThemeMode.SYSTEM
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val useDynamicColor: Boolean = true,
 )
 
 /**

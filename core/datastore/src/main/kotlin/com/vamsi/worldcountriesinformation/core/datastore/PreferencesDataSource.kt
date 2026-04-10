@@ -54,6 +54,7 @@ class PreferencesDataSource @Inject constructor(
         val OFFLINE_MODE = booleanPreferencesKey("offline_mode")
         val LAST_CACHE_CLEAR = longPreferencesKey("last_cache_clear_timestamp")
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
     }
 
     /**
@@ -146,6 +147,16 @@ class PreferencesDataSource @Inject constructor(
     }
 
     /**
+     * Enables or disables Material You dynamic colors on Android 12+.
+     * When disabled, the app uses the static Refined Explorer palette.
+     */
+    suspend fun updateUseDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.USE_DYNAMIC_COLOR] = enabled
+        }
+    }
+
+    /**
      * Clears all preferences, resetting them to default values.
      *
      * Use with caution - this will reset all user settings.
@@ -189,7 +200,8 @@ class PreferencesDataSource @Inject constructor(
             cachePolicy = cachePolicy,
             offlineMode = preferences[PreferencesKeys.OFFLINE_MODE] ?: false,
             lastCacheClearTimestamp = preferences[PreferencesKeys.LAST_CACHE_CLEAR] ?: 0L,
-            themeMode = themeMode
+            themeMode = themeMode,
+            useDynamicColor = preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: true
         )
     }
 }

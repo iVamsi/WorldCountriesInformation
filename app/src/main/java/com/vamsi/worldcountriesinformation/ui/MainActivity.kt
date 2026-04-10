@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,8 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.R
+import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
+import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import com.vamsi.worldcountriesinformation.core.designsystem.GradientBackground
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
@@ -24,6 +28,7 @@ import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationSta
 import com.vamsi.worldcountriesinformation.ui.compose.navigation.WorldCountriesNavigation
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
 /**
  * Main entry point for the World Countries Information application.
@@ -43,6 +48,9 @@ class MainActivity : ComponentActivity() {
     // State to trigger recomposition when a new intent arrives
     private var currentIntent by mutableStateOf<Intent?>(null)
 
+    @Inject
+    lateinit var preferencesDataSource: PreferencesDataSource
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -51,7 +59,14 @@ class MainActivity : ComponentActivity() {
         currentIntent = intent
 
         setContent {
-            WorldCountriesTheme {
+            val userPrefs by preferencesDataSource.userPreferences.collectAsStateWithLifecycle(
+                initialValue = UserPreferences(),
+                lifecycle = lifecycle,
+            )
+            WorldCountriesTheme(
+                darkTheme = isSystemInDarkTheme(),
+                dynamicColor = userPrefs.useDynamicColor,
+            ) {
                 SnapNotifyProvider {
                     GradientBackground(modifier = Modifier.fillMaxSize()) {
                         // Create navigation state and navigator
