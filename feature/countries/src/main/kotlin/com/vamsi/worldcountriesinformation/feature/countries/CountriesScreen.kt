@@ -11,7 +11,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -36,7 +35,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -57,7 +55,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,7 +98,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
-import com.vamsi.worldcountriesinformation.core.designsystem.component.fadeInScaleUp
+import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -108,7 +107,6 @@ import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -233,7 +231,7 @@ private fun CountriesScreenContent(
                 title = {
                     Text(
                         "Countries",
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.titleLargeEmphasized
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -563,21 +561,17 @@ private fun ScrollableCountriesContent(
             }
 
             else -> {
-                itemsIndexed(
+                // No staggered fade-in here: lazy items use list index, so delays made rows stay
+                // invisible (alpha 0) while flinging until scroll stopped.
+                items(
                     items = state.filteredCountries,
-                    key = { _, country -> country.threeLetterCode }
-                ) { index, country ->
-                    var hasAppeared by remember { mutableStateOf(false) }
-                    LaunchedEffect(Unit) {
-                        delay((index * 25L).coerceAtMost(120))
-                        hasAppeared = true
-                    }
+                    key = { it.threeLetterCode }
+                ) { country ->
                     CountryCard(
                         country = country,
                         isFavorite = state.favoriteCountryCodes.contains(country.threeLetterCode),
                         onClick = { onIntent(CountriesContract.Intent.CountryClicked(country.threeLetterCode)) },
-                        onFavoriteClick = { onIntent(CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)) },
-                        modifier = Modifier.fadeInScaleUp(visible = hasAppeared)
+                        onFavoriteClick = { onIntent(CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)) }
                     )
                 }
             }
@@ -600,7 +594,7 @@ private fun RegionFilters(
         ) {
             Text(
                 text = "Filter by Region",
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLargeEmphasized
             )
             if (selectedRegions.isNotEmpty()) {
                 Text(
@@ -645,7 +639,7 @@ private fun SortSelector(
     ) {
         Text(
             text = "Sort",
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLargeEmphasized
         )
 
         Box {
@@ -698,7 +692,7 @@ private fun RecentlyViewedSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = "Recently viewed",
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
         LazyRow(
@@ -919,7 +913,7 @@ private fun CountryCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = country.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMediumEmphasized
                 )
                 Text(
                     text = country.capital,
@@ -931,7 +925,7 @@ private fun CountryCard(
             // Favorite button with scale animation
             val favoriteScale by animateFloatAsState(
                 targetValue = if (isFavorite) 1.1f else 1f,
-                animationSpec = tween(200),
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
                 label = "favoriteScale"
             )
             IconButton(
@@ -966,7 +960,7 @@ private fun SearchHistorySection(
         ) {
             Text(
                 text = "Recent searches",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMediumEmphasized
             )
             TextButton(onClick = onClearAll) {
                 Text("Clear all")
@@ -1065,7 +1059,7 @@ private fun SearchSuggestionsSection(
         ) {
             Text(
                 text = "Suggestions",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMediumEmphasized
             )
         }
 
@@ -1111,6 +1105,7 @@ private fun SearchSuggestionItemRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(
@@ -1118,9 +1113,8 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(48.dp),
-                strokeWidth = 3.dp
+            LoadingIndicator(
+                modifier = Modifier.size(48.dp)
             )
             Spacer(Modifier.height(16.dp))
             Text(
@@ -1198,7 +1192,7 @@ private fun EmptySearchResults(
         Spacer(Modifier.height(16.dp))
         Text(
             text = "No results for \"$query\"",
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMediumEmphasized
         )
         Spacer(Modifier.height(8.dp))
         TextButton(onClick = onClearSearch) {
@@ -1221,12 +1215,14 @@ private fun CountriesScreenPreview() {
         lastUpdated = System.currentTimeMillis()
     )
 
-    CountriesScreenContent(
-        state = previewState,
-        listState = rememberLazyListState(),
-        onNavigateToSettings = {},
-        onIntent = {}
-    )
+    WorldCountriesTheme {
+        CountriesScreenContent(
+            state = previewState,
+            listState = rememberLazyListState(),
+            onNavigateToSettings = {},
+            onIntent = {}
+        )
+    }
 }
 
 @Preview(showBackground = true, name = "Countries • Search History")
@@ -1243,12 +1239,14 @@ private fun CountriesScreenSearchHistoryPreview() {
         )
     )
 
-    CountriesScreenContent(
-        state = previewState,
-        listState = rememberLazyListState(),
-        onNavigateToSettings = {},
-        onIntent = {}
-    )
+    WorldCountriesTheme {
+        CountriesScreenContent(
+            state = previewState,
+            listState = rememberLazyListState(),
+            onNavigateToSettings = {},
+            onIntent = {}
+        )
+    }
 }
 
 private val PreviewCountries = listOf(

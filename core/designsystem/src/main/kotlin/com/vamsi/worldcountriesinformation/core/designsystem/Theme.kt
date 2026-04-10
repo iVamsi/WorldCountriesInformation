@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.vamsi.worldcountriesinformation.core.designsystem
 
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -19,11 +23,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 private val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(16.dp),
-    large = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(24.dp)
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    largeIncreased = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+    extraLargeIncreased = RoundedCornerShape(32.dp),
+    extraExtraLarge = RoundedCornerShape(48.dp)
 )
 
 private val LightColors = lightColorScheme(
@@ -91,7 +98,7 @@ fun WorldCountriesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     /// When true, uses system accent on Android 12+. When false, uses our
     /// accessibility-tested palette (WCAG AA contrast, Explorer theme).
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -114,8 +121,9 @@ fun WorldCountriesTheme(
         }
     }
 
-    MaterialTheme(
+    MaterialExpressiveTheme(
         colorScheme = colorScheme,
+        motionScheme = MotionScheme.expressive(),
         typography = Typography,
         shapes = AppShapes,
         content = content

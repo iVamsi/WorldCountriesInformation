@@ -20,7 +20,8 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -163,8 +164,7 @@ private fun SettingsSection(
     Column {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -313,6 +313,7 @@ private fun OfflineModeSwitch(
 /**
  * Cache statistics display card.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CacheStatisticsCard(
     stats: CacheStats,
@@ -337,7 +338,7 @@ private fun CacheStatisticsCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    CircularProgressIndicator()
+                    LoadingIndicator()
                 }
             } else {
                 // Entry Count

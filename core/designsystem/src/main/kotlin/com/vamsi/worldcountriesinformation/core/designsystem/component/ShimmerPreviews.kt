@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 @Preview(name = "Simple Shimmer", showBackground = true)
 @Composable
 private fun SimpleShimmerPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -52,7 +52,7 @@ private fun SimpleShimmerPreview() {
 @Preview(name = "Circular Shimmer", showBackground = true)
 @Composable
 private fun CircularShimmerPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -70,7 +70,7 @@ private fun CircularShimmerPreview() {
 @Preview(name = "Card Shimmer Layout", showBackground = true)
 @Composable
 private fun CardShimmerPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -120,7 +120,7 @@ private fun CardShimmerPreview() {
 @Preview(name = "Multiple Shimmers", showBackground = true)
 @Composable
 private fun MultipleShimmersPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,7 +177,7 @@ private fun MultipleShimmersPreview() {
 @Preview(name = "List Item Shimmer", showBackground = true)
 @Composable
 private fun ListItemShimmerPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

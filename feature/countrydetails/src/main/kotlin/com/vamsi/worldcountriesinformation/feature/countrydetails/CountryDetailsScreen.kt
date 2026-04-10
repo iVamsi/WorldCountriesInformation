@@ -28,8 +28,9 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -341,8 +342,7 @@ private fun CountryDetailsScreen(
                 item {
                     Text(
                         text = "Country Information",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLargeEmphasized,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
                 }
@@ -382,7 +382,7 @@ private fun CountryFlagCard(country: Country) {
         modifier = Modifier
             .fillMaxWidth()
             .height(220.dp),
-        shape = MaterialTheme.shapes.large,
+        shape = MaterialTheme.shapes.extraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
@@ -398,7 +398,7 @@ private fun CountryFlagCard(country: Country) {
                     contentDescription = "Flag of ${country.name}",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(MaterialTheme.shapes.large),
+                        .clip(MaterialTheme.shapes.extraLarge),
                     contentScale = ContentScale.FillBounds
                 )
             } else {
@@ -413,7 +413,7 @@ private fun CountryFlagCard(country: Country) {
                     ) {
                         Text(
                             text = country.twoLetterCode,
-                            style = MaterialTheme.typography.displayLarge,
+                            style = MaterialTheme.typography.displayLargeEmphasized,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -506,13 +506,17 @@ private fun OpenInMapsButton(
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text("Open in Maps")
+        Text(
+            text = "Open in Maps",
+            style = MaterialTheme.typography.labelLargeEmphasized
+        )
     }
 }
 
 /**
  * Section showing nearby countries in the same region.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun NearbyCountriesSection(
     region: String,
@@ -525,8 +529,7 @@ private fun NearbyCountriesSection(
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Nearby Countries ($region)",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.titleLargeEmphasized,
             modifier = Modifier.padding(bottom = 12.dp)
         )
 
@@ -538,7 +541,7 @@ private fun NearbyCountriesSection(
                         .height(120.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    LoadingIndicator(modifier = Modifier.size(32.dp))
                 }
             }
 
@@ -640,7 +643,7 @@ private fun NearbyCountryCard(
                     ) {
                         Text(
                             text = CountryDetailsViewModel.countryCodeToFlagEmoji(country.twoLetterCode),
-                            style = MaterialTheme.typography.headlineMedium
+                            style = MaterialTheme.typography.headlineMediumEmphasized
                         )
                     }
                 }
@@ -651,8 +654,7 @@ private fun NearbyCountryCard(
             // Country name
             Text(
                 text = country.name,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.labelMediumEmphasized,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
@@ -696,9 +698,8 @@ private fun CountryDetailItem(
         ) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -810,7 +811,7 @@ private fun getSampleCountry() = Country(
 @Preview(name = "Country Details Screen", showBackground = true)
 @Composable
 private fun CountryDetailsScreenPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         val country = getSampleCountry()
         CountryDetailsScreen(
             country = country,
@@ -828,7 +829,7 @@ private fun CountryDetailsScreenPreview() {
 @Preview(name = "Country Details Screen - Favorite", showBackground = true)
 @Composable
 private fun CountryDetailsScreenFavoritePreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         val country = getSampleCountry()
         CountryDetailsScreen(
             country = country,
@@ -846,7 +847,7 @@ private fun CountryDetailsScreenFavoritePreview() {
 @Preview(name = "Country Flag Card", showBackground = true)
 @Composable
 private fun CountryFlagCardPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         CountryFlagCard(country = getSampleCountry())
     }
 }
@@ -854,7 +855,7 @@ private fun CountryFlagCardPreview() {
 @Preview(name = "Country Detail Item", showBackground = true)
 @Composable
 private fun CountryDetailItemPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         CountryDetailItem(
             label = "Capital City",
             value = "Washington, D.C."
@@ -865,7 +866,7 @@ private fun CountryDetailItemPreview() {
 @Preview(name = "Nearby Countries Section", showBackground = true)
 @Composable
 private fun NearbyCountriesSectionPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         NearbyCountriesSection(
             region = "Americas",
             nearbyCountries = getSampleNearbyCountries(),
@@ -878,7 +879,7 @@ private fun NearbyCountriesSectionPreview() {
 @Preview(name = "Error Content", showBackground = true)
 @Composable
 private fun CountryDetailsErrorContentPreview() {
-    MaterialTheme {
+    WorldCountriesTheme {
         CountryDetailsErrorContent(
             message = "Failed to load country details. Please try again.",
             onRetry = {},
