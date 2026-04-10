@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.vamsi.worldcountriesinformation.feature.countries
 
 import android.app.Activity
@@ -8,9 +10,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -257,8 +257,12 @@ private fun CountriesScreenContent(
                     (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0)
             AnimatedVisibility(
                 visible = showFab,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut()
+                enter = expandVertically(
+                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
+                ) + fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
+                exit = shrinkVertically(
+                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
+                ) + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec())
             ) {
                 val coroutineScope = rememberCoroutineScope()
                 ExtendedFloatingActionButton(
@@ -397,21 +401,18 @@ private fun SearchBar(
 
     Row(
         modifier = modifier.animateContentSize(
-            animationSpec = spring(
-                stiffness = Spring.StiffnessMediumLow,
-                dampingRatio = Spring.DampingRatioMediumBouncy
-            )
+            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
         ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AnimatedVisibility(
             visible = isFocused,
             enter = expandHorizontally(
-                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy)
-            ) + fadeIn(),
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
+            ) + fadeIn(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
             exit = shrinkHorizontally(
-                animationSpec = spring(dampingRatio = Spring.DampingRatioNoBouncy)
-            ) + fadeOut()
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
+            ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec())
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -1105,7 +1106,6 @@ private fun SearchSuggestionItemRow(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
     Box(

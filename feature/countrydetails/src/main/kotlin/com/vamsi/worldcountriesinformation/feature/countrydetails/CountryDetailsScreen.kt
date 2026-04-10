@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import android.content.Intent
@@ -29,9 +31,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -316,52 +319,63 @@ private fun CountryDetailsScreen(
         ) {
             val detailsList = getCountryDetailsList(country)
 
-            LazyColumn(
-                modifier = modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Country Flag
-                item {
-                    CountryFlagCard(country = country)
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Wavy progress indicator during refresh
+                if (isRefreshing) {
+                    LinearWavyProgressIndicator(
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
 
-                // Map with "Open in Maps" button
-                item {
-                    CountryMapCard(country = country)
-                }
-
-                // "Open in Maps" action button
-                if (country.latitude != 0.0 || country.longitude != 0.0) {
+                LazyColumn(
+                    modifier = modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Country Flag
                     item {
-                        OpenInMapsButton(onClick = onOpenInMapsClick)
+                        CountryFlagCard(country = country)
                     }
-                }
 
-                // Country Details
-                item {
-                    Text(
-                        text = "Country Information",
-                        style = MaterialTheme.typography.titleLargeEmphasized,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
+                    // Map with "Open in Maps" button
+                    item {
+                        CountryMapCard(country = country)
+                    }
 
-                items(detailsList) { detail ->
-                    CountryDetailItem(
-                        label = detail.label,
-                        value = detail.value
-                    )
-                }
+                    // "Open in Maps" action button
+                    if (country.latitude != 0.0 || country.longitude != 0.0) {
+                        item {
+                            OpenInMapsButton(onClick = onOpenInMapsClick)
+                        }
+                    }
 
-                // Nearby Countries section
-                item {
-                    NearbyCountriesSection(
-                        region = country.region,
-                        nearbyCountries = nearbyCountries,
-                        isLoading = isLoadingNearby,
-                        onCountryClick = onNearbyCountryClick
-                    )
+                    // Country Details
+                    item {
+                        Text(
+                            text = "Country Information",
+                            style = MaterialTheme.typography.titleLargeEmphasized,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
+                    items(detailsList) { detail ->
+                        CountryDetailItem(
+                            label = detail.label,
+                            value = detail.value
+                        )
+                    }
+
+                    // Nearby Countries section
+                    item {
+                        NearbyCountriesSection(
+                            region = country.region,
+                            nearbyCountries = nearbyCountries,
+                            isLoading = isLoadingNearby,
+                            onCountryClick = onNearbyCountryClick
+                        )
+                    }
                 }
             }
         }
@@ -378,12 +392,16 @@ private fun CountryFlagCard(country: Country) {
         context.packageName
     )
 
+    // Hero moment: expressive shape + elevated card for the flag
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp),
-        shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .height(240.dp),
+        shape = MaterialTheme.shapes.extraExtraLarge,
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -398,14 +416,14 @@ private fun CountryFlagCard(country: Country) {
                     contentDescription = "Flag of ${country.name}",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(MaterialTheme.shapes.extraLarge),
+                        .clip(MaterialTheme.shapes.extraExtraLarge),
                     contentScale = ContentScale.FillBounds
                 )
             } else {
                 // Fallback if flag not found
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -414,7 +432,7 @@ private fun CountryFlagCard(country: Country) {
                         Text(
                             text = country.twoLetterCode,
                             style = MaterialTheme.typography.displayLargeEmphasized,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
@@ -431,7 +449,7 @@ private fun CountryMapCard(country: Country) {
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp),
-        shape = MaterialTheme.shapes.large,
+        shape = MaterialTheme.shapes.extraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         if (country.latitude != 0.0 && country.longitude != 0.0) {
@@ -498,7 +516,7 @@ private fun OpenInMapsButton(
     FilledTonalButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium
+        shape = MaterialTheme.shapes.large
     ) {
         Icon(
             imageVector = Icons.Default.Map,
@@ -516,7 +534,6 @@ private fun OpenInMapsButton(
 /**
  * Section showing nearby countries in the same region.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun NearbyCountriesSection(
     region: String,
@@ -541,7 +558,7 @@ private fun NearbyCountriesSection(
                         .height(120.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    LoadingIndicator(modifier = Modifier.size(32.dp))
+                    ContainedLoadingIndicator(modifier = Modifier.size(48.dp))
                 }
             }
 
@@ -685,7 +702,7 @@ private fun CountryDetailItem(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
