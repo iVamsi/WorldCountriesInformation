@@ -65,7 +65,7 @@ coroutines = "1.10.2"
 
 # JSON & Serialization
 gson = "2.13.2"
-kotlinx-serialization = "1.10.0"
+kotlinx-serialization = "1.11.0"
 
 # DataStore
 datastore = "1.2.1"
