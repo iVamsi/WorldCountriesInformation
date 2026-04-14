@@ -1,14 +1,14 @@
-name: Android CI
+# Run unit tests, lint, and debug assemble on push/PR.
+name: CI
 
 on:
   workflow_dispatch:
   push:
-    branches: [master, main]
+    branches: [main, master]
   pull_request:
-    branches: [master, main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -19,7 +19,6 @@ env:
 
 jobs:
   build:
-    name: Build & unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -44,11 +43,17 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run unit tests (JVM + Android)
+        run: ./gradlew test testDebugUnitTest --stacktrace
+
+      - name: Run lint
+        run: ./gradlew lintDebug --stacktrace
+
       - name: Assemble debug
         run: ./gradlew assembleDebug --stacktrace
-
-      - name: Unit tests (JVM + Android)
-        run: ./gradlew test testDebugUnitTest --stacktrace
 
       - name: Upload unit test results
         if: always()
@@ -59,32 +64,6 @@ jobs:
             **/build/test-results/test/**/*.xml
             **/build/test-results/testDebugUnitTest/**/*.xml
           if-no-files-found: ignore
-
-  lint:
-    name: Lint (debug)
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          packages: tools platform-tools platforms;android-36
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-
-      - name: Lint
-        run: ./gradlew lintDebug --stacktrace
 
       - name: Upload lint reports
         if: always()
