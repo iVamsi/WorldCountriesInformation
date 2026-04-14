@@ -16,6 +16,7 @@
 
 package com.vamsi.worldcountriesinformation.domain.core
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -28,7 +29,10 @@ import kotlinx.coroutines.flow.flowOn
  */
 abstract class FlowUseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) {
     operator fun invoke(parameters: P): Flow<ApiResponse<R>> = execute(parameters)
-        .catch { e -> emit(ApiResponse.Error(Exception(e))) }
+        .catch { e ->
+            if (e is CancellationException) throw e
+            emit(ApiResponse.Error(Exception(e)))
+        }
         .flowOn(coroutineDispatcher)
 
     protected abstract fun execute(parameters: P): Flow<ApiResponse<R>>

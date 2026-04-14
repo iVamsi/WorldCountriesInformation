@@ -1,6 +1,7 @@
 name: Android CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [master, main]
   pull_request:
@@ -12,6 +13,9 @@ concurrency:
 
 permissions:
   contents: read
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx4g -Dorg.gradle.daemon=false -Dkotlin.incremental=false
 
 jobs:
   build:
@@ -41,17 +45,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Assemble debug
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: Unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
+      - name: Unit tests (JVM + Android)
+        run: ./gradlew test testDebugUnitTest --stacktrace
 
       - name: Upload unit test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: unit-test-results
-          path: '**/build/test-results/testDebugUnitTest/**/*.xml'
+          path: |
+            **/build/test-results/test/**/*.xml
+            **/build/test-results/testDebugUnitTest/**/*.xml
           if-no-files-found: ignore
 
   lint:
@@ -78,7 +84,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Lint
-        run: ./gradlew lintDebug --no-daemon --stacktrace
+        run: ./gradlew lintDebug --stacktrace
 
       - name: Upload lint reports
         if: always()

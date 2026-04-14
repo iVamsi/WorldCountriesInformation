@@ -44,7 +44,7 @@ private val Context.searchDataStore: DataStore<Preferences> by preferencesDataSt
 class SearchPreferencesDataSource @Inject constructor(
     @ApplicationContext private val context: Context,
     private val json: Json,
-) {
+) : SearchPreferencesPort {
     companion object {
         private const val MAX_HISTORY_SIZE = 10
         private const val MAX_RECENTLY_VIEWED_SIZE = 20
@@ -67,7 +67,7 @@ class SearchPreferencesDataSource @Inject constructor(
      *
      * Emits current preferences and all updates reactively.
      */
-    val searchPreferences: Flow<SearchPreferences> = context.searchDataStore.data
+    override val searchPreferences: Flow<SearchPreferences> = context.searchDataStore.data
         .catch { exception ->
             if (exception is IOException) {
                 emit(androidx.datastore.preferences.core.emptyPreferences())
@@ -84,7 +84,7 @@ class SearchPreferencesDataSource @Inject constructor(
      *
      * @param regions Set of region names to filter by
      */
-    suspend fun updateSelectedRegions(regions: Set<String>) {
+    override suspend fun updateSelectedRegions(regions: Set<String>) {
         context.searchDataStore.edit { preferences ->
             preferences[Keys.SELECTED_REGIONS] = regions.joinToString(",")
         }
@@ -106,7 +106,7 @@ class SearchPreferencesDataSource @Inject constructor(
      *
      * @param sortOrder The new sort order
      */
-    suspend fun updateSortOrder(sortOrder: SortOrder) {
+    override suspend fun updateSortOrder(sortOrder: SortOrder) {
         context.searchDataStore.edit { preferences ->
             preferences[Keys.SORT_ORDER] = sortOrder.name
         }
@@ -132,7 +132,7 @@ class SearchPreferencesDataSource @Inject constructor(
      *
      * @param query The search query to add
      */
-    suspend fun addToSearchHistory(query: String) {
+    override suspend fun addToSearchHistory(query: String) {
         if (query.isBlank()) return
 
         context.searchDataStore.edit { preferences ->
@@ -151,7 +151,7 @@ class SearchPreferencesDataSource @Inject constructor(
      *
      * Maintains a maximum of 20 recent countries.
      */
-    suspend fun addToRecentlyViewedCountry(countryCode: String) {
+    override suspend fun addToRecentlyViewedCountry(countryCode: String) {
         val normalizedCode = countryCode.trim().uppercase()
         if (normalizedCode.isBlank()) return
 
@@ -193,7 +193,7 @@ class SearchPreferencesDataSource @Inject constructor(
     /**
      * Removes a single search history entry that matches the provided query.
      */
-    suspend fun removeFromSearchHistory(query: String) {
+    override suspend fun removeFromSearchHistory(query: String) {
         if (query.isBlank()) return
 
         context.searchDataStore.edit { preferences ->
@@ -243,7 +243,7 @@ class SearchPreferencesDataSource @Inject constructor(
     /**
      * Clears all search history.
      */
-    suspend fun clearSearchHistory() {
+    override suspend fun clearSearchHistory() {
         context.searchDataStore.edit { preferences ->
             preferences[Keys.SEARCH_HISTORY] =
                 json.encodeToString(emptyList<SearchHistoryEntryDto>())
@@ -264,7 +264,7 @@ class SearchPreferencesDataSource @Inject constructor(
     /**
      * Clears all search filters.
      */
-    suspend fun clearFilters() {
+    override suspend fun clearFilters() {
         context.searchDataStore.edit { preferences ->
             preferences[Keys.SELECTED_REGIONS] = ""
             preferences[Keys.SELECTED_SUBREGIONS] = ""

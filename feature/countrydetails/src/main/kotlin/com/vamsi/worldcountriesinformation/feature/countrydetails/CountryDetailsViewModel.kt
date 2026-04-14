@@ -2,7 +2,7 @@ package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
-import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
@@ -12,10 +12,12 @@ import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseC
 import com.vamsi.worldcountriesinformation.domain.countries.GetNearbyCountriesUseCase
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.NumberFormat
+import java.time.Clock
 import java.util.Locale
 import javax.inject.Inject
 
@@ -30,7 +32,8 @@ import javax.inject.Inject
 class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
     private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase,
-    private val searchPreferencesDataSource: SearchPreferencesDataSource,
+    private val searchPreferencesDataSource: SearchPreferencesPort,
+    private val clock: Clock,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
     initialState = CountryDetailsContract.State()
 ) {
@@ -64,6 +67,7 @@ class CountryDetailsViewModel @Inject constructor(
 
             getCountryByCodeUseCase(CountryByCodeParams(countryCode, policy))
                 .catch { exception ->
+                    if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading country: $countryCode")
                     setState {
                         copy(
@@ -89,7 +93,7 @@ class CountryDetailsViewModel @Inject constructor(
                                     isLoading = false,
                                     isRefreshing = false,
                                     country = country,
-                                    lastUpdated = System.currentTimeMillis(),
+                                    lastUpdated = clock.millis(),
                                     errorMessage = null
                                 )
                             }
@@ -250,7 +254,7 @@ class CountryDetailsViewModel @Inject constructor(
     fun getCacheAge(): String {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.getCacheAgeDescription(timestamp)
+            CachePolicy.getCacheAgeDescription(timestamp, clock.millis())
         } else {
             "Never"
         }
@@ -262,7 +266,7 @@ class CountryDetailsViewModel @Inject constructor(
     fun isCacheFresh(): Boolean {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.isCacheFresh(timestamp)
+            CachePolicy.isCacheFresh(timestamp, nowMillis = clock.millis())
         } else {
             false
         }

@@ -362,9 +362,10 @@ enum class CachePolicy {
          */
         fun isCacheFresh(
             lastUpdated: Long,
-            validityPeriodMs: Long = DEFAULT_CACHE_VALIDITY_MS
+            validityPeriodMs: Long = DEFAULT_CACHE_VALIDITY_MS,
+            nowMillis: Long = System.currentTimeMillis(),
         ): Boolean {
-            val age = System.currentTimeMillis() - lastUpdated
+            val age = nowMillis - lastUpdated
             return age < validityPeriodMs
         }
 
@@ -372,20 +373,28 @@ enum class CachePolicy {
          * Gets the age of cached data in milliseconds.
          *
          * @param lastUpdated Timestamp when data was last updated
+         * @param nowMillis Wall clock time to compare against (for tests, inject via caller)
          * @return Age in milliseconds
          */
-        fun getCacheAge(lastUpdated: Long): Long {
-            return System.currentTimeMillis() - lastUpdated
+        fun getCacheAge(
+            lastUpdated: Long,
+            nowMillis: Long = System.currentTimeMillis(),
+        ): Long {
+            return nowMillis - lastUpdated
         }
 
         /**
          * Gets a human-readable description of cache age.
          *
          * @param lastUpdated Timestamp when data was last updated
+         * @param nowMillis Wall clock time to compare against (for tests, inject via caller)
          * @return Human-readable string (e.g., "2 hours ago", "3 days ago")
          */
-        fun getCacheAgeDescription(lastUpdated: Long): String {
-            val ageMs = getCacheAge(lastUpdated)
+        fun getCacheAgeDescription(
+            lastUpdated: Long,
+            nowMillis: Long = System.currentTimeMillis(),
+        ): String {
+            val ageMs = getCacheAge(lastUpdated, nowMillis)
             val ageSeconds = ageMs / 1000
             val ageMinutes = ageSeconds / 60
             val ageHours = ageMinutes / 60

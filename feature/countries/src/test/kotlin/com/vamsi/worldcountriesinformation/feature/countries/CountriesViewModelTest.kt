@@ -1,7 +1,7 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
 import app.cash.turbine.test
-import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountriesUseCase
@@ -35,6 +35,9 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 /**
  * Unit tests for CountriesViewModel.
@@ -55,10 +58,15 @@ class CountriesViewModelTest {
     private lateinit var searchCountriesUseCase: SearchCountriesUseCase
     private lateinit var filteredSearchUseCase: FilteredSearchCountriesUseCase
     private lateinit var suggestionsUseCase: GenerateSearchSuggestionsUseCase
-    private lateinit var searchPreferencesDataSource: SearchPreferencesDataSource
+    private lateinit var searchPreferencesDataSource: SearchPreferencesPort
     private lateinit var searchFiltersUseCase: com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
 
     private val testDispatcher = StandardTestDispatcher()
+
+    private val testClock: Clock = Clock.fixed(
+        Instant.parse("2024-06-15T12:00:00Z"),
+        ZoneOffset.UTC,
+    )
 
     private val testCountries = listOf(
         Country(
@@ -135,7 +143,8 @@ class CountriesViewModelTest {
             filteredSearchUseCase = filteredSearchUseCase,
             suggestionsUseCase = suggestionsUseCase,
             searchPreferencesDataSource = searchPreferencesDataSource,
-            searchFiltersUseCase = searchFiltersUseCase
+            searchFiltersUseCase = searchFiltersUseCase,
+            clock = testClock,
         )
     }
 
@@ -651,5 +660,22 @@ class CountriesViewModelTest {
 
         // Then
         coVerify { getCountriesUseCase(CachePolicy.CACHE_FIRST) }
+    }
+
+    @Test
+    fun `toggle region updates fake search preferences port`() = runTest {
+        searchPreferencesDataSource = FakeSearchPreferencesPort()
+        coEvery { getCountriesUseCase(any()) } returns flowOf(
+            ApiResponse.Loading,
+            ApiResponse.Success(testCountries),
+        )
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.processIntent(CountriesContract.Intent.ToggleRegion("Europe"))
+        advanceUntilIdle()
+
+        val fake = searchPreferencesDataSource as FakeSearchPreferencesPort
+        assertTrue(fake.prefsState.value.filters.selectedRegions.contains("Europe"))
     }
 }

@@ -1,5 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.core
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -24,6 +25,8 @@ abstract class UseCase<in P, R>(private val coroutineDispatcher: CoroutineDispat
                     ApiResponse.Success(it)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             ApiResponse.Error(e)
         }

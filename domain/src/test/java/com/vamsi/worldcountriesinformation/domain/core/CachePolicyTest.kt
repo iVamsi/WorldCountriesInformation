@@ -301,6 +301,25 @@ class CachePolicyTest {
         assertEquals(24 * 60 * 60 * 1000L, CachePolicy.DEFAULT_CACHE_VALIDITY_MS)
     }
 
+    @Test
+    fun `isCacheFresh uses explicit nowMillis for deterministic tests`() {
+        val now = 10_000_000L
+        val oneHourAgo = now - 3_600_000L
+        assertTrue(CachePolicy.isCacheFresh(oneHourAgo, nowMillis = now))
+        val twoDaysAgo = now - 48 * 3_600_000L
+        assertFalse(CachePolicy.isCacheFresh(twoDaysAgo, nowMillis = now))
+    }
+
+    @Test
+    fun `getCacheAgeDescription uses explicit nowMillis`() {
+        val now = 10_000_000L
+        val thirtyMinutesAgo = now - 30 * 60 * 1000L
+        assertEquals(
+            "30 minutes ago",
+            CachePolicy.getCacheAgeDescription(thirtyMinutesAgo, nowMillis = now),
+        )
+    }
+
     // ===========================================
     // Integration Tests (Multiple Policies)
     // ===========================================

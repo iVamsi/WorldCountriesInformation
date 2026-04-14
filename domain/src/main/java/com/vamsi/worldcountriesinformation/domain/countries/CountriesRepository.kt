@@ -394,4 +394,14 @@ interface CountriesRepository {
      * @see RefreshCountriesUseCase for a more feature-rich implementation
      */
     suspend fun forceRefresh(): Result<Unit>
+
+    /**
+     * Returns a snapshot of local cache size and oldest row timestamp for diagnostics.
+     */
+    suspend fun getCountryCacheSnapshot(): CountryCacheSnapshot
+
+    /**
+     * Deletes all locally stored countries (does not touch preferences).
+     */
+    suspend fun clearCountryCache()
 }

@@ -3,7 +3,7 @@ package com.vamsi.worldcountriesinformation.feature.countries
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences
-import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
+import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
@@ -18,16 +18,19 @@ import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.Clock
 import javax.inject.Inject
 
 /**
@@ -44,8 +47,9 @@ class CountriesViewModel @Inject constructor(
     private val searchCountriesUseCase: SearchCountriesUseCase,
     private val filteredSearchUseCase: FilteredSearchCountriesUseCase,
     private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
-    private val searchPreferencesDataSource: SearchPreferencesDataSource,
+    private val searchPreferencesDataSource: SearchPreferencesPort,
     private val searchFiltersUseCase: SearchFiltersUseCase,
+    private val clock: Clock,
 ) : MVIViewModel<CountriesContract.Intent, CountriesContract.State, CountriesContract.Effect>(
     initialState = CountriesContract.State()
 ) {
@@ -56,26 +60,26 @@ class CountriesViewModel @Inject constructor(
             initialValue = SearchPreferences()
         )
 
-    private val searchSuggestionsFlow: StateFlow<List<String>> = combine(
-        state,
-        state
-    ) { currentState, _ ->
-        val query = currentState.searchQuery
-        val countries = currentState.countries
-        if (query.length >= 2 && countries.isNotEmpty()) {
-            suggestionsUseCase(
-                query = query,
-                allCountries = countries,
-                maxSuggestions = 5
-            )
-        } else {
-            emptyList()
+    private val searchSuggestionsFlow: StateFlow<List<String>> = state
+        .map { currentState ->
+            val query = currentState.searchQuery
+            val countries = currentState.countries
+            if (query.length >= 2 && countries.isNotEmpty()) {
+                suggestionsUseCase(
+                    query = query,
+                    allCountries = countries,
+                    maxSuggestions = 5
+                )
+            } else {
+                emptyList()
+            }
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = emptyList()
-    )
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = emptyList()
+        )
 
     init {
         // Load countries on initialization
@@ -142,6 +146,7 @@ class CountriesViewModel @Inject constructor(
 
             getCountriesUseCase(policy)
                 .catch { exception ->
+                    if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading countries")
                     setState {
                         copy(
@@ -174,7 +179,7 @@ class CountriesViewModel @Inject constructor(
                                         entries = recentlyViewed,
                                         countries = countries
                                     ),
-                                    lastUpdated = System.currentTimeMillis(),
+                                    lastUpdated = clock.millis(),
                                     errorMessage = null
                                 )
                             }
@@ -447,7 +452,7 @@ class CountriesViewModel @Inject constructor(
     fun getCacheAge(): String {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.getCacheAgeDescription(timestamp)
+            CachePolicy.getCacheAgeDescription(timestamp, clock.millis())
         } else {
             "Never"
         }
@@ -459,7 +464,7 @@ class CountriesViewModel @Inject constructor(
     fun isCacheFresh(): Boolean {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.isCacheFresh(timestamp)
+            CachePolicy.isCacheFresh(timestamp, nowMillis = clock.millis())
         } else {
             false
         }

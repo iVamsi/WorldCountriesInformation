@@ -6,7 +6,7 @@ import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
 import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.ThemeMode
 import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
-import com.vamsi.worldcountriesinformation.core.database.WorldCountriesDatabase
+import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.time.Clock
 import javax.inject.Inject
 
 /**
@@ -22,22 +24,14 @@ import javax.inject.Inject
  * Manages user preferences and cache statistics. Provides state flows for
  * reactive UI updates and methods for updating preferences.
  *
- * Key features:
- * - Reactive preference updates via StateFlow
- * - Cache statistics calculation
- * - Cache clearing with timestamp tracking
- * - Integration with DataStore for persistence
- *
  * @property preferencesDataSource Data source for user preferences
- * @property database Database instance for cache statistics
- *
- * @see UserPreferences
- * @see PreferencesDataSource
+ * @property countriesRepository Repository for cache administration (stats and clear)
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferencesDataSource: PreferencesDataSource,
-    private val database: WorldCountriesDatabase
+    private val countriesRepository: CountriesRepository,
+    private val clock: Clock,
 ) : ViewModel() {
 
     /**
@@ -48,7 +42,7 @@ class SettingsViewModel @Inject constructor(
      *
      * Example:
      * ```kotlin
-     * val preferences by viewModel.userPreferences.collectAsState()
+     * val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
      * Text("Cache Policy: ${preferences.cachePolicy}")
      * ```
      */
@@ -90,17 +84,12 @@ class SettingsViewModel @Inject constructor(
      * This will affect how the app fetches data in future requests.
      *
      * @param policy The new cache policy to apply
-     *
-     * Example:
-     * ```kotlin
-     * viewModel.updateCachePolicy(CachePolicy.NETWORK_FIRST)
-     * ```
      */
     fun updateCachePolicy(policy: CachePolicy) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateCachePolicy(policy)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _errorMessage.value = "Failed to update cache policy: ${e.message}"
             }
         }
@@ -113,17 +102,12 @@ class SettingsViewModel @Inject constructor(
      * and not make any network requests.
      *
      * @param enabled Whether offline mode should be enabled
-     *
-     * Example:
-     * ```kotlin
-     * viewModel.updateOfflineMode(true)
-     * ```
      */
     fun updateOfflineMode(enabled: Boolean) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateOfflineMode(enabled)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _errorMessage.value = "Failed to update offline mode: ${e.message}"
             }
         }
@@ -140,7 +124,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateThemeMode(mode)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _errorMessage.value = "Failed to update theme mode: ${e.message}"
             }
         }
@@ -150,7 +134,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateUseDynamicColor(enabled)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 _errorMessage.value = "Failed to update appearance: ${e.message}"
             }
         }
@@ -165,31 +149,24 @@ class SettingsViewModel @Inject constructor(
      * 3. Refreshes cache statistics
      *
      * Show a confirmation dialog before calling this method.
-     *
-     * Example:
-     * ```kotlin
-     * if (userConfirmed) {
-     *     viewModel.clearCache()
-     * }
-     * ```
      */
     fun clearCache() {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
-            
+
             try {
-                // Clear database
-                database.countryDao().deleteAllCountries()
-                
-                // Update timestamp
-                val timestamp = System.currentTimeMillis()
-                preferencesDataSource.updateLastCacheClear(timestamp)
-                
-                // Reload statistics
+                countriesRepository.clearCountryCache()
+
+                val timestamp = clock.millis()
+                try {
+                    preferencesDataSource.updateLastCacheClear(timestamp)
+                } catch (e: IOException) {
+                    _errorMessage.value = "Cache cleared but failed to save timestamp: ${e.message}"
+                }
+
                 loadCacheStatistics()
-                
-            } catch (e: Exception) {
+            } catch (e: android.database.sqlite.SQLiteException) {
                 _errorMessage.value = "Failed to clear cache: ${e.message}"
             } finally {
                 _isLoading.value = false
@@ -210,24 +187,25 @@ class SettingsViewModel @Inject constructor(
     fun loadCacheStatistics() {
         viewModelScope.launch {
             try {
-                val countryCount = database.countryDao().getCountryCount()
-                val oldestTimestamp = database.countryDao().getOldestTimestamp()
-                
+                val snapshot = countriesRepository.getCountryCacheSnapshot()
+                val countryCount = snapshot.entryCount
+                val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
+
                 val cacheAge = if (oldestTimestamp > 0) {
-                    System.currentTimeMillis() - oldestTimestamp
+                    clock.millis() - oldestTimestamp
                 } else {
                     0L
                 }
-                
+
                 // Rough estimate: ~2KB per country entry
                 val estimatedSizeKB = countryCount * 2
-                
+
                 _cacheStats.value = CacheStats(
                     entryCount = countryCount,
                     oldestEntryAgeMs = cacheAge,
                     estimatedSizeKB = estimatedSizeKB
                 )
-            } catch (e: Exception) {
+            } catch (e: android.database.sqlite.SQLiteException) {
                 _errorMessage.value = "Failed to load cache statistics: ${e.message}"
             }
         }

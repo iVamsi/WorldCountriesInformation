@@ -18,8 +18,7 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:model"))
     implementation(project(":core:datastore"))
-    implementation(project(":core:database"))
-    
+
     // Domain layer
     implementation(project(":domain"))
     
