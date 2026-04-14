@@ -4,7 +4,7 @@ agp = "9.1.0"
 kotlin = "2.3.20"
 ksp = "2.3.6"
 compileSdk = "36"
-minSdk = "24"
+minSdk = "26"
 targetSdk = "36"
 snapnotify = "1.0.6"
 

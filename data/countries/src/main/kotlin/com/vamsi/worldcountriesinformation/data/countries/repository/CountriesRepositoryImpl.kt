@@ -13,7 +13,6 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domain.countries.CountryCacheSnapshot
-import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +24,7 @@ import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
 import timber.log.Timber
 import java.io.IOException
+import java.time.Clock
 import javax.inject.Inject
 
 /**
@@ -38,7 +38,7 @@ import javax.inject.Inject
 class CountriesRepositoryImpl @Inject constructor(
     private val countriesApi: WorldCountriesApi,
     private val countryDao: CountryDao,
-    private val timeProvider: TimeProvider,
+    private val clock: Clock,
 ) : CountriesRepository {
 
     /**
@@ -184,7 +184,7 @@ class CountriesRepositoryImpl @Inject constructor(
             // Determine cache staleness (only for CACHE_FIRST)
             val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
                 val oldestTimestamp = cachedCountries.minOfOrNull { it.lastUpdated } ?: 0L
-                val nowMillis = timeProvider.millis()
+                val nowMillis = clock.millis()
                 val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, nowMillis = nowMillis)
                 Timber.d(
                     "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp, nowMillis)}, fresh=$isFresh"

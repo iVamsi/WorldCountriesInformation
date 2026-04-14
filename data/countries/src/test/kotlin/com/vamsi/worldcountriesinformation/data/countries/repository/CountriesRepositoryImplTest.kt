@@ -5,7 +5,6 @@ import com.vamsi.worldcountriesinformation.core.database.dao.CountryDao
 import com.vamsi.worldcountriesinformation.core.network.WorldCountriesApi
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
-import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -14,10 +13,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.IOException
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 class CountriesRepositoryImplTest {
 
-    private val timeProvider: TimeProvider = TimeProvider { 1_735_689_600_000L }
+    private val clock: Clock =
+        Clock.fixed(Instant.ofEpochMilli(1_735_689_600_000L), ZoneOffset.UTC)
 
     @Test
     fun `FORCE_REFRESH emits error when network throws IOException`() = runTest {
@@ -26,7 +29,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getAllCountriesOnce() } returns emptyList()
         coEvery { api.fetchWorldCountriesInformation() } throws IOException("offline")
 
-        val repo = CountriesRepositoryImpl(api, dao, timeProvider)
+        val repo = CountriesRepositoryImpl(api, dao, clock)
 
         repo.getCountries(CachePolicy.FORCE_REFRESH).test {
             assertEquals(ApiResponse.Loading, awaitItem())
@@ -43,7 +46,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getCountryCount() } returns 42
         coEvery { dao.getOldestTimestamp() } returns 1_000L
 
-        val repo = CountriesRepositoryImpl(api, dao, timeProvider)
+        val repo = CountriesRepositoryImpl(api, dao, clock)
         val snapshot = repo.getCountryCacheSnapshot()
 
         assertEquals(42, snapshot.entryCount)
@@ -58,7 +61,7 @@ class CountriesRepositoryImplTest {
         val dao = mockk<CountryDao>()
         coEvery { dao.deleteAllCountries() } returns Unit
 
-        val repo = CountriesRepositoryImpl(api, dao, timeProvider)
+        val repo = CountriesRepositoryImpl(api, dao, clock)
         repo.clearCountryCache()
 
         coVerify(exactly = 1) { dao.deleteAllCountries() }

@@ -10,7 +10,6 @@ import com.vamsi.worldcountriesinformation.domain.core.onSuccess
 import com.vamsi.worldcountriesinformation.domain.countries.CountryByCodeParams
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetNearbyCountriesUseCase
-import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.NumberFormat
+import java.time.Clock
 import java.util.Locale
 import javax.inject.Inject
 
@@ -33,7 +33,7 @@ class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
     private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase,
     private val searchPreferencesDataSource: SearchPreferencesPort,
-    private val timeProvider: TimeProvider,
+    private val clock: Clock,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
     initialState = CountryDetailsContract.State()
 ) {
@@ -93,7 +93,7 @@ class CountryDetailsViewModel @Inject constructor(
                                     isLoading = false,
                                     isRefreshing = false,
                                     country = country,
-                                    lastUpdated = timeProvider.millis(),
+                                    lastUpdated = clock.millis(),
                                     errorMessage = null
                                 )
                             }
@@ -254,7 +254,7 @@ class CountryDetailsViewModel @Inject constructor(
     fun getCacheAge(): String {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.getCacheAgeDescription(timestamp, timeProvider.millis())
+            CachePolicy.getCacheAgeDescription(timestamp, clock.millis())
         } else {
             "Never"
         }
@@ -266,7 +266,7 @@ class CountryDetailsViewModel @Inject constructor(
     fun isCacheFresh(): Boolean {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.isCacheFresh(timestamp, nowMillis = timeProvider.millis())
+            CachePolicy.isCacheFresh(timestamp, nowMillis = clock.millis())
         } else {
             false
         }
