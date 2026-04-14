@@ -7,6 +7,7 @@ import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.ThemeMode
 import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
+import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.time.Clock
 import javax.inject.Inject
 
 /**
@@ -31,7 +31,7 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val preferencesDataSource: PreferencesDataSource,
     private val countriesRepository: CountriesRepository,
-    private val clock: Clock,
+    private val timeProvider: TimeProvider,
 ) : ViewModel() {
 
     /**
@@ -158,7 +158,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 countriesRepository.clearCountryCache()
 
-                val timestamp = clock.millis()
+                val timestamp = timeProvider.millis()
                 try {
                     preferencesDataSource.updateLastCacheClear(timestamp)
                 } catch (e: IOException) {
@@ -192,7 +192,7 @@ class SettingsViewModel @Inject constructor(
                 val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
 
                 val cacheAge = if (oldestTimestamp > 0) {
-                    clock.millis() - oldestTimestamp
+                    timeProvider.millis() - oldestTimestamp
                 } else {
                     0L
                 }

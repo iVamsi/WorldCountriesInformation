@@ -34,10 +34,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import org.junit.Test
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 
 /**
  * Unit tests for CountriesViewModel.
@@ -63,10 +61,7 @@ class CountriesViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
-    private val testClock: Clock = Clock.fixed(
-        Instant.parse("2024-06-15T12:00:00Z"),
-        ZoneOffset.UTC,
-    )
+    private val testTimeProvider: TimeProvider = TimeProvider { 1_718_452_800_000L }
 
     private val testCountries = listOf(
         Country(
@@ -144,7 +139,7 @@ class CountriesViewModelTest {
             suggestionsUseCase = suggestionsUseCase,
             searchPreferencesDataSource = searchPreferencesDataSource,
             searchFiltersUseCase = searchFiltersUseCase,
-            clock = testClock,
+            timeProvider = testTimeProvider,
         )
     }
 

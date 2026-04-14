@@ -20,13 +20,13 @@ import com.vamsi.worldcountriesinformation.domain.di.DefaultDispatcher
 import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
 import com.vamsi.worldcountriesinformation.domain.di.MainDispatcher
 import com.vamsi.worldcountriesinformation.domain.di.MainImmediateDispatcher
+import com.vamsi.worldcountriesinformation.domain.time.TimeProvider
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import java.time.Clock
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
@@ -35,7 +35,7 @@ object CoroutinesModule {
 
     @Provides
     @Singleton
-    fun provideClock(): Clock = Clock.systemDefaultZone()
+    fun provideTimeProvider(): TimeProvider = TimeProvider { System.currentTimeMillis() }
 
     @DefaultDispatcher
     @Provides
