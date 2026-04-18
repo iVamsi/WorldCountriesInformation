@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 rootProject.name = "World Countries Information"
 include(
     ":app",
+    ":benchmark",
     ":domain",
     ":tests-shared",
     ":core:common",
