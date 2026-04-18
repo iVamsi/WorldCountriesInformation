@@ -89,7 +89,7 @@ coroutinesTest = "1.10.2"
 runner = "1.7.0"
 rules = "1.7.0"
 turbine = "1.2.1"
-benchmarkMacro = "1.3.3"
+benchmarkMacro = "1.4.1"
 uiautomator = "2.3.0"
 
 [libraries]
