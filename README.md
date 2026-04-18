@@ -4,18 +4,18 @@ Android app for browsing country data from the [REST Countries](https://restcoun
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3.20-blue.svg)](https://kotlinlang.org)
 [![AGP](https://img.shields.io/badge/AGP-9.1.0-green.svg)](https://developer.android.com/studio/releases/gradle-plugin)
-[![Min SDK](https://img.shields.io/badge/Min%20SDK-24-orange.svg)](https://developer.android.com/about/versions/nougat)
+[![Min SDK](https://img.shields.io/badge/Min%20SDK-26-orange.svg)](https://developer.android.com/about/versions/oreo)
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-36-orange.svg)](https://developer.android.com/about/versions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ## Features
 
-- **Countries list** — Search with suggestions and history, region filters, sort order, pull-to-refresh; favorite countries from the list.
-- **Country details** — Flag, facts, OpenStreetMap via osmdroid (no API key), share as text, favorites, and other countries in the same region.
-- **Settings** — Cache policy, offline mode, cache statistics, clear cache.
-- **Widget** — “Country of the Day” home screen widget (Jetpack Glance), periodic updates.
-- **Offline-first** — Room holds cached data; behavior controlled by cache policy and offline toggle.
-- **UI** — Material 3, light/dark follows the system theme. Navigation uses **Navigation 3**.
+- **Countries** — Search (with history/suggestions), filters, sort, pull-to-refresh, favorites.
+- **Details** — Flag, facts, map (OpenStreetMap / osmdroid, no API key), share, favorites, neighbors in region.
+- **Settings** — Cache policy, offline toggle, cache stats, clear cache.
+- **Widget** — “Country of the Day” (Glance), periodic updates.
+- **Offline** — Room cache; behavior depends on policy + offline switch.
+- **UI** — Material 3, system light/dark. **Navigation 3** for navigation.
 
 ## Tech stack
 
@@ -37,9 +37,9 @@ feature: countries, countrydetails, settings, widget
 tests-shared
 ```
 
-## Getting started
+## Build
 
-**Requirements:** Android Studio with JDK 17+, Android SDK for compile API 36.
+Use a recent Android Studio and an SDK that can build API **36**. JDK **17+**.
 
 ```bash
 git clone https://github.com/iVamsi/WorldCountriesInformation.git
@@ -49,11 +49,11 @@ cd WorldCountriesInformation
 
 Maps use OpenStreetMap; no API keys are required. Add `sdk.dir` in `local.properties` if Android Studio has not created it.
 
-**Tests:** `./gradlew test` · `./gradlew connectedAndroidTest`
+**Tests:** `./gradlew test` (and `connectedAndroidTest` if you want instrumentation on a device).
 
-**Release / CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, JVM tests, `assembleDebug`, and `assembleRelease` (R8). ProGuard: [`app/proguard-rules.pro`](app/proguard-rules.pro).
+**CI** (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)): lint, unit tests, `assembleDebug`, `assembleRelease` (R8). Release shrinking uses [`app/proguard-rules.pro`](app/proguard-rules.pro).
 
-**Baseline profile:** checked-in [`app/src/main/baseline-prof.txt`](app/src/main/baseline-prof.txt). On a device or emulator, run `./gradlew :benchmark:connectedDebugAndroidTest` to execute [`BaselineProfileGenerator`](benchmark/src/main/java/com/vamsi/worldcountriesinformation/benchmark/BaselineProfileGenerator.kt); merge emitted rules into `app/src/main/baseline-prof.txt` as needed (see [Macrobenchmark](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview)).
+**Baseline profiles:** the app ships a hand-maintained [`app/src/main/baseline-prof.txt`](app/src/main/baseline-prof.txt). There is a [`:benchmark`](benchmark/) Macrobenchmark module with a small startup generator—plug in a device or emulator and run `./gradlew :benchmark:connectedDebugAndroidTest` if you want to capture new rules; fold anything useful back into `baseline-prof.txt`. [Macrobenchmark overview](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview) has the details.
 
 ## License
 
