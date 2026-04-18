@@ -29,6 +29,7 @@ Android app for browsing country data from the [REST Countries](https://restcoun
 
 ```
 app
+benchmark
 domain
 data/countries
 core: common, model, designsystem, navigation, network, database, datastore
@@ -49,6 +50,10 @@ cd WorldCountriesInformation
 Maps use OpenStreetMap; no API keys are required. Add `sdk.dir` in `local.properties` if Android Studio has not created it.
 
 **Tests:** `./gradlew test` · `./gradlew connectedAndroidTest`
+
+**Release / CI:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs lint, JVM tests, `assembleDebug`, and `assembleRelease` (R8). ProGuard: [`app/proguard-rules.pro`](app/proguard-rules.pro).
+
+**Baseline profile:** checked-in [`app/src/main/baseline-prof.txt`](app/src/main/baseline-prof.txt). On a device or emulator, run `./gradlew :benchmark:connectedDebugAndroidTest` to execute [`BaselineProfileGenerator`](benchmark/src/main/java/com/vamsi/worldcountriesinformation/benchmark/BaselineProfileGenerator.kt); merge emitted rules into `app/src/main/baseline-prof.txt` as needed (see [Macrobenchmark](https://developer.android.com/topic/performance/benchmarking/macrobenchmark-overview)).
 
 ## License
 
