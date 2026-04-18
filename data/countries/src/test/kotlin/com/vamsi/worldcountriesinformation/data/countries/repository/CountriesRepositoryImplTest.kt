@@ -32,7 +32,7 @@ class CountriesRepositoryImplTest {
     fun `FORCE_REFRESH emits error when network throws IOException`() = runTest {
         val api = mockk<WorldCountriesApi>()
         val dao = mockk<CountryDao>()
-        coEvery { dao.getAllCountriesOnce() } returns emptyList()
+        coEvery { dao.getCountryCount() } returns 0
         coEvery { api.fetchWorldCountriesInformation() } throws IOException("offline")
 
         val repo = CountriesRepositoryImpl(api, dao, clock)
@@ -43,6 +43,7 @@ class CountriesRepositoryImplTest {
             assertTrue(err.exception is IOException)
             cancelAndIgnoreRemainingEvents()
         }
+        coVerify(exactly = 0) { dao.getAllCountriesOnce() }
     }
 
     @Test
@@ -113,6 +114,8 @@ class CountriesRepositoryImplTest {
         val dao = mockk<CountryDao>()
         val lastUpdated = clock.millis() - 3_600_000L // 1 hour — within 24h window
         val entity = testEntity(lastUpdated)
+        coEvery { dao.getCountryCount() } returns 1
+        coEvery { dao.getOldestTimestamp() } returns lastUpdated
         coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
         coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
 
@@ -124,6 +127,9 @@ class CountriesRepositoryImplTest {
             cancelAndIgnoreRemainingEvents()
         }
         coVerify(exactly = 0) { api.fetchWorldCountriesInformation() }
+        coVerify(exactly = 1) { dao.getCountryCount() }
+        coVerify(exactly = 1) { dao.getOldestTimestamp() }
+        coVerify(exactly = 1) { dao.getAllCountriesOnce() }
     }
 
     @Test
@@ -133,7 +139,7 @@ class CountriesRepositoryImplTest {
         val apiItem = minimalApiItem()
         val entities = listOf(apiItem).toCountries().toEntityList()
 
-        coEvery { dao.getAllCountriesOnce() } returns emptyList()
+        coEvery { dao.getCountryCount() } returns 0
         coEvery { api.fetchWorldCountriesInformation() } returns listOf(apiItem)
         coEvery { dao.refreshCountries(any()) } returns Unit
         coEvery { dao.getAllCountries() } returns flowOf(entities)
@@ -147,6 +153,28 @@ class CountriesRepositoryImplTest {
         }
         coVerify(exactly = 1) { api.fetchWorldCountriesInformation() }
         coVerify(exactly = 1) { dao.refreshCountries(any()) }
+        coVerify(exactly = 0) { dao.getAllCountriesOnce() }
+    }
+
+    @Test
+    fun `NETWORK_FIRST emits cache when network fails and cache exists`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val entity = testEntity(clock.millis())
+        coEvery { dao.getCountryCount() } returns 1
+        coEvery { api.fetchWorldCountriesInformation() } throws IOException("offline")
+        coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
+        coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
+
+        val repo = CountriesRepositoryImpl(api, dao, clock)
+        repo.getCountries(CachePolicy.NETWORK_FIRST).test {
+            assertEquals(ApiResponse.Loading, awaitItem())
+            val success = awaitItem() as ApiResponse.Success
+            assertEquals(1, success.data.size)
+            cancelAndIgnoreRemainingEvents()
+        }
+        coVerify(exactly = 1) { dao.getAllCountriesOnce() }
+        coVerify(exactly = 1) { api.fetchWorldCountriesInformation() }
     }
 
     private fun testEntity(lastUpdated: Long) = CountryEntity(

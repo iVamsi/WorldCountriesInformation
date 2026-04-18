@@ -177,13 +177,13 @@ class CountriesRepositoryImpl @Inject constructor(
                 return@flow
             }
 
-            // Step 2: Check cache for CACHE_FIRST and NETWORK_FIRST policies
-            val cachedCountries = countryDao.getAllCountriesOnce()
-            val hasCache = cachedCountries.isNotEmpty()
+            // Step 2: Lightweight cache probe (avoid full-table read until we need rows)
+            val cacheCount = countryDao.getCountryCount()
+            val hasCache = cacheCount > 0
 
-            // Determine cache staleness (only for CACHE_FIRST)
+            // Determine cache staleness (only for CACHE_FIRST) via scalar MIN(lastUpdated)
             val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
-                val oldestTimestamp = cachedCountries.minOfOrNull { it.lastUpdated } ?: 0L
+                val oldestTimestamp = countryDao.getOldestTimestamp()
                 val nowMillis = clock.millis()
                 val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, nowMillis = nowMillis)
                 Timber.d(
@@ -192,6 +192,15 @@ class CountriesRepositoryImpl @Inject constructor(
                 isFresh
             } else {
                 false
+            }
+
+            var cachedCountriesSnapshot: List<CountryEntity>? = null
+            suspend fun loadCachedSnapshotOnce(): List<CountryEntity> {
+                val existing = cachedCountriesSnapshot
+                if (existing != null) return existing
+                val loaded = countryDao.getAllCountriesOnce()
+                cachedCountriesSnapshot = loaded
+                return loaded
             }
 
             // Step 3: Emit cached data if appropriate
@@ -203,6 +212,7 @@ class CountriesRepositoryImpl @Inject constructor(
             }
 
             if (shouldEmitCache && hasCache) {
+                val cachedCountries = loadCachedSnapshotOnce()
                 Timber.d("${policy.name}: Emitting ${cachedCountries.size} cached countries")
                 emit(ApiResponse.Success(cachedCountries.toDomainList()))
             }
@@ -233,15 +243,30 @@ class CountriesRepositoryImpl @Inject constructor(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: IOException) {
-                    if (handleCountriesListNetworkFailure(policy, hasCache, cachedCountries, e)) {
+                    val fallback = if (policy == CachePolicy.NETWORK_FIRST && hasCache) {
+                        loadCachedSnapshotOnce()
+                    } else {
+                        emptyList()
+                    }
+                    if (handleCountriesListNetworkFailure(policy, hasCache, fallback, e)) {
                         return@flow
                     }
                 } catch (e: HttpException) {
-                    if (handleCountriesListNetworkFailure(policy, hasCache, cachedCountries, e)) {
+                    val fallback = if (policy == CachePolicy.NETWORK_FIRST && hasCache) {
+                        loadCachedSnapshotOnce()
+                    } else {
+                        emptyList()
+                    }
+                    if (handleCountriesListNetworkFailure(policy, hasCache, fallback, e)) {
                         return@flow
                     }
                 } catch (e: SerializationException) {
-                    if (handleCountriesListNetworkFailure(policy, hasCache, cachedCountries, e)) {
+                    val fallback = if (policy == CachePolicy.NETWORK_FIRST && hasCache) {
+                        loadCachedSnapshotOnce()
+                    } else {
+                        emptyList()
+                    }
+                    if (handleCountriesListNetworkFailure(policy, hasCache, fallback, e)) {
                         return@flow
                     }
                 }
