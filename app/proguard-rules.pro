@@ -46,3 +46,10 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 -keep,includedescriptorclasses class com.vamsi.worldcountriesinformation.**$$serializer { *; }
+
+# Strip verbose Android logging in release (R8 removes call sites and string literals)
+-assumenosideeffects class android.util.Log {
+    public static int d(...);
+    public static int v(...);
+    public static int i(...);
+}
