@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -35,6 +36,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
             Timber.d("Country Widget updated successfully")
             Result.success()
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Timber.e(e, "Failed to update Country Widget")
             Result.retry()
         }
@@ -86,6 +88,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
                 CountryWidget().updateAll(context)
                 Timber.d("Triggered immediate widget update")
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 Timber.e(e, "Failed to trigger immediate widget update")
             }
         }

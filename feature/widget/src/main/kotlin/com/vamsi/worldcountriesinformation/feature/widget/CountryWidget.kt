@@ -39,8 +39,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
 import timber.log.Timber
 
 /**
@@ -68,10 +67,7 @@ class CountryWidget : GlanceAppWidget() {
     )
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // Fetch widget data
-        val widgetData = withContext(Dispatchers.IO) {
-            getWidgetData(context)
-        }
+        val widgetData = getWidgetData(context)
 
         provideContent {
             GlanceTheme {
@@ -96,6 +92,7 @@ class CountryWidget : GlanceAppWidget() {
 
             data
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             Timber.e(e, "Failed to load widget data")
             WidgetData(
                 featuredCountry = null,
