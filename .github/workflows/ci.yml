@@ -55,6 +55,9 @@ jobs:
       - name: Assemble debug
         run: ./gradlew assembleDebug --stacktrace
 
+      - name: Assemble release (R8 / baseline-prof / shrinker verification)
+        run: ./gradlew assembleRelease --stacktrace
+
       - name: Upload unit test results
         if: always()
         uses: actions/upload-artifact@v7
