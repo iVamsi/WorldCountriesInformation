@@ -386,11 +386,13 @@ private fun CountryDetailsScreen(
 private fun CountryFlagCard(country: Country) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase(Locale.US)}_flag"
-    val flagResourceId = context.resources.getIdentifier(
-        flagResourceName,
-        "drawable",
-        context.packageName
-    )
+    val flagResourceId = remember(country.twoLetterCode) {
+        context.resources.getIdentifier(
+            flagResourceName,
+            "drawable",
+            context.packageName
+        )
+    }
 
     // Hero moment: expressive shape + elevated card for the flag
     Card(
@@ -610,11 +612,13 @@ private fun NearbyCountryCard(
 ) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase(Locale.US)}_flag"
-    val flagResourceId = context.resources.getIdentifier(
-        flagResourceName,
-        "drawable",
-        context.packageName
-    )
+    val flagResourceId = remember(country.twoLetterCode) {
+        context.resources.getIdentifier(
+            flagResourceName,
+            "drawable",
+            context.packageName
+        )
+    }
     val interactionSource = rememberPressScaleInteractionSource()
 
     Card(

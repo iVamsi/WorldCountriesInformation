@@ -78,6 +78,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -224,6 +225,12 @@ private fun CountriesScreenContent(
     onIntent: (CountriesContract.Intent) -> Unit,
     onMicClick: (() -> Unit)? = null,
 ) {
+    val scrolledPastTop by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 ||
+                listState.firstVisibleItemScrollOffset > 0
+        }
+    }
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
@@ -253,8 +260,7 @@ private fun CountriesScreenContent(
             )
         },
         floatingActionButton = {
-            val showFab = !state.shouldShowSearchHistory &&
-                    (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0)
+            val showFab = !state.shouldShowSearchHistory && scrolledPastTop
             AnimatedVisibility(
                 visible = showFab,
                 enter = expandVertically(
@@ -362,15 +368,12 @@ private fun CountriesScreenContent(
                                     listState = listState,
                                     onIntent = onIntent
                                 )
-                                val showAlphabetIndex =
-                                    listState.firstVisibleItemIndex > 0 ||
-                                            listState.firstVisibleItemScrollOffset > 0
                                 Box(
                                     modifier = Modifier.align(Alignment.CenterEnd),
                                     contentAlignment = Alignment.CenterEnd
                                 ) {
                                     AlphabetJumpIndexWithVisibility(
-                                        visible = showAlphabetIndex,
+                                        visible = scrolledPastTop,
                                         countries = state.filteredCountries,
                                         listState = listState,
                                         headerItemCount = getHeaderItemCount(state),
@@ -718,11 +721,13 @@ private fun RecentlyViewedCard(
 ) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase()}_flag"
-    val flagResourceId = context.resources.getIdentifier(
-        flagResourceName,
-        "drawable",
-        context.packageName
-    )
+    val flagResourceId = remember(country.twoLetterCode) {
+        context.resources.getIdentifier(
+            flagResourceName,
+            "drawable",
+            context.packageName
+        )
+    }
     val interactionSource = rememberPressScaleInteractionSource()
 
     Card(
@@ -856,11 +861,13 @@ private fun CountryCard(
 ) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase()}_flag"
-    val flagResourceId = context.resources.getIdentifier(
-        flagResourceName,
-        "drawable",
-        context.packageName
-    )
+    val flagResourceId = remember(country.twoLetterCode) {
+        context.resources.getIdentifier(
+            flagResourceName,
+            "drawable",
+            context.packageName
+        )
+    }
     val interactionSource = rememberPressScaleInteractionSource()
 
     Card(
