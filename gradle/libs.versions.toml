@@ -58,7 +58,7 @@ retrofit-kotlinx-serialization = "1.0.0"
 
 # Image Loading
 coil = "2.7.0"
-glide = "5.0.5"
+glide = "5.0.7"
 
 # Coroutines
 coroutines = "1.10.2"
