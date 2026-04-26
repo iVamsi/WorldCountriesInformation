@@ -58,7 +58,6 @@ retrofit-kotlinx-serialization = "1.0.0"
 
 # Image Loading
 coil = "2.7.0"
-glide = "5.0.7"
 
 # Coroutines
 coroutines = "1.10.2"
@@ -156,8 +155,6 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 # Image Loading
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
-glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 
 # Coroutines
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }

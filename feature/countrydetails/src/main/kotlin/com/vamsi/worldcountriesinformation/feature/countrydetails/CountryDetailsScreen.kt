@@ -334,25 +334,21 @@ private fun CountryDetailsScreen(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Country Flag
-                    item {
+                    item(key = "flag-card", contentType = "flag-card") {
                         CountryFlagCard(country = country)
                     }
 
-                    // Map with "Open in Maps" button
-                    item {
+                    item(key = "map-card", contentType = "map-card") {
                         CountryMapCard(country = country)
                     }
 
-                    // "Open in Maps" action button
                     if (country.latitude != 0.0 || country.longitude != 0.0) {
-                        item {
+                        item(key = "open-in-maps", contentType = "open-in-maps") {
                             OpenInMapsButton(onClick = onOpenInMapsClick)
                         }
                     }
 
-                    // Country Details
-                    item {
+                    item(key = "details-header", contentType = "section-header") {
                         Text(
                             text = "Country Information",
                             style = MaterialTheme.typography.titleLargeEmphasized,
@@ -360,15 +356,18 @@ private fun CountryDetailsScreen(
                         )
                     }
 
-                    items(detailsList) { detail ->
+                    items(
+                        items = detailsList,
+                        key = { it.label },
+                        contentType = { "country-detail" }
+                    ) { detail ->
                         CountryDetailItem(
                             label = detail.label,
                             value = detail.value
                         )
                     }
 
-                    // Nearby Countries section
-                    item {
+                    item(key = "nearby-countries", contentType = "nearby-countries") {
                         NearbyCountriesSection(
                             region = country.region,
                             nearbyCountries = nearbyCountries,

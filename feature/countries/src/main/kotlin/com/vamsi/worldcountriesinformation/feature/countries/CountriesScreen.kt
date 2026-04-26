@@ -511,7 +511,7 @@ private fun ScrollableCountriesContent(
             state.searchQuery.isBlank() &&
             !state.isSearchFocused
         ) {
-            item {
+            item(key = "recently-viewed", contentType = "recently-viewed") {
                 RecentlyViewedSection(
                     countries = state.recentlyViewedCountries,
                     onCountryClick = { country ->
@@ -522,7 +522,7 @@ private fun ScrollableCountriesContent(
         }
 
         if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
-            item {
+            item(key = "region-filters", contentType = "region-filters") {
                 RegionFilters(
                     selectedRegions = state.selectedRegions,
                     onRegionToggle = { region ->
@@ -532,7 +532,7 @@ private fun ScrollableCountriesContent(
             }
         }
 
-        item {
+        item(key = "sort-selector", contentType = "sort-selector") {
             SortSelector(
                 currentSort = state.sortOrder,
                 onSortChange = { sortOrder ->
@@ -543,7 +543,7 @@ private fun ScrollableCountriesContent(
 
         when {
             state.showEmptySearchResults -> {
-                item {
+                item(key = "empty-search", contentType = "empty-state") {
                     Box(Modifier.fillParentMaxHeight()) {
                         EmptySearchResults(
                             query = state.searchQuery,
@@ -557,7 +557,7 @@ private fun ScrollableCountriesContent(
             }
 
             state.filteredCountries.isEmpty() && !state.isLoading -> {
-                item {
+                item(key = "empty-state", contentType = "empty-state") {
                     Box(Modifier.fillParentMaxHeight()) {
                         EmptyState(modifier = Modifier.fillMaxSize())
                     }
@@ -569,7 +569,8 @@ private fun ScrollableCountriesContent(
                 // invisible (alpha 0) while flinging until scroll stopped.
                 items(
                     items = state.filteredCountries,
-                    key = { it.threeLetterCode }
+                    key = { it.threeLetterCode },
+                    contentType = { "country-card" }
                 ) { country ->
                     CountryCard(
                         country = country,
