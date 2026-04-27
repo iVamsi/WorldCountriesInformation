@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">Netzwerkfehler. Überprüfe deine Verbindung und versuche es erneut.</string>
+    <string name="error_timeout">Zeitüberschreitung der Verbindung. Überprüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="error_no_cached_data">Keine zwischengespeicherten Daten verfügbar. Bitte stelle eine Internetverbindung her.</string>
+    <string name="error_not_found">Land mit dem Code \'%1$s\' wurde nicht gefunden.</string>
+    <string name="error_load_countries_failed">Länder konnten nicht geladen werden. Versuche es erneut.</string>
+    <string name="error_load_country_details_failed">Länderdetails konnten nicht geladen werden. Versuche es erneut.</string>
+    <string name="error_unknown">Etwas ist schiefgelaufen. Versuche es erneut.</string>
+</resources>

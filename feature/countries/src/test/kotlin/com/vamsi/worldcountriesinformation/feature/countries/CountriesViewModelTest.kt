@@ -1,6 +1,7 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
 import app.cash.turbine.test
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
@@ -169,7 +170,7 @@ class CountriesViewModelTest {
         assertEquals(emptyList<SearchHistoryEntry>(), state.searchHistory)
         assertEquals(emptySet<String>(), state.selectedRegions)
         assertEquals(SortOrder.NAME_ASC, state.sortOrder)
-        assertEquals(null, state.errorMessage)
+        assertEquals(null, state.error)
     }
 
     // ============================================================================
@@ -194,7 +195,7 @@ class CountriesViewModelTest {
             assertEquals(testCountries, state.countries)
             assertEquals(testCountries, state.filteredCountries)
             assertFalse(state.isLoading)
-            assertEquals(null, state.errorMessage)
+            assertEquals(null, state.error)
         }
     }
 
@@ -215,7 +216,7 @@ class CountriesViewModelTest {
         viewModel.state.test {
             val state = awaitItem()
             assertFalse(state.isLoading)
-            assertTrue(state.errorMessage?.contains("Network") == true)
+            assertTrue(state.error is AppError.Network)
         }
     }
 
@@ -635,7 +636,7 @@ class CountriesViewModelTest {
         advanceUntilIdle()
 
         // Then
-        assertEquals(null, viewModel.state.value.errorMessage)
+        assertEquals(null, viewModel.state.value.error)
     }
 
     @Test

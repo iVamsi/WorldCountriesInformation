@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_location_unavailable">Données de localisation indisponibles pour %1$s.</string>
+    <string name="details_added_to_favorites">Ajouté aux favoris</string>
+    <string name="details_removed_from_favorites">Retiré des favoris</string>
+</resources>

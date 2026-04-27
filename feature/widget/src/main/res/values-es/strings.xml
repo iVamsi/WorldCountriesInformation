@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">País del día</string>
+    <string name="widget_description">Muestra un país destacado con detalles en tu pantalla de inicio</string>
+    <string name="widget_loading">Cargando información del país…</string>
+    <string name="widget_error">Error al cargar los datos</string>
+    <string name="widget_no_data">Sin datos disponibles</string>
+    <string name="widget_tap_to_open">Toca para abrir la app</string>
+    <string name="country_capital">Capital</string>
+    <string name="country_region">Región</string>
+    <string name="country_population">Población</string>
+    <string name="total_countries">Total de países</string>
+</resources>

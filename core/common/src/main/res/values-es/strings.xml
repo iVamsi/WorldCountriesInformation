@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">Error de red. Comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="error_timeout">Tiempo de conexión agotado. Comprueba tu conexión a Internet e inténtalo de nuevo.</string>
+    <string name="error_no_cached_data">No hay datos en caché. Conéctate a Internet.</string>
+    <string name="error_not_found">No se encontró el país con el código \'%1$s\'.</string>
+    <string name="error_load_countries_failed">No se pudieron cargar los países. Inténtalo de nuevo.</string>
+    <string name="error_load_country_details_failed">No se pudieron cargar los detalles del país. Inténtalo de nuevo.</string>
+    <string name="error_unknown">Algo salió mal. Inténtalo de nuevo.</string>
+</resources>

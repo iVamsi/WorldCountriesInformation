@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">आज का देश</string>
+    <string name="widget_description">अपनी होम स्क्रीन पर विवरण के साथ एक विशेष देश दिखाएँ</string>
+    <string name="widget_loading">देश की जानकारी लोड हो रही है…</string>
+    <string name="widget_error">डेटा लोड करने में विफल</string>
+    <string name="widget_no_data">कोई डेटा उपलब्ध नहीं</string>
+    <string name="widget_tap_to_open">ऐप खोलने के लिए टैप करें</string>
+    <string name="country_capital">राजधानी</string>
+    <string name="country_region">क्षेत्र</string>
+    <string name="country_population">जनसंख्या</string>
+    <string name="total_countries">कुल देश</string>
+</resources>

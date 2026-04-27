@@ -1,5 +1,6 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
@@ -146,8 +147,8 @@ object CountriesContract {
         // Favorites
         val favoriteCountryCodes: Set<String> = emptySet(),
 
-        // Error state
-        val errorMessage: String? = null,
+        // Error state — UI translates to a localized string via Context.message(error)
+        val error: AppError? = null,
 
         // Cache info
         val lastUpdated: Long = 0L,
@@ -169,7 +170,7 @@ object CountriesContract {
          * True if showing data (not loading or error).
          */
         val hasData: Boolean
-            get() = countries.isNotEmpty() && !isLoading && errorMessage == null
+            get() = countries.isNotEmpty() && !isLoading && error == null
 
         /**
          * True if should show empty search results.
@@ -181,7 +182,7 @@ object CountriesContract {
          * True if should show error state.
          */
         val showError: Boolean
-            get() = errorMessage != null && !isLoading
+            get() = error != null && !isLoading
 
         /**
          * True when search history panel should be visible.
@@ -217,9 +218,9 @@ object CountriesContract {
         data class ShowToast(val message: String) : Effect
 
         /**
-         * Show an error snackbar.
+         * Show an error snackbar. The UI layer localizes the error.
          */
-        data class ShowError(val message: String) : Effect
+        data class ShowError(val error: AppError) : Effect
 
         /**
          * Show success message.

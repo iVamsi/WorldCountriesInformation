@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">World Countries Information</string>
+    <string name="app_name" translatable="false">World Countries Information</string>
     <string name="country_flag_ada">country flag</string>
 
     <string name="country_name_label">"Name: "</string>

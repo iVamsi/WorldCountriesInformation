@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_countries_hint">Rechercher des pays…</string>
+    <string name="voice_search">Recherche vocale</string>
+</resources>

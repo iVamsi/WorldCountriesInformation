@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Land des Tages</string>
+    <string name="widget_description">Zeige ein hervorgehobenes Land mit Details auf deinem Startbildschirm an</string>
+    <string name="widget_loading">Länderinformationen werden geladen…</string>
+    <string name="widget_error">Daten konnten nicht geladen werden</string>
+    <string name="widget_no_data">Keine Daten verfügbar</string>
+    <string name="widget_tap_to_open">Tippen, um die App zu öffnen</string>
+    <string name="country_capital">Hauptstadt</string>
+    <string name="country_region">Region</string>
+    <string name="country_population">Bevölkerung</string>
+    <string name="total_countries">Länder insgesamt</string>
+</resources>

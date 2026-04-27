@@ -1,0 +1,9 @@
+<resources>
+    <string name="country_flag_ada">Landesflagge</string>
+    <string name="country_name_label">"Name: "</string>
+    <string name="capital_city_label">"Hauptstadt: "</string>
+    <string name="population_label">"Bevölkerung: "</string>
+    <string name="calling_code_label">"Vorwahl: "</string>
+    <string name="language_label">"Sprachen: "</string>
+    <string name="currency_label">"Währungen: "</string>
+</resources>

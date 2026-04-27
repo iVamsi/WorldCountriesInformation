@@ -57,7 +57,7 @@ import kotlinx.coroutines.launch
  *                     setState { copy(isLoading = false, countries = countries) }
  *                 }
  *                 .onFailure { error ->
- *                     setState { copy(isLoading = false, errorMessage = error.message) }
+ *                     setState { copy(isLoading = false, error = error.toAppError()) }
  *                 }
  *         }
  *     }

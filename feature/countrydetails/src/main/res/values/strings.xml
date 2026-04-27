@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Country Details feature strings -->
+    <string name="details_location_unavailable">Location data not available for %1$s.</string>
+    <string name="details_added_to_favorites">Added to favorites</string>
+    <string name="details_removed_from_favorites">Removed from favorites</string>
+</resources>

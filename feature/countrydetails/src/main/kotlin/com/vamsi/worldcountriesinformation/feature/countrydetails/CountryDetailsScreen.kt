@@ -53,17 +53,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewFontScale
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.error.message
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -92,6 +100,7 @@ fun CountryDetailsRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     // Handle effects
     LaunchedEffect(Unit) {
@@ -105,8 +114,19 @@ fun CountryDetailsRoute(
                     SnapNotify.show(effect.message)
                 }
 
+                is CountryDetailsContract.Effect.ShowMessage -> {
+                    SnapNotify.show(
+                        resources.getString(effect.messageRes, *effect.formatArgs.toTypedArray())
+                    )
+                }
+
                 is CountryDetailsContract.Effect.ShowError -> {
-                    SnapNotify.showError(effect.message)
+                    val text = effect.error?.let { resources.message(it) }
+                        ?: resources.getString(
+                            effect.messageRes!!,
+                            *effect.formatArgs.toTypedArray()
+                        )
+                    SnapNotify.showError(text)
                 }
 
                 is CountryDetailsContract.Effect.ShowSuccess -> {
@@ -188,8 +208,10 @@ private fun CountryDetailsScreenContent(
         }
 
         state.showError -> {
+            val errorContext = LocalContext.current
             CountryDetailsErrorContent(
-                message = state.errorMessage ?: "An error occurred",
+                message = state.error?.let { errorContext.message(it) }
+                    ?: stringResource(CommonR.string.error_unknown),
                 onRetry = { onIntent(CountryDetailsContract.Intent.RetryLoading(countryCode)) },
                 onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) }
             )
@@ -828,6 +850,9 @@ private fun getSampleCountry() = Country(
 
 // Previews
 @OptIn(ExperimentalMaterial3Api::class)
+@PreviewLightDark
+@PreviewFontScale
+@PreviewScreenSizes
 @Preview(name = "Country Details Screen", showBackground = true)
 @Composable
 private fun CountryDetailsScreenPreview() {
