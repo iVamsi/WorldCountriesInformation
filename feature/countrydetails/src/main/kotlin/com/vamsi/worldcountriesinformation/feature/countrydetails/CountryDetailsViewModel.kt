@@ -1,8 +1,11 @@
 package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import androidx.lifecycle.viewModelScope
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
+import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
@@ -69,14 +72,17 @@ class CountryDetailsViewModel @Inject constructor(
                 .catch { exception ->
                     if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading country: $countryCode")
+                    val error = exception.toAppError(
+                        fallback = AppError.Generic(CommonR.string.error_load_country_details_failed)
+                    )
                     setState {
                         copy(
                             isLoading = false,
                             isRefreshing = false,
-                            errorMessage = "Failed to load country details. Please try again."
+                            error = error
                         )
                     }
-                    setEffect { CountryDetailsContract.Effect.ShowError("Failed to load country details. Please try again.") }
+                    setEffect { CountryDetailsContract.Effect.ShowError(error = error) }
                 }
                 .collect { response ->
                     response
@@ -94,7 +100,7 @@ class CountryDetailsViewModel @Inject constructor(
                                     isRefreshing = false,
                                     country = country,
                                     lastUpdated = clock.millis(),
-                                    errorMessage = null
+                                    error = null
                                 )
                             }
                             viewModelScope.launch {
@@ -107,37 +113,20 @@ class CountryDetailsViewModel @Inject constructor(
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading country: $countryCode")
-
-                            val errorMessage = when {
-                                exception.message?.contains("No cached data", ignoreCase = true) == true -> {
-                                    "No cached data available. Please connect to the internet."
-                                }
-
-                                exception.message?.contains("not found", ignoreCase = true) == true -> {
-                                    "Country with code '$countryCode' not found"
-                                }
-
-                                exception.message?.contains("timeout", ignoreCase = true) == true -> {
-                                    "Connection timeout. Please check your internet and try again."
-                                }
-
-                                exception.message?.contains("network", ignoreCase = true) == true -> {
-                                    "Network error. Please check your connection and try again."
-                                }
-
-                                else -> {
-                                    "Failed to load country details. Please try again."
-                                }
+                            val error = when (val mapped = exception.toAppError(
+                                fallback = AppError.Generic(CommonR.string.error_load_country_details_failed)
+                            )) {
+                                is AppError.NotFound -> AppError.NotFound(identifier = countryCode)
+                                else -> mapped
                             }
-
                             setState {
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    errorMessage = errorMessage
+                                    error = error
                                 )
                             }
-                            setEffect { CountryDetailsContract.Effect.ShowError(errorMessage) }
+                            setEffect { CountryDetailsContract.Effect.ShowError(error = error) }
                         }
                 }
         }
@@ -189,8 +178,12 @@ class CountryDetailsViewModel @Inject constructor(
      */
     private fun toggleFavorite() {
         setState { copy(isFavorite = !isFavorite) }
-        val message = if (state.value.isFavorite) "Added to favorites" else "Removed from favorites"
-        setEffect { CountryDetailsContract.Effect.ShowToast(message) }
+        val messageRes = if (state.value.isFavorite) {
+            R.string.details_added_to_favorites
+        } else {
+            R.string.details_removed_from_favorites
+        }
+        setEffect { CountryDetailsContract.Effect.ShowMessage(messageRes = messageRes) }
     }
 
     /**
@@ -212,7 +205,12 @@ class CountryDetailsViewModel @Inject constructor(
         Timber.d("Open in Maps requested for: ${country.name}")
 
         if (country.latitude == 0.0 && country.longitude == 0.0) {
-            setEffect { CountryDetailsContract.Effect.ShowError("Location data not available for ${country.name}") }
+            setEffect {
+                CountryDetailsContract.Effect.ShowError(
+                    messageRes = R.string.details_location_unavailable,
+                    formatArgs = listOf(country.name)
+                )
+            }
             return
         }
 
@@ -245,7 +243,7 @@ class CountryDetailsViewModel @Inject constructor(
      * Clear error message.
      */
     private fun clearError() {
-        setState { copy(errorMessage = null) }
+        setState { copy(error = null) }
     }
 
     /**

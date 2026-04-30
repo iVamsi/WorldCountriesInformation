@@ -1,5 +1,7 @@
 package com.vamsi.worldcountriesinformation.feature.countrydetails
 
+import androidx.annotation.StringRes
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
@@ -83,8 +85,8 @@ object CountryDetailsContract {
         // Favorite state
         val isFavorite: Boolean = false,
 
-        // Error state
-        val errorMessage: String? = null,
+        // Error state — UI translates to a localized string via Context.message(error)
+        val error: AppError? = null,
 
         // Cache info
         val lastUpdated: Long = 0L,
@@ -94,13 +96,13 @@ object CountryDetailsContract {
          * True if showing data (not loading or error).
          */
         val hasData: Boolean
-            get() = country != null && !isLoading && errorMessage == null
+            get() = country != null && !isLoading && error == null
 
         /**
          * True if should show error state.
          */
         val showError: Boolean
-            get() = errorMessage != null && !isLoading
+            get() = error != null && !isLoading
 
         /**
          * True if showing initial loading state.
@@ -126,9 +128,31 @@ object CountryDetailsContract {
         data class ShowToast(val message: String) : Effect
 
         /**
-         * Show an error snackbar.
+         * Show a localized one-time message via a string resource.
          */
-        data class ShowError(val message: String) : Effect
+        data class ShowMessage(
+            @get:StringRes val messageRes: Int,
+            val formatArgs: List<Any> = emptyList(),
+        ) : Effect
+
+        /**
+         * Show an error snackbar. The UI layer localizes the error.
+         *
+         * Either an [AppError] (preferred) or an explicit string resource
+         * with positional format args. Use the resource form for transient
+         * UI errors that don't fit the AppError taxonomy.
+         */
+        data class ShowError(
+            val error: AppError? = null,
+            @get:StringRes val messageRes: Int? = null,
+            val formatArgs: List<Any> = emptyList(),
+        ) : Effect {
+            init {
+                require(error != null || messageRes != null) {
+                    "ShowError requires either an AppError or a messageRes"
+                }
+            }
+        }
 
         /**
          * Show success message.

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_location_unavailable">%1$s के लिए स्थान डेटा उपलब्ध नहीं है।</string>
+    <string name="details_added_to_favorites">पसंदीदा में जोड़ा गया</string>
+    <string name="details_removed_from_favorites">पसंदीदा से हटाया गया</string>
+</resources>

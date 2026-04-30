@@ -1,6 +1,9 @@
 package com.vamsi.worldcountriesinformation.feature.countries
 
 import androidx.lifecycle.viewModelScope
+import com.vamsi.worldcountriesinformation.core.common.R
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
+import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
@@ -148,14 +151,17 @@ class CountriesViewModel @Inject constructor(
                 .catch { exception ->
                     if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading countries")
+                    val error = exception.toAppError(
+                        fallback = AppError.Generic(R.string.error_load_countries_failed)
+                    )
                     setState {
                         copy(
                             isLoading = false,
                             isRefreshing = false,
-                            errorMessage = "Failed to load countries. Please try again."
+                            error = error
                         )
                     }
-                    setEffect { CountriesContract.Effect.ShowError("Failed to load countries. Please try again.") }
+                    setEffect { CountriesContract.Effect.ShowError(error) }
                 }
                 .collect { response ->
                     response
@@ -180,38 +186,23 @@ class CountriesViewModel @Inject constructor(
                                         countries = countries
                                     ),
                                     lastUpdated = clock.millis(),
-                                    errorMessage = null
+                                    error = null
                                 )
                             }
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading countries")
-                            val errorMessage = when {
-                                exception.message?.contains("No cached data", ignoreCase = true) == true -> {
-                                    "No cached data available. Please connect to the internet."
-                                }
-
-                                exception.message?.contains("timeout", ignoreCase = true) == true -> {
-                                    "Connection timeout. Please check your internet and try again."
-                                }
-
-                                exception.message?.contains("network", ignoreCase = true) == true -> {
-                                    "Network error. Please check your connection and try again."
-                                }
-
-                                else -> {
-                                    "Failed to load countries. Please try again."
-                                }
-                            }
-
+                            val error = exception.toAppError(
+                                fallback = AppError.Generic(R.string.error_load_countries_failed)
+                            )
                             setState {
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    errorMessage = errorMessage
+                                    error = error
                                 )
                             }
-                            setEffect { CountriesContract.Effect.ShowError(errorMessage) }
+                            setEffect { CountriesContract.Effect.ShowError(error) }
                         }
                 }
         }
@@ -425,7 +416,7 @@ class CountriesViewModel @Inject constructor(
      * Clear error message.
      */
     private fun clearError() {
-        setState { copy(errorMessage = null) }
+        setState { copy(error = null) }
     }
 
     /**

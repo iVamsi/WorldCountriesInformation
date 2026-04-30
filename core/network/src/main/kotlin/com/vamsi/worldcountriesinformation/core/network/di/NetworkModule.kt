@@ -1,5 +1,6 @@
 package com.vamsi.worldcountriesinformation.core.network.di
 
+import android.content.Context
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.vamsi.worldcountriesinformation.core.common.Constants
 import com.vamsi.worldcountriesinformation.core.network.BuildConfig
@@ -9,14 +10,18 @@ import com.vamsi.worldcountriesinformation.core.network.interceptor.HttpsOnlyInt
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
+import okhttp3.Cache
+import okhttp3.CacheControl
 import okhttp3.ConnectionSpec
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.TlsVersion
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -136,10 +141,59 @@ object NetworkModule {
      * @see HttpsOnlyInterceptor for HTTPS enforcement details
      * @see provideRetrofit for Retrofit configuration
      */
+    private const val HTTP_CACHE_DIR = "rest-countries-http-cache"
+    private const val HTTP_CACHE_SIZE_BYTES = 10L * 1024L * 1024L // 10 MB
+    private const val HTTP_CACHE_MAX_AGE_SECONDS = 60 * 60 // 1 hour
+    private const val HTTP_CACHE_MAX_STALE_SECONDS = 60 * 60 * 24 * 7 // 7 days
+
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideHttpCache(@ApplicationContext context: Context): Cache {
+        val cacheDir = File(context.cacheDir, HTTP_CACHE_DIR)
+        return Cache(cacheDir, HTTP_CACHE_SIZE_BYTES)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(httpCache: Cache): OkHttpClient {
         return OkHttpClient.Builder().apply {
+            cache(httpCache)
+
+            // Force a sane Cache-Control on responses from REST Countries.
+            // The upstream API does not always set caching headers, so we rewrite
+            // the response to allow OkHttp to serve from disk for an hour and
+            // fall back to stale data for up to a week when offline.
+            addNetworkInterceptor { chain ->
+                val response = chain.proceed(chain.request())
+                if (response.isSuccessful) {
+                    response.newBuilder()
+                        .removeHeader("Pragma")
+                        .header(
+                            "Cache-Control",
+                            CacheControl.Builder()
+                                .maxAge(HTTP_CACHE_MAX_AGE_SECONDS, TimeUnit.SECONDS)
+                                .build()
+                                .toString()
+                        )
+                        .build()
+                } else {
+                    response
+                }
+            }
+
+            // When offline, allow OkHttp to serve a stale cached response
+            // (up to one week old) instead of failing immediately.
+            addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .cacheControl(
+                        CacheControl.Builder()
+                            .maxStale(HTTP_CACHE_MAX_STALE_SECONDS, TimeUnit.SECONDS)
+                            .build()
+                    )
+                    .build()
+                chain.proceed(request)
+            }
+
             // Security: HTTPS-only enforcement
             // This interceptor blocks all non-HTTPS requests to prevent
             // man-in-the-middle attacks and data interception

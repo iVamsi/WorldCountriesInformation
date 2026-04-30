@@ -1,0 +1,9 @@
+<resources>
+    <string name="country_flag_ada">देश का ध्वज</string>
+    <string name="country_name_label">"नाम: "</string>
+    <string name="capital_city_label">"राजधानी: "</string>
+    <string name="population_label">"जनसंख्या: "</string>
+    <string name="calling_code_label">"कॉलिंग कोड: "</string>
+    <string name="language_label">"भाषाएँ: "</string>
+    <string name="currency_label">"मुद्राएँ: "</string>
+</resources>

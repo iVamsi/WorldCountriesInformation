@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">Erreur réseau. Vérifiez votre connexion et réessayez.</string>
+    <string name="error_timeout">Délai de connexion dépassé. Vérifiez votre connexion Internet et réessayez.</string>
+    <string name="error_no_cached_data">Aucune donnée en cache. Connectez-vous à Internet.</string>
+    <string name="error_not_found">Pays avec le code \'%1$s\' introuvable.</string>
+    <string name="error_load_countries_failed">Échec du chargement des pays. Réessayez.</string>
+    <string name="error_load_country_details_failed">Échec du chargement des détails du pays. Réessayez.</string>
+    <string name="error_unknown">Une erreur s\'est produite. Réessayez.</string>
+</resources>

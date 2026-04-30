@@ -214,3 +214,4 @@ coverage/
 
 # Temporary instruction files (should not be committed)
 COMMIT_INSTRUCTIONS.md
+.gitnexus

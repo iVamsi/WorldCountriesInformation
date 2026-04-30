@@ -93,13 +93,19 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewFontScale
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.error.message
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -175,7 +181,7 @@ fun CountriesScreen(
                 }
 
                 is CountriesContract.Effect.ShowError -> {
-                    SnapNotify.showError(effect.message)
+                    SnapNotify.showError(context.message(effect.error))
                 }
 
                 is CountriesContract.Effect.ShowSuccess -> {
@@ -291,8 +297,10 @@ private fun CountriesScreenContent(
             }
 
             state.showError && state.countries.isEmpty() -> {
+                val errorContext = LocalContext.current
                 ErrorContent(
-                    message = state.errorMessage ?: "Unknown error",
+                    message = state.error?.let { errorContext.message(it) }
+                        ?: stringResource(CommonR.string.error_unknown),
                     onRetry = { onIntent(CountriesContract.Intent.RetryLoading) },
                     modifier = Modifier.padding(paddingValues)
                 )
@@ -511,7 +519,7 @@ private fun ScrollableCountriesContent(
             state.searchQuery.isBlank() &&
             !state.isSearchFocused
         ) {
-            item {
+            item(key = "recently-viewed", contentType = "recently-viewed") {
                 RecentlyViewedSection(
                     countries = state.recentlyViewedCountries,
                     onCountryClick = { country ->
@@ -522,7 +530,7 @@ private fun ScrollableCountriesContent(
         }
 
         if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) {
-            item {
+            item(key = "region-filters", contentType = "region-filters") {
                 RegionFilters(
                     selectedRegions = state.selectedRegions,
                     onRegionToggle = { region ->
@@ -532,7 +540,7 @@ private fun ScrollableCountriesContent(
             }
         }
 
-        item {
+        item(key = "sort-selector", contentType = "sort-selector") {
             SortSelector(
                 currentSort = state.sortOrder,
                 onSortChange = { sortOrder ->
@@ -543,7 +551,7 @@ private fun ScrollableCountriesContent(
 
         when {
             state.showEmptySearchResults -> {
-                item {
+                item(key = "empty-search", contentType = "empty-state") {
                     Box(Modifier.fillParentMaxHeight()) {
                         EmptySearchResults(
                             query = state.searchQuery,
@@ -557,7 +565,7 @@ private fun ScrollableCountriesContent(
             }
 
             state.filteredCountries.isEmpty() && !state.isLoading -> {
-                item {
+                item(key = "empty-state", contentType = "empty-state") {
                     Box(Modifier.fillParentMaxHeight()) {
                         EmptyState(modifier = Modifier.fillMaxSize())
                     }
@@ -569,7 +577,8 @@ private fun ScrollableCountriesContent(
                 // invisible (alpha 0) while flinging until scroll stopped.
                 items(
                     items = state.filteredCountries,
-                    key = { it.threeLetterCode }
+                    key = { it.threeLetterCode },
+                    contentType = { "country-card" }
                 ) { country ->
                     CountryCard(
                         country = country,
@@ -1212,6 +1221,9 @@ private fun EmptySearchResults(
 // Previews
 // -----------------------------------------------------------------------------
 
+@PreviewLightDark
+@PreviewFontScale
+@PreviewScreenSizes
 @Preview(showBackground = true, name = "Countries • List")
 @Composable
 private fun CountriesScreenPreview() {

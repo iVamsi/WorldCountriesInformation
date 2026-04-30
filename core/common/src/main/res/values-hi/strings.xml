@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_network">नेटवर्क त्रुटि। कृपया अपना कनेक्शन जाँचें और पुनः प्रयास करें।</string>
+    <string name="error_timeout">कनेक्शन का समय समाप्त। कृपया अपना इंटरनेट जाँचें और पुनः प्रयास करें।</string>
+    <string name="error_no_cached_data">कोई कैश्ड डेटा उपलब्ध नहीं है। कृपया इंटरनेट से कनेक्ट करें।</string>
+    <string name="error_not_found">कोड \'%1$s\' वाला देश नहीं मिला।</string>
+    <string name="error_load_countries_failed">देश लोड करने में विफल। कृपया पुनः प्रयास करें।</string>
+    <string name="error_load_country_details_failed">देश का विवरण लोड करने में विफल। कृपया पुनः प्रयास करें।</string>
+    <string name="error_unknown">कुछ गलत हो गया। कृपया पुनः प्रयास करें।</string>
+</resources>

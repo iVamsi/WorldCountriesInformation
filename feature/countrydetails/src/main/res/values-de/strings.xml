@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="details_location_unavailable">Standortdaten für %1$s nicht verfügbar.</string>
+    <string name="details_added_to_favorites">Zu Favoriten hinzugefügt</string>
+    <string name="details_removed_from_favorites">Aus Favoriten entfernt</string>
+</resources>
