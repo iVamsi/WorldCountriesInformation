@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.vamsi.worldcountriesinformation.core.navigation.CompareRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.NavigationState
@@ -11,6 +12,7 @@ import com.vamsi.worldcountriesinformation.core.navigation.Navigator
 import com.vamsi.worldcountriesinformation.core.navigation.SettingsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
 import com.vamsi.worldcountriesinformation.core.navigation.toEntries
+import com.vamsi.worldcountriesinformation.feature.compare.CompareRoute as CompareScreen
 import com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen
 import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
 import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute as CountryDetailsScreen
@@ -75,7 +77,18 @@ fun WorldCountriesNavigation(
                 },
                 onNavigateToSettings = {
                     navigator.navigate(SettingsRoute)
-                }
+                },
+                onNavigateToCompare = { codes ->
+                    navigator.navigate(CompareRoute(codes.joinToString(",")))
+                },
+            )
+        }
+
+        // Compare Screen
+        entry<CompareRoute> { key ->
+            CompareScreen(
+                countryCodes = key.codes,
+                onNavigateBack = { navigator.goBack() },
             )
         }
 

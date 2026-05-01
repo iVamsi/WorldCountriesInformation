@@ -34,6 +34,7 @@ include(
     ":data:countries",
     ":feature:countries",
     ":feature:countrydetails",
+    ":feature:compare",
     ":feature:settings",
     ":feature:widget"
 )

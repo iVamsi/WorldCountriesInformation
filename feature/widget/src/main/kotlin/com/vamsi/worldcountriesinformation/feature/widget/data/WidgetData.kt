@@ -1,12 +1,12 @@
 package com.vamsi.worldcountriesinformation.feature.widget.data
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 
 /**
  * Data class representing the state of the country widget
  */
 data class WidgetData(
-    val featuredCountry: Country? = null,
+    val featuredCountry: CountrySummary? = null,
     val totalCountries: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null,

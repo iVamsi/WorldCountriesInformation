@@ -3,6 +3,7 @@ package com.vamsi.worldcountriesinformation.domain.countries
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -104,7 +105,7 @@ interface CountriesRepository {
      * @see CachePolicy for detailed policy descriptions
      * @since 2.4.0 (added cache policy support)
      */
-    fun getCountries(policy: CachePolicy = CachePolicy.CACHE_FIRST): Flow<ApiResponse<List<Country>>>
+    fun getCountries(policy: CachePolicy = CachePolicy.CACHE_FIRST): Flow<ApiResponse<List<CountrySummary>>>
     
     /**
      * Retrieves a single country by its three-letter ISO code.
@@ -190,7 +191,7 @@ interface CountriesRepository {
      *
      * @since 2.0.0
      */
-    fun getCountriesFlow(): Flow<List<Country>>
+    fun getCountriesFlow(): Flow<List<CountrySummary>>
     
     /**
      * Searches countries by name with reactive updates.
@@ -249,7 +250,7 @@ interface CountriesRepository {
      * @since 2.0.0
      * @see SearchCountriesUseCase for a more feature-rich search implementation
      */
-    fun searchCountries(query: String): Flow<List<Country>>
+    fun searchCountries(query: String): Flow<List<CountrySummary>>
     
     /**
      * Retrieves countries filtered by region with reactive updates.
@@ -316,7 +317,7 @@ interface CountriesRepository {
      * @since 2.0.0
      * @see GetCountriesByRegionUseCase for a more feature-rich implementation
      */
-    fun getCountriesByRegion(region: String): Flow<List<Country>>
+    fun getCountriesByRegion(region: String): Flow<List<CountrySummary>>
     
     /**
      * Forces a refresh of country data from the network.

@@ -40,6 +40,7 @@ dependencies {
     // Feature modules (bring in UI, ViewModels, domain dependencies transitively)
     implementation(project(":feature:countries"))
     implementation(project(":feature:countrydetails"))
+    implementation(project(":feature:compare"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:widget"))
 

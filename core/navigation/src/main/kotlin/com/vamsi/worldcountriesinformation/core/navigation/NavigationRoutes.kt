@@ -91,3 +91,20 @@ data object SettingsRoute : NavKey
  */
 @Serializable
 data class CountryDetailsRoute(val countryCode: String) : NavKey
+
+/**
+ * Compare countries screen - shows two or three countries side-by-side.
+ *
+ * **Parameters:**
+ * - [countryCodes]: Three-letter codes joined by comma (e.g. "USA,IND,JPN").
+ *
+ * **Example:**
+ * ```kotlin
+ * navigator.navigate(CompareRoute("USA,CAN"))
+ * ```
+ */
+@Serializable
+data class CompareRoute(val countryCodes: String) : NavKey {
+    val codes: List<String>
+        get() = countryCodes.split(',').filter { it.isNotBlank() }
+}

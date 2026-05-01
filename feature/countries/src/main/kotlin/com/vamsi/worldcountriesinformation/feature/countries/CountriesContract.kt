@@ -4,7 +4,7 @@ import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
@@ -109,6 +109,26 @@ object CountriesContract {
          * User cleared the entire history list.
          */
         data object ClearSearchHistory : Intent
+
+        /**
+         * User toggled compare-selection mode (e.g. via long-press).
+         */
+        data object ToggleSelectionMode : Intent
+
+        /**
+         * User added or removed a country from the current compare selection.
+         */
+        data class ToggleCompareSelection(val countryCode: String) : Intent
+
+        /**
+         * User cleared the active compare selection.
+         */
+        data object ClearCompareSelection : Intent
+
+        /**
+         * User confirmed the current compare selection.
+         */
+        data object ConfirmCompare : Intent
     }
 
     // ============================================================================
@@ -126,8 +146,8 @@ object CountriesContract {
         val isRefreshing: Boolean = false,
 
         // Data
-        val countries: List<Country> = emptyList(),
-        val filteredCountries: List<Country> = emptyList(),
+        val countries: List<CountrySummary> = emptyList(),
+        val filteredCountries: List<CountrySummary> = emptyList(),
 
         // Search
         val searchQuery: String = "",
@@ -138,7 +158,7 @@ object CountriesContract {
 
         // Recently viewed
         val recentlyViewedEntries: List<RecentlyViewedEntry> = emptyList(),
-        val recentlyViewedCountries: List<Country> = emptyList(),
+        val recentlyViewedCountries: List<CountrySummary> = emptyList(),
 
         // Filters
         val selectedRegions: Set<String> = emptySet(),
@@ -152,7 +172,28 @@ object CountriesContract {
 
         // Cache info
         val lastUpdated: Long = 0L,
+
+        // Compare-selection mode
+        val isSelecting: Boolean = false,
+        val compareSelection: List<String> = emptyList(),
     ) : MVIState {
+
+        /**
+         * True when at least 2 (and at most [MAX_COMPARE]) countries are selected.
+         */
+        val canConfirmCompare: Boolean
+            get() = compareSelection.size in MIN_COMPARE..MAX_COMPARE
+
+        /**
+         * True when the cap has been hit and additional selections will be ignored.
+         */
+        val compareSelectionAtCap: Boolean
+            get() = compareSelection.size >= MAX_COMPARE
+
+        companion object {
+            const val MIN_COMPARE = 2
+            const val MAX_COMPARE = 3
+        }
 
         /**
          * True if there are any active filters.
@@ -226,5 +267,10 @@ object CountriesContract {
          * Show success message.
          */
         data class ShowSuccess(val message: String) : Effect
+
+        /**
+         * Navigate to the compare screen with the selected three-letter codes.
+         */
+        data class NavigateToCompare(val codes: List<String>) : Effect
     }
 }

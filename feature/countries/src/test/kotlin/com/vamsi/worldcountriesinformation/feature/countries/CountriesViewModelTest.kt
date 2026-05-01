@@ -9,9 +9,7 @@ import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountr
 import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
-import com.vamsi.worldcountriesinformation.domainmodel.Country
-import com.vamsi.worldcountriesinformation.domainmodel.Currency
-import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import io.mockk.Runs
@@ -68,45 +66,36 @@ class CountriesViewModelTest {
         Clock.fixed(Instant.ofEpochMilli(1_718_452_800_000L), ZoneOffset.UTC)
 
     private val testCountries = listOf(
-        Country(
+        CountrySummary(
             name = "United States",
             capital = "Washington D.C.",
-            languages = listOf(Language("English", "en")),
             twoLetterCode = "US",
             threeLetterCode = "USA",
             population = 331002651,
             region = "Americas",
-            currencies = listOf(Currency("US Dollar", "USD", "$")),
-            callingCode = "+1",
             latitude = 38.0,
-            longitude = -97.0
+            longitude = -97.0,
         ),
-        Country(
+        CountrySummary(
             name = "Canada",
             capital = "Ottawa",
-            languages = listOf(Language("English", "en"), Language("French", "fr")),
             twoLetterCode = "CA",
             threeLetterCode = "CAN",
             population = 37742154,
             region = "Americas",
-            currencies = listOf(Currency("Canadian Dollar", "CAD", "$")),
-            callingCode = "+1",
             latitude = 56.0,
-            longitude = -106.0
+            longitude = -106.0,
         ),
-        Country(
+        CountrySummary(
             name = "United Kingdom",
             capital = "London",
-            languages = listOf(Language("English", "en")),
             twoLetterCode = "GB",
             threeLetterCode = "GBR",
             population = 67886011,
             region = "Europe",
-            currencies = listOf(Currency("British Pound", "GBP", "£")),
-            callingCode = "+44",
             latitude = 54.0,
-            longitude = -2.0
-        )
+            longitude = -2.0,
+        ),
     )
 
     @Before
@@ -143,6 +132,7 @@ class CountriesViewModelTest {
             suggestionsUseCase = suggestionsUseCase,
             searchPreferencesDataSource = searchPreferencesDataSource,
             searchFiltersUseCase = searchFiltersUseCase,
+            searchRanker = com.vamsi.worldcountriesinformation.domain.search.SearchRanker(),
             clock = testClock,
         )
     }
@@ -162,8 +152,8 @@ class CountriesViewModelTest {
 
         // Then
         val state = viewModel.state.value
-        assertEquals(emptyList<Country>(), state.countries)
-        assertEquals(emptyList<Country>(), state.filteredCountries)
+        assertEquals(emptyList<CountrySummary>(), state.countries)
+        assertEquals(emptyList<CountrySummary>(), state.filteredCountries)
         assertEquals("", state.searchQuery)
         assertFalse(state.isSearchActive)
         assertFalse(state.isSearchFocused)

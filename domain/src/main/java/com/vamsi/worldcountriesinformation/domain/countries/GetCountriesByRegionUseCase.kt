@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -227,7 +227,7 @@ class GetCountriesByRegionUseCase @Inject constructor(
      *
      * @throws IllegalArgumentException if region is empty
      */
-    operator fun invoke(region: String): Flow<List<Country>> {
+    operator fun invoke(region: String): Flow<List<CountrySummary>> {
         require(region.isNotBlank()) {
             "Region cannot be empty. Valid regions: ${VALID_REGIONS.joinToString()}"
         }

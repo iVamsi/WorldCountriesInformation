@@ -102,18 +102,34 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Handles deep link navigation from widgets and other sources
+     * Handles deep link navigation from widgets, ACTION_VIEW intents (https/wci),
+     * and other sources.
      */
     private fun handleDeepLink(intent: Intent, navigator: Navigator) {
-        val countryCode = intent.getStringExtra(EXTRA_COUNTRY_CODE)
-        if (countryCode != null) {
-            Timber.d("Deep link: Navigating to country details for code: $countryCode")
-            try {
-                // Navigate to country details, clearing any intermediate screens
-                navigator.navigateAndClear(CountryDetailsRoute(countryCode))
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to navigate to country details")
-            }
+        val countryCode = resolveCountryCode(intent) ?: return
+        Timber.d("Deep link: Navigating to country details for code: $countryCode")
+        try {
+            navigator.navigateAndClear(CountryDetailsRoute(countryCode))
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to navigate to country details")
         }
+    }
+
+    /**
+     * Resolves a country code from an inbound intent, supporting widget extras
+     * and ACTION_VIEW deep-link URIs (https + wci scheme).
+     */
+    private fun resolveCountryCode(intent: Intent): String? {
+        intent.getStringExtra(EXTRA_COUNTRY_CODE)?.takeIf { it.isNotBlank() }?.let { return it.uppercase() }
+
+        if (intent.action != Intent.ACTION_VIEW) return null
+        val data = intent.data ?: return null
+        val raw = when (data.scheme?.lowercase()) {
+            "https", "http" -> data.lastPathSegment
+            "wci" -> data.host?.takeIf { it.equals("country", ignoreCase = true) }
+                ?.let { data.lastPathSegment ?: data.pathSegments.firstOrNull() }
+            else -> null
+        }
+        return raw?.takeIf { it.length == 3 && it.all { ch -> ch.isLetter() } }?.uppercase()
     }
 }

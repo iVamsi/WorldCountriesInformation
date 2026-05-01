@@ -4,7 +4,7 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.FlowUseCase
 import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -61,7 +61,7 @@ import javax.inject.Inject
 open class GetCountriesUseCase @Inject constructor(
     private val repository: CountriesRepository,
     @IoDispatcher ioDispatcher: CoroutineDispatcher
-) : FlowUseCase<CachePolicy, List<Country>>(ioDispatcher) {
+) : FlowUseCase<CachePolicy, List<CountrySummary>>(ioDispatcher) {
 
     /**
      * Executes the use case to retrieve all countries.
@@ -69,7 +69,7 @@ open class GetCountriesUseCase @Inject constructor(
      * @param parameters Cache policy to use (default: CACHE_FIRST)
      * @return Flow of [ApiResponse] containing list of countries
      */
-    override fun execute(parameters: CachePolicy): Flow<ApiResponse<List<Country>>> {
+    override fun execute(parameters: CachePolicy): Flow<ApiResponse<List<CountrySummary>>> {
         return repository.getCountries(policy = parameters)
     }
 }

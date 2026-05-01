@@ -3,7 +3,7 @@ package com.vamsi.worldcountriesinformation.feature.widget.data
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -21,16 +21,13 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class WidgetDataSourceTest {
 
-    private val testCountry = Country(
+    private val testCountry = CountrySummary(
         name = "Testland",
         capital = "Test City",
-        languages = emptyList(),
         twoLetterCode = "TL",
         threeLetterCode = "TLS",
         population = 1,
         region = "Test",
-        currencies = emptyList(),
-        callingCode = "+1",
         latitude = 0.0,
         longitude = 0.0,
     )

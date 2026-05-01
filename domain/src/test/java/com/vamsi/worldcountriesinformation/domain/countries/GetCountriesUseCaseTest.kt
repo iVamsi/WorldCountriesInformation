@@ -46,7 +46,7 @@ class GetCountriesUseCaseTest {
     @Test
     fun `countries list is returned by repository successfully`() = runTest(testDispatcher) {
         // Given
-        val expectedCountries = TestData.getCountries()
+        val expectedCountries = TestData.getCountrySummaries()
         val expectedResult = flowOf(ApiResponse.Success(expectedCountries))
         coEvery { countriesRepository.getCountries() } returns expectedResult
 

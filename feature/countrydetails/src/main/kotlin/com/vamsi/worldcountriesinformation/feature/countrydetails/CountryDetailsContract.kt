@@ -6,6 +6,7 @@ import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 
 /**
  * MVI Contract for Country Details feature.
@@ -79,7 +80,7 @@ object CountryDetailsContract {
         val country: Country? = null,
 
         // Nearby countries
-        val nearbyCountries: List<Country> = emptyList(),
+        val nearbyCountries: List<CountrySummary> = emptyList(),
         val isLoadingNearby: Boolean = false,
 
         // Favorite state

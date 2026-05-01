@@ -1,8 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
-import com.vamsi.worldcountriesinformation.domainmodel.Currency
-import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -22,19 +20,16 @@ class GenerateSearchSuggestionsUseCaseTest {
         createCountry("Uruguay", "Montevideo")
     )
 
-    private fun createCountry(name: String, capital: String): Country {
-        return Country(
+    private fun createCountry(name: String, capital: String): CountrySummary {
+        return CountrySummary(
             name = name,
             capital = capital,
-            languages = listOf(Language("English", "en")),
             twoLetterCode = name.take(2).uppercase(),
             threeLetterCode = name.take(3).uppercase(),
             population = 1000000,
             region = "TestRegion",
-            currencies = listOf(Currency("TestCurrency", "TST", "$")),
-            callingCode = "+1",
             latitude = 0.0,
-            longitude = 0.0
+            longitude = 0.0,
         )
     }
 
