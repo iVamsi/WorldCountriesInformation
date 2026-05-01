@@ -279,7 +279,7 @@ private fun SuccessState(
  * Small widget layout - Shows only flag and country name
  */
 @Composable
-private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domainmodel.Country, context: Context) {
+private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domainmodel.CountrySummary, context: Context) {
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -314,7 +314,7 @@ private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domai
  */
 @Composable
 private fun MediumWidgetLayout(
-    country: com.vamsi.worldcountriesinformation.domainmodel.Country,
+    country: com.vamsi.worldcountriesinformation.domainmodel.CountrySummary,
     widgetData: WidgetData,
     context: Context,
 ) {
@@ -383,7 +383,7 @@ private fun MediumWidgetLayout(
  */
 @Composable
 private fun LargeWidgetLayout(
-    country: com.vamsi.worldcountriesinformation.domainmodel.Country,
+    country: com.vamsi.worldcountriesinformation.domainmodel.CountrySummary,
     widgetData: WidgetData,
     context: Context,
 ) {

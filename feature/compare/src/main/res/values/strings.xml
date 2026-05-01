@@ -1,0 +1,14 @@
+<resources>
+    <string name="compare_title">Compare countries</string>
+    <string name="compare_navigate_back">Navigate back</string>
+    <string name="compare_loading">Loading…</string>
+    <string name="compare_retry">Retry</string>
+    <string name="compare_error_min_selection">Pick at least 2 countries to compare.</string>
+    <string name="compare_error_load_failed">Couldn\'t load all selected countries. Try again.</string>
+    <string name="compare_label_capital">Capital</string>
+    <string name="compare_label_region">Region</string>
+    <string name="compare_label_population">Population</string>
+    <string name="compare_label_languages">Languages</string>
+    <string name="compare_label_currencies">Currencies</string>
+    <string name="compare_label_calling_code">Calling code</string>
+</resources>

@@ -1,6 +1,7 @@
 package com.vamsi.worldcountriesinformation.tests_shared
 
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 
@@ -23,6 +24,13 @@ object TestData {
         return listOf(
             Country("India", "New Delhi", languages, "IN", "IND", 1295210000, "Asia", currencies, "91", 20.0, 77.0),
             Country("United States of America", "Washington, D.C.", languages, "US", "USA", 323947000, "Americas", currencies, "1", 38.0, -97.0)
+        )
+    }
+
+    fun getCountrySummaries(): List<CountrySummary> {
+        return listOf(
+            CountrySummary("India", "New Delhi", "Asia", 1295210000, "IN", "IND", 20.0, 77.0),
+            CountrySummary("United States of America", "Washington, D.C.", "Americas", 323947000, "US", "USA", 38.0, -97.0),
         )
     }
 }

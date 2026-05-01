@@ -4,7 +4,7 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
@@ -100,7 +100,7 @@ class WidgetDataSource @Inject constructor(
     }
 }
 
-internal fun pickFeaturedCountry(countries: List<Country>): Country? {
+internal fun pickFeaturedCountry(countries: List<CountrySummary>): CountrySummary? {
     if (countries.isEmpty()) return null
     val dayOfYear = System.currentTimeMillis() / (1000 * 60 * 60 * 24)
     val index = (dayOfYear % countries.size).toInt()

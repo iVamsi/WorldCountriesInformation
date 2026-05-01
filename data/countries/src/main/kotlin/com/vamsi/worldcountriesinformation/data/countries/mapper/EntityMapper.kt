@@ -4,6 +4,7 @@ import com.vamsi.worldcountriesinformation.core.database.entity.CountryEntity
 import com.vamsi.worldcountriesinformation.core.database.entity.CurrencyEntity
 import com.vamsi.worldcountriesinformation.core.database.entity.LanguageEntity
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 
@@ -45,6 +46,36 @@ fun CurrencyEntity.toDomain(): Currency {
 
 fun List<CountryEntity>.toDomainList(): List<Country> {
     return this.map { it.toDomain() }
+}
+
+// Entity to Summary (light projection)
+fun CountryEntity.toSummary(): CountrySummary {
+    return CountrySummary(
+        name = name,
+        capital = capital,
+        region = region,
+        population = population,
+        twoLetterCode = twoLetterCode,
+        threeLetterCode = threeLetterCode,
+        latitude = latitude,
+        longitude = longitude,
+    )
+}
+
+fun List<CountryEntity>.toSummaryList(): List<CountrySummary> = map { it.toSummary() }
+
+// Domain (full) -> Summary
+fun Country.toSummary(): CountrySummary {
+    return CountrySummary(
+        name = name,
+        capital = capital,
+        region = region,
+        population = population,
+        twoLetterCode = twoLetterCode,
+        threeLetterCode = threeLetterCode,
+        latitude = latitude,
+        longitude = longitude,
+    )
 }
 
 // Domain to Entity

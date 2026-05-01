@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -184,7 +184,7 @@ class SearchCountriesUseCase @Inject constructor(
      *         Never completes (continuous observation)
      *
      */
-    operator fun invoke(query: String): Flow<List<Country>> {
+    operator fun invoke(query: String): Flow<List<CountrySummary>> {
         // Normalize query
         val normalizedQuery = query.trim().lowercase()
 

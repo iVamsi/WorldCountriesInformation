@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -71,7 +71,7 @@ class GetNearbyCountriesUseCase @Inject constructor(
      * @return Flow emitting filtered list of nearby countries, sorted alphabetically
      * @throws IllegalArgumentException if region is blank
      */
-    operator fun invoke(region: String, excludeCountryCode: String): Flow<List<Country>> {
+    operator fun invoke(region: String, excludeCountryCode: String): Flow<List<CountrySummary>> {
         require(region.isNotBlank()) {
             "Region cannot be empty. Provide a valid region to find nearby countries."
         }

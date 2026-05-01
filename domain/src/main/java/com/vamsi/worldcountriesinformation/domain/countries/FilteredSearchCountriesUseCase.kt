@@ -1,6 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
 import kotlinx.coroutines.flow.Flow
@@ -93,7 +93,7 @@ class FilteredSearchCountriesUseCase @Inject constructor(
     operator fun invoke(
         query: String,
         filters: SearchFilters
-    ): Flow<List<Country>> {
+    ): Flow<List<CountrySummary>> {
         return searchCountriesUseCase(query)
             .map { countries ->
                 applyFiltersAndSort(countries, filters)
@@ -111,9 +111,9 @@ class FilteredSearchCountriesUseCase @Inject constructor(
      * @return Filtered and sorted list of countries
      */
     fun applyFiltersAndSort(
-        countries: List<Country>,
+        countries: List<CountrySummary>,
         filters: SearchFilters
-    ): List<Country> {
+    ): List<CountrySummary> {
         var filtered = countries
 
         // Apply region filter
@@ -140,9 +140,9 @@ class FilteredSearchCountriesUseCase @Inject constructor(
      * @return Sorted list of countries
      */
     private fun applySortOrder(
-        countries: List<Country>,
+        countries: List<CountrySummary>,
         sortOrder: SortOrder
-    ): List<Country> {
+    ): List<CountrySummary> {
         return when (sortOrder) {
             SortOrder.NAME_ASC -> countries.sortedBy { it.name }
             SortOrder.NAME_DESC -> countries.sortedByDescending { it.name }
@@ -205,8 +205,8 @@ class GenerateSearchSuggestionsUseCase @Inject constructor() {
      */
     operator fun invoke(
         query: String,
-        allCountries: List<Country>,
-        maxSuggestions: Int = 5
+        allCountries: List<CountrySummary>,
+        maxSuggestions: Int = 5,
     ): List<String> {
         if (query.isBlank()) return emptyList()
 

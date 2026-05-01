@@ -32,6 +32,35 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Deep link: https://worldcountries.vamsi.dev/country/{code} -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="https"
+                    android:host="worldcountries.vamsi.dev"
+                    android:pathPrefix="/country/" />
+                <data
+                    android:scheme="http"
+                    android:host="worldcountries.vamsi.dev"
+                    android:pathPrefix="/country/" />
+            </intent-filter>
+
+            <!-- Deep link: wci://country/{code} (custom scheme for sharing) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="wci"
+                    android:host="country" />
+            </intent-filter>
         </activity>
 
         <meta-data

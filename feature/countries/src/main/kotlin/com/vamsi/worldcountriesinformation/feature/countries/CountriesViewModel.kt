@@ -16,7 +16,8 @@ import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSugges
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
-import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domain.search.SearchRanker
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SearchFilters
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
@@ -52,6 +53,7 @@ class CountriesViewModel @Inject constructor(
     private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
     private val searchPreferencesDataSource: SearchPreferencesPort,
     private val searchFiltersUseCase: SearchFiltersUseCase,
+    private val searchRanker: SearchRanker,
     private val clock: Clock,
 ) : MVIViewModel<CountriesContract.Intent, CountriesContract.State, CountriesContract.Effect>(
     initialState = CountriesContract.State()
@@ -137,6 +139,10 @@ class CountriesViewModel @Inject constructor(
             is CountriesContract.Intent.SearchSuggestionSelected -> selectSearchQuery(intent.suggestion)
             is CountriesContract.Intent.DeleteSearchHistoryItem -> deleteSearchHistoryEntry(intent.query)
             is CountriesContract.Intent.ClearSearchHistory -> clearSearchHistory()
+            is CountriesContract.Intent.ToggleSelectionMode -> toggleSelectionMode()
+            is CountriesContract.Intent.ToggleCompareSelection -> toggleCompareSelection(intent.countryCode)
+            is CountriesContract.Intent.ClearCompareSelection -> clearCompareSelection()
+            is CountriesContract.Intent.ConfirmCompare -> confirmCompare()
         }
     }
 
@@ -268,7 +274,7 @@ class CountriesViewModel @Inject constructor(
                             Timber.e(exception, "Search error for query: $query")
                         }
                         .collect { results ->
-                            setState { copy(filteredCountries = results) }
+                            setState { copy(filteredCountries = rankResults(query, results)) }
                         }
                 } else {
                     // Use basic search
@@ -277,7 +283,7 @@ class CountriesViewModel @Inject constructor(
                             Timber.e(exception, "Search error for query: $query")
                         }
                         .collect { results ->
-                            setState { copy(filteredCountries = results) }
+                            setState { copy(filteredCountries = rankResults(query, results)) }
                         }
                 }
             }
@@ -419,17 +425,69 @@ class CountriesViewModel @Inject constructor(
         setState { copy(error = null) }
     }
 
+    private fun toggleSelectionMode() {
+        setState {
+            val nextSelecting = !isSelecting
+            copy(
+                isSelecting = nextSelecting,
+                compareSelection = if (nextSelecting) compareSelection else emptyList(),
+            )
+        }
+    }
+
+    private fun toggleCompareSelection(countryCode: String) {
+        val normalized = countryCode.uppercase()
+        setState {
+            val current = compareSelection
+            val next = when {
+                current.contains(normalized) -> current - normalized
+                current.size >= CountriesContract.State.MAX_COMPARE -> current
+                else -> current + normalized
+            }
+            copy(
+                isSelecting = next.isNotEmpty() || isSelecting,
+                compareSelection = next,
+            )
+        }
+    }
+
+    private fun clearCompareSelection() {
+        setState { copy(isSelecting = false, compareSelection = emptyList()) }
+    }
+
+    private fun confirmCompare() {
+        val codes = state.value.compareSelection
+        if (codes.size < CountriesContract.State.MIN_COMPARE) return
+        setEffect { CountriesContract.Effect.NavigateToCompare(codes) }
+    }
+
     /**
      * Apply filters and sorting to countries list.
      */
-    private fun applyFiltersAndSort(countries: List<Country>, filters: SearchFilters): List<Country> {
+    private fun applyFiltersAndSort(countries: List<CountrySummary>, filters: SearchFilters): List<CountrySummary> {
         return filteredSearchUseCase.applyFiltersAndSort(countries, filters)
+    }
+
+    private fun rankResults(query: String, results: List<CountrySummary>): List<CountrySummary> {
+        if (query.isBlank()) return results
+        val recentCodes = state.value.recentlyViewedEntries
+            .map { it.countryCode.uppercase() }
+            .toSet()
+        val favoriteCodes = state.value.favoriteCountryCodes
+            .map { it.uppercase() }
+            .toSet()
+        return searchRanker.rank(
+            query = query,
+            countries = results,
+            recentCodes = recentCodes,
+            favoriteCodes = favoriteCodes,
+        )
     }
 
     private fun mapRecentlyViewedCountries(
         entries: List<RecentlyViewedEntry>,
-        countries: List<Country>,
-    ): List<Country> {
+        countries: List<CountrySummary>,
+    ): List<CountrySummary> {
         if (entries.isEmpty() || countries.isEmpty()) return emptyList()
         val countryMap = countries.associateBy { it.threeLetterCode.uppercase() }
         return entries.mapNotNull { entry ->

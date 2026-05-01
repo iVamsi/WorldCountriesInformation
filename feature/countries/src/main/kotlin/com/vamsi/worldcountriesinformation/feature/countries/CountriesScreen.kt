@@ -17,8 +17,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -108,9 +110,7 @@ import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
-import com.vamsi.worldcountriesinformation.domainmodel.Country
-import com.vamsi.worldcountriesinformation.domainmodel.Currency
-import com.vamsi.worldcountriesinformation.domainmodel.Language
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
@@ -141,6 +141,7 @@ internal fun extractSpokenText(resultCode: Int, results: List<String>?): String?
 fun CountriesScreen(
     onNavigateToDetails: (String) -> Unit,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToCompare: (List<String>) -> Unit = {},
     viewModel: CountriesViewModel = hiltViewModel(),
 ) {
     // Collect state
@@ -186,6 +187,10 @@ fun CountriesScreen(
 
                 is CountriesContract.Effect.ShowSuccess -> {
                     SnapNotify.showSuccess(effect.message)
+                }
+
+                is CountriesContract.Effect.NavigateToCompare -> {
+                    onNavigateToCompare(effect.codes)
                 }
             }
         }
@@ -240,30 +245,63 @@ private fun CountriesScreenContent(
     Scaffold(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Countries",
-                        style = MaterialTheme.typography.titleLargeEmphasized
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                ),
-                actions = {
-                    if (state.hasActiveFilters) {
+            if (state.isSelecting) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "${state.compareSelection.size} selected",
+                            style = MaterialTheme.typography.titleLargeEmphasized,
+                        )
+                    },
+                    navigationIcon = {
                         IconButton(
-                            onClick = { onIntent(CountriesContract.Intent.ClearFilters) }
+                            onClick = { onIntent(CountriesContract.Intent.ClearCompareSelection) }
                         ) {
-                            Icon(Icons.Default.FilterList, "Clear filters")
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Cancel compare selection",
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                    actions = {
+                        TextButton(
+                            onClick = { onIntent(CountriesContract.Intent.ConfirmCompare) },
+                            enabled = state.canConfirmCompare,
+                        ) {
+                            Text("Compare")
+                        }
+                    },
+                )
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "Countries",
+                            style = MaterialTheme.typography.titleLargeEmphasized
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    actions = {
+                        if (state.hasActiveFilters) {
+                            IconButton(
+                                onClick = { onIntent(CountriesContract.Intent.ClearFilters) }
+                            ) {
+                                Icon(Icons.Default.FilterList, "Clear filters")
+                            }
+                        }
+                        IconButton(onClick = onNavigateToSettings) {
+                            Icon(Icons.Default.Settings, "Settings")
                         }
                     }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, "Settings")
-                    }
-                }
-            )
+                )
+            }
         },
         floatingActionButton = {
             val showFab = !state.shouldShowSearchHistory && scrolledPastTop
@@ -580,11 +618,26 @@ private fun ScrollableCountriesContent(
                     key = { it.threeLetterCode },
                     contentType = { "country-card" }
                 ) { country ->
+                    val code = country.threeLetterCode
+                    val isSelectedForCompare = state.compareSelection.contains(code)
                     CountryCard(
                         country = country,
-                        isFavorite = state.favoriteCountryCodes.contains(country.threeLetterCode),
-                        onClick = { onIntent(CountriesContract.Intent.CountryClicked(country.threeLetterCode)) },
-                        onFavoriteClick = { onIntent(CountriesContract.Intent.ToggleFavorite(country.threeLetterCode)) }
+                        isFavorite = state.favoriteCountryCodes.contains(code),
+                        isSelecting = state.isSelecting,
+                        isSelectedForCompare = isSelectedForCompare,
+                        onClick = {
+                            if (state.isSelecting) {
+                                onIntent(CountriesContract.Intent.ToggleCompareSelection(code))
+                            } else {
+                                onIntent(CountriesContract.Intent.CountryClicked(code))
+                            }
+                        },
+                        onLongClick = {
+                            onIntent(CountriesContract.Intent.ToggleCompareSelection(code))
+                        },
+                        onFavoriteClick = {
+                            onIntent(CountriesContract.Intent.ToggleFavorite(code))
+                        },
                     )
                 }
             }
@@ -698,8 +751,8 @@ private fun SortOrder.humanReadableLabel(): String = when (this) {
 
 @Composable
 private fun RecentlyViewedSection(
-    countries: List<Country>,
-    onCountryClick: (Country) -> Unit,
+    countries: List<CountrySummary>,
+    onCountryClick: (CountrySummary) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -724,7 +777,7 @@ private fun RecentlyViewedSection(
 
 @Composable
 private fun RecentlyViewedCard(
-    country: Country,
+    country: CountrySummary,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -789,7 +842,7 @@ private fun RecentlyViewedCard(
 @Composable
 private fun AlphabetJumpIndexWithVisibility(
     visible: Boolean,
-    countries: List<Country>,
+    countries: List<CountrySummary>,
     listState: LazyListState,
     headerItemCount: Int,
     modifier: Modifier = Modifier,
@@ -810,7 +863,7 @@ private fun AlphabetJumpIndexWithVisibility(
 
 @Composable
 private fun AlphabetJumpIndex(
-    countries: List<Country>,
+    countries: List<CountrySummary>,
     listState: LazyListState,
     headerItemCount: Int = 0,
     modifier: Modifier = Modifier,
@@ -846,7 +899,7 @@ private fun AlphabetJumpIndex(
     }
 }
 
-private fun buildAlphabetIndexMap(countries: List<Country>): Map<String, Int> {
+private fun buildAlphabetIndexMap(countries: List<CountrySummary>): Map<String, Int> {
     val letterToIndex = LinkedHashMap<String, Int>()
     countries.forEachIndexed { index, country ->
         val letter = country.name.trim().firstOrNull()?.uppercaseChar()
@@ -860,13 +913,17 @@ private fun buildAlphabetIndexMap(countries: List<Country>): Map<String, Int> {
     return letterToIndex
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CountryCard(
-    country: Country,
+    country: CountrySummary,
     isFavorite: Boolean,
     onClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isSelecting: Boolean = false,
+    isSelectedForCompare: Boolean = false,
+    onLongClick: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val flagResourceName = "${country.twoLetterCode.lowercase()}_flag"
@@ -878,20 +935,26 @@ private fun CountryCard(
         )
     }
     val interactionSource = rememberPressScaleInteractionSource()
+    val containerColor = if (isSelectedForCompare) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
 
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
+                onLongClick = onLongClick,
             )
             .pressScaleEffect(interactionSource),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = containerColor
         )
     ) {
         Row(
@@ -1269,30 +1332,24 @@ private fun CountriesScreenSearchHistoryPreview() {
 }
 
 private val PreviewCountries = listOf(
-    Country(
+    CountrySummary(
         name = "Canada",
         capital = "Ottawa",
-        languages = listOf(Language(name = "English")),
         twoLetterCode = "CA",
         threeLetterCode = "CAN",
         population = 38_000_000,
         region = "Americas",
-        currencies = listOf(Currency(code = "CAD", name = "Canadian Dollar", symbol = "$")),
-        callingCode = "+1",
         latitude = 56.0,
-        longitude = -106.0
+        longitude = -106.0,
     ),
-    Country(
+    CountrySummary(
         name = "Japan",
         capital = "Tokyo",
-        languages = listOf(Language(name = "Japanese")),
         twoLetterCode = "JP",
         threeLetterCode = "JPN",
         population = 125_000_000,
         region = "Asia",
-        currencies = listOf(Currency(code = "JPY", name = "Yen", symbol = "¥")),
-        callingCode = "+81",
         latitude = 36.0,
-        longitude = 138.0
-    )
+        longitude = 138.0,
+    ),
 )

@@ -75,6 +75,7 @@ import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.feature.countrydetails.component.CountryDetailsShimmer
@@ -254,7 +255,8 @@ private fun CountryDetailsScreenContent(
 private fun CountryDetailsScreen(
     country: Country,
     isFavorite: Boolean,
-    nearbyCountries: List<Country> = emptyList(),
+    nearbyCountries: List<CountrySummary> = emptyList(),
+
     isLoadingNearby: Boolean = false,
     onNavigateBack: () -> Unit,
     isRefreshing: Boolean = false,
@@ -560,7 +562,7 @@ private fun OpenInMapsButton(
 @Composable
 private fun NearbyCountriesSection(
     region: String,
-    nearbyCountries: List<Country>,
+    nearbyCountries: List<CountrySummary>,
     isLoading: Boolean,
     onCountryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -627,7 +629,7 @@ private fun NearbyCountriesSection(
  */
 @Composable
 private fun NearbyCountryCard(
-    country: Country,
+    country: CountrySummary,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -934,43 +936,34 @@ private fun CountryDetailsErrorContentPreview() {
 }
 
 private fun getSampleNearbyCountries() = listOf(
-    Country(
+    CountrySummary(
         name = "Canada",
         capital = "Ottawa",
         region = "Americas",
         population = 38005238,
         twoLetterCode = "CA",
         threeLetterCode = "CAN",
-        callingCode = "+1",
-        currencies = listOf(Currency(code = "CAD", name = "Canadian dollar", symbol = "$")),
-        languages = listOf(Language(name = "English"), Language(name = "French")),
         latitude = 56.1304,
-        longitude = -106.3468
+        longitude = -106.3468,
     ),
-    Country(
+    CountrySummary(
         name = "Mexico",
         capital = "Mexico City",
         region = "Americas",
         population = 128932753,
         twoLetterCode = "MX",
         threeLetterCode = "MEX",
-        callingCode = "+52",
-        currencies = listOf(Currency(code = "MXN", name = "Mexican peso", symbol = "$")),
-        languages = listOf(Language(name = "Spanish")),
         latitude = 23.6345,
-        longitude = -102.5528
+        longitude = -102.5528,
     ),
-    Country(
+    CountrySummary(
         name = "Brazil",
         capital = "Brasília",
         region = "Americas",
         population = 212559417,
         twoLetterCode = "BR",
         threeLetterCode = "BRA",
-        callingCode = "+55",
-        currencies = listOf(Currency(code = "BRL", name = "Brazilian real", symbol = "R$")),
-        languages = listOf(Language(name = "Portuguese")),
         latitude = -14.235,
-        longitude = -51.9253
-    )
+        longitude = -51.9253,
+    ),
 )

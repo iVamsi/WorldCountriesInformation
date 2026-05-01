@@ -9,11 +9,13 @@ import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountry // v3
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomain
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomainList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
+import com.vamsi.worldcountriesinformation.data.countries.mapper.toSummaryList
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domain.countries.CountryCacheSnapshot
 import com.vamsi.worldcountriesinformation.domainmodel.Country
+import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -152,7 +154,7 @@ class CountriesRepositoryImpl @Inject constructor(
      * @see CachePolicy for detailed policy descriptions
      * @see emitAll for reactive Flow transformation
      */
-    override fun getCountries(policy: CachePolicy): Flow<ApiResponse<List<Country>>> {
+    override fun getCountries(policy: CachePolicy): Flow<ApiResponse<List<CountrySummary>>> {
         return flow {
             // Emit loading state
             emit(ApiResponse.Loading)
@@ -162,12 +164,12 @@ class CountriesRepositoryImpl @Inject constructor(
                 val cachedCountries = countryDao.getAllCountriesOnce()
                 if (cachedCountries.isNotEmpty()) {
                     Timber.d("CACHE_ONLY: Emitting ${cachedCountries.size} cached countries")
-                    emit(ApiResponse.Success(cachedCountries.toDomainList()))
+                    emit(ApiResponse.Success(cachedCountries.toSummaryList()))
 
                     // Start reactive observation for any future database changes
                     emitAll(
                         countryDao.getAllCountries().map { entities ->
-                            ApiResponse.Success(entities.toDomainList())
+                            ApiResponse.Success(entities.toSummaryList())
                         }
                     )
                 } else {
@@ -214,7 +216,7 @@ class CountriesRepositoryImpl @Inject constructor(
             if (shouldEmitCache && hasCache) {
                 val cachedCountries = loadCachedSnapshotOnce()
                 Timber.d("${policy.name}: Emitting ${cachedCountries.size} cached countries")
-                emit(ApiResponse.Success(cachedCountries.toDomainList()))
+                emit(ApiResponse.Success(cachedCountries.toSummaryList()))
             }
 
             // Step 4: Determine if network fetch is needed
@@ -281,7 +283,7 @@ class CountriesRepositoryImpl @Inject constructor(
             Timber.d("${policy.name}: Starting reactive database observation")
             emitAll(
                 countryDao.getAllCountries().map { entities ->
-                    ApiResponse.Success(entities.toDomainList())
+                    ApiResponse.Success(entities.toSummaryList())
                 }
             )
         }
@@ -488,21 +490,21 @@ class CountriesRepositoryImpl @Inject constructor(
         return null
     }
 
-    override fun getCountriesFlow(): Flow<List<Country>> {
+    override fun getCountriesFlow(): Flow<List<CountrySummary>> {
         return countryDao.getAllCountries().map { entities ->
-            entities.toDomainList()
+            entities.toSummaryList()
         }
     }
 
-    override fun searchCountries(query: String): Flow<List<Country>> {
+    override fun searchCountries(query: String): Flow<List<CountrySummary>> {
         return countryDao.searchCountries(query).map { entities ->
-            entities.toDomainList()
+            entities.toSummaryList()
         }
     }
 
-    override fun getCountriesByRegion(region: String): Flow<List<Country>> {
+    override fun getCountriesByRegion(region: String): Flow<List<CountrySummary>> {
         return countryDao.getCountriesByRegion(region).map { entities ->
-            entities.toDomainList()
+            entities.toSummaryList()
         }
     }
 
@@ -547,7 +549,7 @@ class CountriesRepositoryImpl @Inject constructor(
         countryDao.deleteAllCountries()
     }
 
-    private suspend fun FlowCollector<ApiResponse<List<Country>>>.handleCountriesListNetworkFailure(
+    private suspend fun FlowCollector<ApiResponse<List<CountrySummary>>>.handleCountriesListNetworkFailure(
         policy: CachePolicy,
         hasCache: Boolean,
         cachedCountries: List<CountryEntity>,
@@ -562,7 +564,7 @@ class CountriesRepositoryImpl @Inject constructor(
             CachePolicy.NETWORK_FIRST -> {
                 if (hasCache) {
                     Timber.d("NETWORK_FIRST: Network failed, falling back to cached data")
-                    emit(ApiResponse.Success(cachedCountries.toDomainList()))
+                    emit(ApiResponse.Success(cachedCountries.toSummaryList()))
                 } else {
                     Timber.w("NETWORK_FIRST: Network failed and no cache available")
                     emit(ApiResponse.Error(exception))
