@@ -57,7 +57,7 @@ okhttp = "5.3.2"
 retrofit-kotlinx-serialization = "1.0.0"
 
 # Image Loading
-coil = "3.3.0"
+coil = "3.4.0"
 
 # Coroutines
 coroutines = "1.10.2"
