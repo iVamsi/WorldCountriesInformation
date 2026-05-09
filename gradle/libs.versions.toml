@@ -60,7 +60,7 @@ retrofit-kotlinx-serialization = "1.0.0"
 coil = "3.4.0"
 
 # Coroutines
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 
 # JSON & Serialization
 gson = "2.13.2"
