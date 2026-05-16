@@ -18,7 +18,7 @@ splashScreen = "1.2.0"
 profileinstaller = "1.4.1"
 
 # UI Components
-material = "1.13.0"
+material = "1.14.0"
 constraintLayout = "2.2.1"
 cardview = "1.0.0"
 drawerLayout = "1.2.0"
