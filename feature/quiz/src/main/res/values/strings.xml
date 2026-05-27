@@ -1,0 +1,19 @@
+<resources>
+    <string name="quiz_title">Country quiz</string>
+    <string name="quiz_navigate_back">Navigate back</string>
+    <string name="quiz_score">Score: %1$d / %2$d</string>
+    <string name="quiz_pick_mode">Pick a quiz mode</string>
+    <string name="quiz_mode_flag">Guess the flag</string>
+    <string name="quiz_mode_capital">Guess the capital</string>
+    <string name="quiz_mode_region">Guess the region</string>
+    <string name="quiz_prompt_flag">Which country is this flag?</string>
+    <string name="quiz_prompt_capital">What is the capital of %1$s?</string>
+    <string name="quiz_prompt_region">Which region is %1$s in?</string>
+    <string name="quiz_loading">Loading question…</string>
+    <string name="quiz_retry">Retry</string>
+    <string name="quiz_error_load">Couldn\'t load a question. Open the countries list once to cache data.</string>
+    <string name="quiz_correct">Correct!</string>
+    <string name="quiz_wrong">Wrong — answer was %1$s</string>
+    <string name="quiz_next">Next question</string>
+    <string name="quiz_change_mode">Change mode</string>
+</resources>

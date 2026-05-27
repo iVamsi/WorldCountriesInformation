@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +54,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -142,6 +144,7 @@ fun CountriesScreen(
     onNavigateToDetails: (String) -> Unit,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToCompare: (List<String>) -> Unit = {},
+    onNavigateToQuiz: () -> Unit = {},
     viewModel: CountriesViewModel = hiltViewModel(),
 ) {
     // Collect state
@@ -209,6 +212,7 @@ fun CountriesScreen(
         state = state,
         listState = listState,
         onNavigateToSettings = onNavigateToSettings,
+        onNavigateToQuiz = onNavigateToQuiz,
         onIntent = { intent -> viewModel.processIntent(intent) },
         onMicClick = if (isVoiceSearchAvailable) {
             {
@@ -233,6 +237,7 @@ private fun CountriesScreenContent(
     state: CountriesContract.State,
     listState: LazyListState,
     onNavigateToSettings: () -> Unit,
+    onNavigateToQuiz: () -> Unit = {},
     onIntent: (CountriesContract.Intent) -> Unit,
     onMicClick: (() -> Unit)? = null,
 ) {
@@ -295,6 +300,9 @@ private fun CountriesScreenContent(
                             ) {
                                 Icon(Icons.Default.FilterList, "Clear filters")
                             }
+                        }
+                        IconButton(onClick = onNavigateToQuiz) {
+                            Icon(Icons.Default.Quiz, stringResource(R.string.quiz_open))
                         }
                         IconButton(onClick = onNavigateToSettings) {
                             Icon(Icons.Default.Settings, "Settings")
@@ -1105,8 +1113,9 @@ private fun SearchHistoryItemRow(
         Row(
             modifier = modifier
                 .fillMaxWidth()
+                .defaultMinSize(minHeight = 48.dp)
                 .clickable(onClick = onClick)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(

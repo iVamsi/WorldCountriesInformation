@@ -108,3 +108,9 @@ data class CompareRoute(val countryCodes: String) : NavKey {
     val codes: List<String>
         get() = countryCodes.split(',').filter { it.isNotBlank() }
 }
+
+/**
+ * Country quiz screen — multiple-choice rounds from cached country data.
+ */
+@Serializable
+data object QuizRoute : NavKey

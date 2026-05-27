@@ -1,5 +1,9 @@
 package com.vamsi.worldcountriesinformation.ui.compose.navigation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.entryProvider
@@ -9,6 +13,7 @@ import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.NavigationState
 import com.vamsi.worldcountriesinformation.core.navigation.Navigator
+import com.vamsi.worldcountriesinformation.core.navigation.QuizRoute
 import com.vamsi.worldcountriesinformation.core.navigation.SettingsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
 import com.vamsi.worldcountriesinformation.core.navigation.toEntries
@@ -16,6 +21,9 @@ import com.vamsi.worldcountriesinformation.feature.compare.CompareRoute as Compa
 import com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen
 import com.vamsi.worldcountriesinformation.feature.settings.SettingsScreen
 import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsRoute as CountryDetailsScreen
+import com.vamsi.worldcountriesinformation.feature.quiz.QuizRoute as QuizScreen
+import com.vamsi.worldcountriesinformation.ui.compose.adaptive.AdaptiveCountriesLayout
+import com.vamsi.worldcountriesinformation.ui.compose.adaptive.isExpandedWidth
 
 /**
  * Main navigation configuration for the World Countries application using Navigation 3.
@@ -65,8 +73,24 @@ import com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetails
 @Composable
 fun WorldCountriesNavigation(
     navigationState: NavigationState = rememberNavigationState(startRoute = CountriesRoute),
-    navigator: Navigator = remember { Navigator(navigationState) }
+    navigator: Navigator = remember { Navigator(navigationState) },
+    onDailyNotificationChanged: (Boolean) -> Unit = {},
 ) {
+    val expanded = isExpandedWidth()
+    val showAdaptiveHome = expanded &&
+        navigationState.backStack.lastOrNull() is CountriesRoute
+
+    if (showAdaptiveHome) {
+        AdaptiveCountriesLayout(
+            onNavigateToSettings = { navigator.navigate(SettingsRoute) },
+            onNavigateToCompare = { codes ->
+                navigator.navigate(CompareRoute(codes.joinToString(",")))
+            },
+            onNavigateToQuiz = { navigator.navigate(QuizRoute) },
+        )
+        return
+    }
+
     // Define the entry provider that maps routes to content
     val entryProvider = entryProvider {
         // Countries List Screen
@@ -81,7 +105,14 @@ fun WorldCountriesNavigation(
                 onNavigateToCompare = { codes ->
                     navigator.navigate(CompareRoute(codes.joinToString(",")))
                 },
+                onNavigateToQuiz = {
+                    navigator.navigate(QuizRoute)
+                },
             )
+        }
+
+        entry<QuizRoute> {
+            QuizScreen(onNavigateBack = { navigator.goBack() })
         }
 
         // Compare Screen
@@ -97,7 +128,8 @@ fun WorldCountriesNavigation(
             SettingsScreen(
                 onNavigateBack = {
                     navigator.goBack()
-                }
+                },
+                onDailyNotificationChanged = onDailyNotificationChanged,
             )
         }
 
@@ -115,9 +147,16 @@ fun WorldCountriesNavigation(
         }
     }
 
-    // Display the navigation stack
-    NavDisplay(
-        entries = navigationState.toEntries(entryProvider),
-        onBack = { navigator.goBack() }
-    )
+    // Display the navigation stack with fade transition between destinations
+    val currentRoute = navigationState.backStack.lastOrNull()
+    AnimatedContent(
+        targetState = currentRoute,
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        label = "nav_transition",
+    ) { _ ->
+        NavDisplay(
+            entries = navigationState.toEntries(entryProvider),
+            onBack = { navigator.goBack() },
+        )
+    }
 }
