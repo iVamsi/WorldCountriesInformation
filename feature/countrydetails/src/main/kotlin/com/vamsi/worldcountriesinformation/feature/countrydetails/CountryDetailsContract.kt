@@ -67,6 +67,16 @@ object CountryDetailsContract {
     }
 
     /**
+     * UI state for the optional on-device AI country summary card.
+     */
+    sealed interface AiSummaryState {
+        data object Disabled : AiSummaryState
+        data object Loading : AiSummaryState
+        data class Ready(val summary: String) : AiSummaryState
+        data object Unavailable : AiSummaryState
+    }
+
+    /**
      * Complete UI state for the Country Details screen.
      *
      * This single state object contains all data needed to render the UI.
@@ -91,6 +101,12 @@ object CountryDetailsContract {
 
         // Cache info
         val lastUpdated: Long = 0L,
+
+        // On-device AI summary (opt-in via settings)
+        val aiSummary: AiSummaryState = AiSummaryState.Disabled,
+
+        // Map border overlay toggle from settings
+        val showMapBorders: Boolean = true,
     ) : MVIState {
 
         /**

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Map
@@ -47,7 +50,9 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,6 +84,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.feature.countrydetails.component.CountryDetailsShimmer
+import com.vamsi.worldcountriesinformation.feature.countrydetails.map.CountryBorderOverlay
 import kotlinx.coroutines.flow.collectLatest
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -221,6 +227,8 @@ private fun CountryDetailsScreenContent(
         state.hasData && state.country != null -> {
             CountryDetailsScreen(
                 country = state.country,
+                aiSummary = state.aiSummary,
+                showMapBorders = state.showMapBorders,
                 isFavorite = state.isFavorite,
                 nearbyCountries = state.nearbyCountries,
                 isLoadingNearby = state.isLoadingNearby,
@@ -254,6 +262,8 @@ private fun CountryDetailsScreenContent(
 @Composable
 private fun CountryDetailsScreen(
     country: Country,
+    aiSummary: CountryDetailsContract.AiSummaryState = CountryDetailsContract.AiSummaryState.Disabled,
+    showMapBorders: Boolean = true,
     isFavorite: Boolean,
     nearbyCountries: List<CountrySummary> = emptyList(),
 
@@ -363,7 +373,13 @@ private fun CountryDetailsScreen(
                     }
 
                     item(key = "map-card", contentType = "map-card") {
-                        CountryMapCard(country = country)
+                        CountryMapCard(country = country, showBorders = showMapBorders)
+                    }
+
+                    if (aiSummary !is CountryDetailsContract.AiSummaryState.Disabled) {
+                        item(key = "ai-summary", contentType = "ai-summary") {
+                            AiSummaryCard(aiSummary = aiSummary)
+                        }
                     }
 
                     if (country.latitude != 0.0 || country.longitude != 0.0) {
@@ -399,6 +415,98 @@ private fun CountryDetailsScreen(
                             onCountryClick = onNearbyCountryClick
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AiSummaryCard(
+    aiSummary: CountryDetailsContract.AiSummaryState,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember(aiSummary) { mutableStateOf(true) }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.details_ai_summary_title),
+                        style = MaterialTheme.typography.titleMediumEmphasized,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    Text(
+                        text = stringResource(R.string.details_ai_summary_on_device),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.75f),
+                    )
+                }
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = if (expanded) {
+                            stringResource(R.string.details_ai_summary_collapse)
+                        } else {
+                            stringResource(R.string.details_ai_summary_expand)
+                        },
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                }
+            }
+
+            if (expanded) {
+                when (aiSummary) {
+                    CountryDetailsContract.AiSummaryState.Loading -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            ContainedLoadingIndicator(modifier = Modifier.size(32.dp))
+                        }
+                        Text(
+                            text = stringResource(R.string.details_ai_summary_loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        )
+                    }
+
+                    is CountryDetailsContract.AiSummaryState.Ready -> {
+                        Text(
+                            text = aiSummary.summary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        )
+                    }
+
+                    CountryDetailsContract.AiSummaryState.Unavailable -> {
+                        Text(
+                            text = stringResource(R.string.details_ai_summary_unavailable),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                        )
+                    }
+
+                    CountryDetailsContract.AiSummaryState.Disabled -> Unit
                 }
             }
         }
@@ -467,7 +575,7 @@ private fun CountryFlagCard(country: Country) {
 }
 
 @Composable
-private fun CountryMapCard(country: Country) {
+private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
     LocalContext.current
 
     Card(
@@ -508,10 +616,16 @@ private fun CountryMapCard(country: Country) {
                     }
                 },
                 update = { mapView ->
-                    // Update map if country changes
                     val countryLocation = GeoPoint(country.latitude, country.longitude)
                     mapView.controller.setCenter(countryLocation)
-                }
+                    if (showBorders) {
+                        CountryBorderOverlay.applyApproximateBorder(
+                            mapView,
+                            country.latitude,
+                            country.longitude,
+                        )
+                    }
+                },
             )
         } else {
             Box(

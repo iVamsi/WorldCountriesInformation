@@ -4,4 +4,10 @@
     <string name="details_location_unavailable">Location data not available for %1$s.</string>
     <string name="details_added_to_favorites">Added to favorites</string>
     <string name="details_removed_from_favorites">Removed from favorites</string>
+    <string name="details_ai_summary_title">AI summary</string>
+    <string name="details_ai_summary_on_device">On-device only</string>
+    <string name="details_ai_summary_loading">Generating summary…</string>
+    <string name="details_ai_summary_unavailable">On-device AI summary is not available on this device.</string>
+    <string name="details_ai_summary_expand">Expand AI summary</string>
+    <string name="details_ai_summary_collapse">Collapse AI summary</string>
 </resources>

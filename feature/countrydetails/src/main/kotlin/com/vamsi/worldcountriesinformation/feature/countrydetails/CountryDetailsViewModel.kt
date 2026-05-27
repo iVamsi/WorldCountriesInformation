@@ -4,6 +4,9 @@ import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
+import com.vamsi.worldcountriesinformation.core.ai.CountrySummaryGenerator
+import com.vamsi.worldcountriesinformation.core.ai.toSummaryDetails
+import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
 import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
@@ -17,6 +20,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.NumberFormat
@@ -36,10 +40,20 @@ class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
     private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase,
     private val searchPreferencesDataSource: SearchPreferencesPort,
+    private val preferencesDataSource: PreferencesDataSource,
+    private val countrySummaryGenerator: CountrySummaryGenerator,
     private val clock: Clock,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
     initialState = CountryDetailsContract.State()
 ) {
+
+    init {
+        viewModelScope.launch {
+            preferencesDataSource.userPreferences.collect { prefs ->
+                setState { copy(showMapBorders = prefs.showMapBorders) }
+            }
+        }
+    }
 
     override fun handleIntent(intent: CountryDetailsContract.Intent) {
         when (intent) {
@@ -108,6 +122,7 @@ class CountryDetailsViewModel @Inject constructor(
                                     country.threeLetterCode
                                 )
                             }
+                            loadAiSummary(country)
                             // Load nearby countries once we have the country data
                             loadNearbyCountries(country.region, country.threeLetterCode)
                         }
@@ -129,6 +144,40 @@ class CountryDetailsViewModel @Inject constructor(
                             setEffect { CountryDetailsContract.Effect.ShowError(error = error) }
                         }
                 }
+        }
+    }
+
+    /**
+     * Loads an on-device AI summary when the user has opted in via settings.
+     */
+    private fun loadAiSummary(country: Country) {
+        viewModelScope.launch {
+            val aiSummaryEnabled = preferencesDataSource.userPreferences
+                .first()
+                .aiSummaryEnabled
+
+            if (!aiSummaryEnabled) {
+                setState { copy(aiSummary = CountryDetailsContract.AiSummaryState.Disabled) }
+                return@launch
+            }
+
+            setState { copy(aiSummary = CountryDetailsContract.AiSummaryState.Loading) }
+
+            val summary = runCatching {
+                countrySummaryGenerator.generateSummary(country.toSummaryDetails())
+            }.onFailure { error ->
+                if (error is CancellationException) throw error
+                Timber.w(error, "Failed to generate AI summary for ${country.name}")
+            }.getOrNull()
+
+            setState {
+                copy(
+                    aiSummary = when {
+                        summary != null -> CountryDetailsContract.AiSummaryState.Ready(summary)
+                        else -> CountryDetailsContract.AiSummaryState.Unavailable
+                    }
+                )
+            }
         }
     }
 
