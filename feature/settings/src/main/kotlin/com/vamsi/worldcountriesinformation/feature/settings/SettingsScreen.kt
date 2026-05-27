@@ -49,8 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotify
+import com.vamsi.worldcountriesinformation.core.common.error.message
 import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.collectLatest
 
 /**
  * Settings screen for configuring app preferences.
@@ -69,20 +71,31 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onDailyNotificationChanged: (Boolean) -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    val userPreferences by viewModel.userPreferences.collectAsStateWithLifecycle()
-    val cacheStats by viewModel.cacheStats.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val userPreferences = state.userPreferences
+    val cacheStats = state.cacheStats
+    val isLoading = state.isLoading
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var showClearCacheDialog by remember { mutableStateOf(false) }
 
-    // Show error messages in snackbar
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let { message ->
-            SnapNotify.showError(message)
-            viewModel.clearError()
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is SettingsContract.Effect.ShowError -> {
+                    SnapNotify.showError(context.message(effect.error))
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            SnapNotify.showError(context.message(error))
+            viewModel.processIntent(SettingsContract.Intent.ClearError)
         }
     }
 
@@ -114,32 +127,66 @@ fun SettingsScreen(
             SettingsSection(title = "Cache Policy") {
                 CachePolicySelector(
                     selectedPolicy = userPreferences.cachePolicy,
-                    onPolicySelected = { viewModel.updateCachePolicy(it) }
+                    onPolicySelected = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateCachePolicy(it))
+                    },
                 )
             }
 
-            // Offline Mode Section
             SettingsSection(title = "Network") {
                 OfflineModeSwitch(
                     enabled = userPreferences.offlineMode,
-                    onToggle = { viewModel.updateOfflineMode(it) }
+                    onToggle = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateOfflineMode(it))
+                    },
                 )
             }
 
             SettingsSection(title = "Appearance") {
                 DynamicColorSwitch(
                     enabled = userPreferences.useDynamicColor,
-                    onToggle = { viewModel.updateUseDynamicColor(it) }
+                    onToggle = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateUseDynamicColor(it))
+                    },
                 )
             }
 
-            // Cache Statistics Section
+            SettingsSection(title = "Features") {
+                FeatureToggleSwitch(
+                    title = "On-device AI summaries",
+                    description = "Generate a short country overview on supported devices. Off by default; no data leaves your device.",
+                    enabled = userPreferences.aiSummaryEnabled,
+                    onToggle = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateAiSummaryEnabled(it))
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FeatureToggleSwitch(
+                    title = "Daily country notification",
+                    description = "Get a daily country-of-the-day notification. Tap to open details.",
+                    enabled = userPreferences.dailyNotificationEnabled,
+                    onToggle = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateDailyNotificationEnabled(it))
+                        onDailyNotificationChanged(it)
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                FeatureToggleSwitch(
+                    title = "Map borders",
+                    description = "Show country border overlays on the details map.",
+                    enabled = userPreferences.showMapBorders,
+                    onToggle = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateMapBordersEnabled(it))
+                    },
+                )
+            }
+
             SettingsSection(title = "Cache Statistics") {
                 CacheStatisticsCard(
                     stats = cacheStats,
                     isLoading = isLoading,
                     onClearCache = { showClearCacheDialog = true },
-                    onRefresh = { viewModel.loadCacheStatistics() }
+                    onRefresh = { viewModel.processIntent(SettingsContract.Intent.LoadCacheStats) },
                 )
             }
 
@@ -155,7 +202,7 @@ fun SettingsScreen(
         ClearCacheDialog(
             onConfirm = {
                 showClearCacheDialog = false
-                viewModel.clearCache()
+                viewModel.processIntent(SettingsContract.Intent.ClearCache)
             },
             onDismiss = { showClearCacheDialog = false }
         )
@@ -315,6 +362,44 @@ private fun DynamicColorSwitch(
                 checked = enabled,
                 onCheckedChange = onToggle
             )
+        }
+    }
+}
+
+@Composable
+private fun FeatureToggleSwitch(
+    title: String,
+    description: String,
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = enabled, onCheckedChange = onToggle)
         }
     }
 }

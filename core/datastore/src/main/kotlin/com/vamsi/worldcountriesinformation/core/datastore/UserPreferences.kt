@@ -17,6 +17,9 @@ package com.vamsi.worldcountriesinformation.core.datastore
  * @property useDynamicColor When true (default), Android 12+ uses Material You
  *                           colors from the wallpaper; when false, the app uses
  *                           the static Refined Explorer palette from the design system.
+ * @property aiSummaryEnabled Opt-in on-device AI country summaries (default off).
+ * @property dailyNotificationEnabled Opt-in daily country-of-the-day notification.
+ * @property showMapBorders Whether to draw country border overlays on the map.
  */
 data class UserPreferences(
     val cachePolicy: CachePolicy = CachePolicy.CACHE_FIRST,
@@ -24,6 +27,9 @@ data class UserPreferences(
     val lastCacheClearTimestamp: Long = 0L,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val useDynamicColor: Boolean = true,
+    val aiSummaryEnabled: Boolean = false,
+    val dailyNotificationEnabled: Boolean = false,
+    val showMapBorders: Boolean = true,
 )
 
 /**

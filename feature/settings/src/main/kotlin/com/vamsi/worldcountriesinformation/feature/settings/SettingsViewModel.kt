@@ -1,235 +1,180 @@
 package com.vamsi.worldcountriesinformation.feature.settings
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vamsi.worldcountriesinformation.core.common.error.AppError
+import com.vamsi.worldcountriesinformation.core.common.error.toAppError
+import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
 import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
 import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.ThemeMode
-import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.time.Clock
 import javax.inject.Inject
 
-/**
- * ViewModel for the Settings screen.
- *
- * Manages user preferences and cache statistics. Provides state flows for
- * reactive UI updates and methods for updating preferences.
- *
- * @property preferencesDataSource Data source for user preferences
- * @property countriesRepository Repository for cache administration (stats and clear)
- */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val preferencesDataSource: PreferencesDataSource,
     private val countriesRepository: CountriesRepository,
     private val clock: Clock,
-) : ViewModel() {
-
-    /**
-     * Current user preferences.
-     *
-     * Automatically updates when preferences change in DataStore.
-     * UI should collect this flow to display current settings.
-     *
-     * Example:
-     * ```kotlin
-     * val preferences by viewModel.userPreferences.collectAsStateWithLifecycle()
-     * Text("Cache Policy: ${preferences.cachePolicy}")
-     * ```
-     */
-    val userPreferences: StateFlow<UserPreferences> = preferencesDataSource.userPreferences
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = UserPreferences()
-        )
-
-    /**
-     * Cache statistics UI state.
-     *
-     * Contains calculated statistics about the cached data.
-     */
-    private val _cacheStats = MutableStateFlow(CacheStats())
-    val cacheStats: StateFlow<CacheStats> = _cacheStats.asStateFlow()
-
-    /**
-     * Loading state for cache operations.
-     */
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    /**
-     * Error message state.
-     */
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+) : MVIViewModel<SettingsContract.Intent, SettingsContract.State, SettingsContract.Effect>(
+    initialState = SettingsContract.State(),
+) {
 
     init {
-        // Load cache statistics on initialization
-        loadCacheStatistics()
+        observePreferences()
+        processIntent(SettingsContract.Intent.LoadCacheStats)
     }
 
-    /**
-     * Updates the cache policy preference.
-     *
-     * This will affect how the app fetches data in future requests.
-     *
-     * @param policy The new cache policy to apply
-     */
-    fun updateCachePolicy(policy: CachePolicy) {
+    override fun handleIntent(intent: SettingsContract.Intent) {
+        when (intent) {
+            SettingsContract.Intent.LoadCacheStats -> loadCacheStatistics()
+            is SettingsContract.Intent.UpdateCachePolicy -> updateCachePolicy(intent.policy)
+            is SettingsContract.Intent.UpdateOfflineMode -> updateOfflineMode(intent.enabled)
+            is SettingsContract.Intent.UpdateThemeMode -> updateThemeMode(intent.mode)
+            is SettingsContract.Intent.UpdateUseDynamicColor -> updateUseDynamicColor(intent.enabled)
+            is SettingsContract.Intent.UpdateAiSummaryEnabled -> updateAiSummaryEnabled(intent.enabled)
+            is SettingsContract.Intent.UpdateDailyNotificationEnabled ->
+                updateDailyNotificationEnabled(intent.enabled)
+            is SettingsContract.Intent.UpdateMapBordersEnabled -> updateMapBordersEnabled(intent.enabled)
+            SettingsContract.Intent.ClearCache -> clearCache()
+            SettingsContract.Intent.ClearError -> setState { copy(error = null) }
+        }
+    }
+
+    private fun observePreferences() {
+        viewModelScope.launch {
+            preferencesDataSource.userPreferences
+                .catch { /* defaults handled in data source */ }
+                .collect { prefs ->
+                    setState { copy(userPreferences = prefs) }
+                }
+        }
+    }
+
+    private fun updateCachePolicy(policy: CachePolicy) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateCachePolicy(policy)
             } catch (e: IOException) {
-                _errorMessage.value = "Failed to update cache policy: ${e.message}"
+                handlePreferenceError(e)
             }
         }
     }
 
-    /**
-     * Toggles offline mode on/off.
-     *
-     * When offline mode is enabled, the app will only use cached data
-     * and not make any network requests.
-     *
-     * @param enabled Whether offline mode should be enabled
-     */
-    fun updateOfflineMode(enabled: Boolean) {
+    private fun updateOfflineMode(enabled: Boolean) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateOfflineMode(enabled)
             } catch (e: IOException) {
-                _errorMessage.value = "Failed to update offline mode: ${e.message}"
+                handlePreferenceError(e)
             }
         }
     }
 
-    /**
-     * Updates the theme mode preference.
-     *
-     * Reserved for future theme switching implementation.
-     *
-     * @param mode The new theme mode to apply
-     */
-    fun updateThemeMode(mode: ThemeMode) {
+    private fun updateThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateThemeMode(mode)
             } catch (e: IOException) {
-                _errorMessage.value = "Failed to update theme mode: ${e.message}"
+                handlePreferenceError(e)
             }
         }
     }
 
-    fun updateUseDynamicColor(enabled: Boolean) {
+    private fun updateUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             try {
                 preferencesDataSource.updateUseDynamicColor(enabled)
             } catch (e: IOException) {
-                _errorMessage.value = "Failed to update appearance: ${e.message}"
+                handlePreferenceError(e)
             }
         }
     }
 
-    /**
-     * Clears all cached data from the database.
-     *
-     * This operation:
-     * 1. Clears all countries from the database
-     * 2. Updates the last cache clear timestamp
-     * 3. Refreshes cache statistics
-     *
-     * Show a confirmation dialog before calling this method.
-     */
-    fun clearCache() {
+    private fun updateAiSummaryEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
+            try {
+                preferencesDataSource.updateAiSummaryEnabled(enabled)
+            } catch (e: IOException) {
+                handlePreferenceError(e)
+            }
+        }
+    }
 
+    private fun updateDailyNotificationEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesDataSource.updateDailyNotificationEnabled(enabled)
+            } catch (e: IOException) {
+                handlePreferenceError(e)
+            }
+        }
+    }
+
+    private fun updateMapBordersEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            try {
+                preferencesDataSource.updateMapBordersEnabled(enabled)
+            } catch (e: IOException) {
+                handlePreferenceError(e)
+            }
+        }
+    }
+
+    private fun clearCache() {
+        viewModelScope.launch {
+            setState { copy(isLoading = true, error = null) }
             try {
                 countriesRepository.clearCountryCache()
-
-                val timestamp = clock.millis()
                 try {
-                    preferencesDataSource.updateLastCacheClear(timestamp)
+                    preferencesDataSource.updateLastCacheClear(clock.millis())
                 } catch (e: IOException) {
-                    _errorMessage.value = "Cache cleared but failed to save timestamp: ${e.message}"
+                    setState {
+                        copy(
+                            error = AppError.Generic(
+                                com.vamsi.worldcountriesinformation.core.common.R.string.error_unknown,
+                            ),
+                        )
+                    }
                 }
-
                 loadCacheStatistics()
             } catch (e: android.database.sqlite.SQLiteException) {
-                _errorMessage.value = "Failed to clear cache: ${e.message}"
+                setState { copy(error = e.toAppError()) }
             } finally {
-                _isLoading.value = false
+                setState { copy(isLoading = false) }
             }
         }
     }
 
-    /**
-     * Loads cache statistics from the database.
-     *
-     * Calculates:
-     * - Number of cached countries
-     * - Oldest cache entry age
-     * - Estimated cache size
-     *
-     * Called automatically on initialization and after cache clearing.
-     */
-    fun loadCacheStatistics() {
+    private fun loadCacheStatistics() {
         viewModelScope.launch {
             try {
                 val snapshot = countriesRepository.getCountryCacheSnapshot()
                 val countryCount = snapshot.entryCount
                 val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
-
-                val cacheAge = if (oldestTimestamp > 0) {
-                    clock.millis() - oldestTimestamp
-                } else {
-                    0L
+                val cacheAge = if (oldestTimestamp > 0) clock.millis() - oldestTimestamp else 0L
+                setState {
+                    copy(
+                        cacheStats = CacheStats(
+                            entryCount = countryCount,
+                            oldestEntryAgeMs = cacheAge,
+                            estimatedSizeKB = countryCount * 2,
+                        ),
+                    )
                 }
-
-                // Rough estimate: ~2KB per country entry
-                val estimatedSizeKB = countryCount * 2
-
-                _cacheStats.value = CacheStats(
-                    entryCount = countryCount,
-                    oldestEntryAgeMs = cacheAge,
-                    estimatedSizeKB = estimatedSizeKB
-                )
             } catch (e: android.database.sqlite.SQLiteException) {
-                _errorMessage.value = "Failed to load cache statistics: ${e.message}"
+                setState { copy(error = e.toAppError()) }
             }
         }
     }
 
-    /**
-     * Clears the current error message.
-     *
-     * Call this after displaying an error to the user.
-     */
-    fun clearError() {
-        _errorMessage.value = null
+    private fun handlePreferenceError(e: IOException) {
+        val error = e.toAppError()
+        setState { copy(error = error) }
+        setEffect { SettingsContract.Effect.ShowError(error) }
     }
 }
-
-/**
- * Data class representing cache statistics.
- *
- * @property entryCount Number of cached entries (countries)
- * @property oldestEntryAgeMs Age of the oldest cache entry in milliseconds
- * @property estimatedSizeKB Estimated cache size in kilobytes
- */
-data class CacheStats(
-    val entryCount: Int = 0,
-    val oldestEntryAgeMs: Long = 0L,
-    val estimatedSizeKB: Int = 0
-)

@@ -55,6 +55,9 @@ class PreferencesDataSource @Inject constructor(
         val LAST_CACHE_CLEAR = longPreferencesKey("last_cache_clear_timestamp")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
+        val AI_SUMMARY_ENABLED = booleanPreferencesKey("ai_summary_enabled")
+        val DAILY_NOTIFICATION_ENABLED = booleanPreferencesKey("daily_notification_enabled")
+        val SHOW_MAP_BORDERS = booleanPreferencesKey("show_map_borders")
     }
 
     /**
@@ -156,6 +159,24 @@ class PreferencesDataSource @Inject constructor(
         }
     }
 
+    suspend fun updateAiSummaryEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.AI_SUMMARY_ENABLED] = enabled
+        }
+    }
+
+    suspend fun updateDailyNotificationEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.DAILY_NOTIFICATION_ENABLED] = enabled
+        }
+    }
+
+    suspend fun updateMapBordersEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHOW_MAP_BORDERS] = enabled
+        }
+    }
+
     /**
      * Clears all preferences, resetting them to default values.
      *
@@ -201,7 +222,10 @@ class PreferencesDataSource @Inject constructor(
             offlineMode = preferences[PreferencesKeys.OFFLINE_MODE] ?: false,
             lastCacheClearTimestamp = preferences[PreferencesKeys.LAST_CACHE_CLEAR] ?: 0L,
             themeMode = themeMode,
-            useDynamicColor = preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: true
+            useDynamicColor = preferences[PreferencesKeys.USE_DYNAMIC_COLOR] ?: true,
+            aiSummaryEnabled = preferences[PreferencesKeys.AI_SUMMARY_ENABLED] ?: false,
+            dailyNotificationEnabled = preferences[PreferencesKeys.DAILY_NOTIFICATION_ENABLED] ?: false,
+            showMapBorders = preferences[PreferencesKeys.SHOW_MAP_BORDERS] ?: true,
         )
     }
 }
