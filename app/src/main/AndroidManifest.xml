@@ -5,6 +5,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <!-- Required for Android 11+ to query speech recognition availability -->
     <queries>
@@ -23,9 +25,21 @@
         android:theme="@style/AppTheme"
         android:networkSecurityConfig="@xml/network_security_config"
         tools:ignore="AllowBackup">
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
+            android:enableOnBackInvokedCallback="true"
             android:theme="@style/Theme.WorldCountriesInformation.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

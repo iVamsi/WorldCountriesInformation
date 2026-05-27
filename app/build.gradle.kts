@@ -41,8 +41,10 @@ dependencies {
     implementation(project(":feature:countries"))
     implementation(project(":feature:countrydetails"))
     implementation(project(":feature:compare"))
+    implementation(project(":feature:quiz"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:widget"))
+    implementation(project(":feature:wear"))
 
     // Domain (for DI bindings)
     implementation(project(":domain"))
@@ -58,11 +60,15 @@ dependencies {
     // Core infrastructure (needed for Hilt DI)
     implementation(project(":core:network"))
     implementation(project(":core:database"))
+    implementation(project(":core:ai"))
 
     // Compose (for MainActivity)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.material3.adaptive)
+    implementation(libs.androidx.material3.adaptive.layout)
+    implementation(libs.androidx.material3.window.size)
     implementation(libs.snapnotify)
 
     // AndroidX Core (for MainActivity)
@@ -79,9 +85,18 @@ dependencies {
     // Logging (for Application class)
     implementation(libs.timber)
 
+    // WorkManager + Hilt workers
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.hilt.compiler)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    kspAndroidTest(libs.hilt.compiler)
 }

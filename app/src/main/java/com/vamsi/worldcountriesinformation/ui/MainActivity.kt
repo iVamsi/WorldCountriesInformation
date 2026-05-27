@@ -1,10 +1,14 @@
 package com.vamsi.worldcountriesinformation.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
@@ -14,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.R
@@ -25,6 +30,7 @@ import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.Navigator
 import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
+import com.vamsi.worldcountriesinformation.feature.widget.notification.NotificationScheduler
 import com.vamsi.worldcountriesinformation.ui.compose.navigation.WorldCountriesNavigation
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -50,6 +56,16 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var preferencesDataSource: PreferencesDataSource
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) {
+            NotificationScheduler.schedule(this)
+        } else {
+            Timber.w("POST_NOTIFICATIONS denied; daily notification not scheduled")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -81,9 +97,16 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        LaunchedEffect(userPrefs.dailyNotificationEnabled) {
+                            syncDailyNotificationSchedule(userPrefs.dailyNotificationEnabled)
+                        }
+
                         WorldCountriesNavigation(
                             navigationState = navigationState,
-                            navigator = navigator
+                            navigator = navigator,
+                            onDailyNotificationChanged = { enabled ->
+                                handleDailyNotificationChanged(enabled)
+                            },
                         )
                     }
                 }
@@ -131,5 +154,42 @@ class MainActivity : ComponentActivity() {
             else -> null
         }
         return raw?.takeIf { it.length == 3 && it.all { ch -> ch.isLetter() } }?.uppercase()
+    }
+
+    private fun handleDailyNotificationChanged(enabled: Boolean) {
+        if (enabled) {
+            requestNotificationPermissionIfNeeded()
+        } else {
+            NotificationScheduler.cancel(this)
+        }
+    }
+
+    private fun syncDailyNotificationSchedule(enabled: Boolean) {
+        if (enabled) {
+            if (hasNotificationPermission()) {
+                NotificationScheduler.schedule(this)
+            }
+        } else {
+            NotificationScheduler.cancel(this)
+        }
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            NotificationScheduler.schedule(this)
+            return
+        }
+        when {
+            hasNotificationPermission() -> NotificationScheduler.schedule(this)
+            else -> notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
     }
 }
