@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature
+        android:name="android.hardware.type.watch"
+        android:required="false" />
+
+    <application>
+        <service
+            android:name=".CountryWearTileService"
+            android:exported="true"
+            android:label="@string/wear_tile_name"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+        </service>
+    </application>
+
+</manifest>
