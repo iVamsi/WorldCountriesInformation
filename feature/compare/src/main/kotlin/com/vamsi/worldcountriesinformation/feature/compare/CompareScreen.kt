@@ -14,10 +14,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -160,6 +168,47 @@ private data class CompareRow(val label: String, val values: List<String>)
 @Composable
 private fun CompareTable(countries: List<Country>) {
     val rows = remember(countries) { buildRows(countries) }
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        if (maxWidth >= 600.dp) {
+            CompareGridLayout(rows = rows, countries = countries)
+        } else {
+            CompareScrollTable(rows = rows, countries = countries)
+        }
+    }
+}
+
+@Composable
+private fun CompareGridLayout(rows: List<CompareRow>, countries: List<Country>) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(countries.size.coerceAtMost(3)),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(countries, key = { it.threeLetterCode }) { country ->
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = country.name,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                    rows.forEach { row ->
+                        val index = countries.indexOf(country)
+                        Text(
+                            text = "${row.label}: ${row.values.getOrNull(index).orEmpty()}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 8.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompareScrollTable(rows: List<CompareRow>, countries: List<Country>) {
     val scrollState = rememberScrollState()
     val columnWidth = 160.dp
 
