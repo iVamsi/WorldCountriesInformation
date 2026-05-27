@@ -10,6 +10,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.vamsi.worldcountriesinformation.feature.widget.liveupdate.LiveUpdateManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
@@ -24,11 +25,14 @@ import java.util.concurrent.TimeUnit
 class WidgetUpdateWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted workerParams: WorkerParameters,
+    private val liveUpdateManager: LiveUpdateManager,
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
             Timber.d("Updating Country Widget")
+
+            liveUpdateManager.publishCountryOfDayUpdate()
 
             // Update all widget instances
             CountryWidget().updateAll(context)

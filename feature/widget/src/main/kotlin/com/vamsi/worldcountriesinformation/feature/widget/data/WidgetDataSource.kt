@@ -2,9 +2,9 @@ package com.vamsi.worldcountriesinformation.feature.widget.data
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.countries.FeaturedCountrySelector
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
-import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
@@ -17,6 +17,7 @@ import javax.inject.Inject
  */
 class WidgetDataSource @Inject constructor(
     private val getCountriesUseCase: GetCountriesUseCase,
+    private val featuredCountrySelector: FeaturedCountrySelector,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
     /**
@@ -54,7 +55,7 @@ class WidgetDataSource @Inject constructor(
                             error = null
                         )
                     } else {
-                        val featured = pickFeaturedCountry(countries)
+                        val featured = featuredCountrySelector.select(countries)
                         Timber.d(
                             "Widget: Selected country: ${featured?.name}, total=${countries.size}"
                         )
@@ -98,11 +99,4 @@ class WidgetDataSource @Inject constructor(
             )
         }
     }
-}
-
-internal fun pickFeaturedCountry(countries: List<CountrySummary>): CountrySummary? {
-    if (countries.isEmpty()) return null
-    val dayOfYear = System.currentTimeMillis() / (1000 * 60 * 60 * 24)
-    val index = (dayOfYear % countries.size).toInt()
-    return countries[index]
 }

@@ -2,6 +2,7 @@ package com.vamsi.worldcountriesinformation.feature.widget.data
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.countries.FeaturedCountrySelector
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import io.mockk.every
@@ -14,8 +15,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -39,7 +38,7 @@ class WidgetDataSourceTest {
         every { useCase.invoke(CachePolicy.CACHE_FIRST) } returns flowOf(
             ApiResponse.Success(listOf(testCountry))
         )
-        val dataSource = WidgetDataSource(useCase, ioDispatcher)
+        val dataSource = WidgetDataSource(useCase, FeaturedCountrySelector(), ioDispatcher)
 
         val result = dataSource.getWidgetData()
 
@@ -55,7 +54,7 @@ class WidgetDataSourceTest {
         every { useCase.invoke(CachePolicy.CACHE_FIRST) } returns flow {
             throw CancellationException()
         }
-        val dataSource = WidgetDataSource(useCase, ioDispatcher)
+        val dataSource = WidgetDataSource(useCase, FeaturedCountrySelector(), ioDispatcher)
 
         try {
             dataSource.getWidgetData()
@@ -65,18 +64,5 @@ class WidgetDataSourceTest {
         }
 
         verify(exactly = 1) { useCase.invoke(CachePolicy.CACHE_FIRST) }
-    }
-
-    @Test
-    fun pickFeaturedCountry_returnsNullForEmptyList() {
-        assertNull(pickFeaturedCountry(emptyList()))
-    }
-
-    @Test
-    fun pickFeaturedCountry_returnsElementFromList() {
-        val a = testCountry.copy(name = "A", threeLetterCode = "AAA")
-        val b = testCountry.copy(name = "B", threeLetterCode = "BBB")
-        val picked = pickFeaturedCountry(listOf(a, b))
-        assertTrue(picked === a || picked === b)
     }
 }
