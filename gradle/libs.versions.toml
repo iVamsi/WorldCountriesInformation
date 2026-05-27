@@ -75,6 +75,22 @@ timber = "5.0.1"
 # Maps
 osmdroid = "6.1.20"
 
+# Adaptive UI
+material3Adaptive = "1.1.0"
+windowSizeClass = "1.3.2"
+
+# WorkManager
+work = "2.11.2"
+hiltWork = "1.3.0"
+
+# On-device AI
+generativeai = "0.9.0"
+
+# Wear
+wearCompose = "1.5.4"
+glanceWearTiles = "1.0.0-alpha07"
+playServicesWearable = "19.0.0"
+
 # Testing
 junit = "4.13.2"
 junitExt = "1.3.0"
@@ -175,6 +191,24 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 # Maps - OpenStreetMap
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 snapnotify = { group = "io.github.ivamsi", name = "snapnotify", version.ref = "snapnotify" }
+
+# Adaptive layout
+androidx-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive", version.ref = "material3Adaptive" }
+androidx-material3-adaptive-layout = { group = "androidx.compose.material3.adaptive", name = "adaptive-layout", version.ref = "material3Adaptive" }
+androidx-material3-adaptive-navigation = { group = "androidx.compose.material3.adaptive", name = "adaptive-navigation", version.ref = "material3Adaptive" }
+androidx-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "windowSizeClass" }
+
+# WorkManager
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWork" }
+
+# On-device AI
+google-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+
+# Wear
+androidx-wear-compose = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "wearCompose" }
+androidx-glance-wear-tiles = { group = "androidx.glance", name = "glance-wear-tiles", version.ref = "glanceWearTiles" }
+play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 
 # Testing Libraries
 junit = { group = "junit", name = "junit", version.ref = "junit" }

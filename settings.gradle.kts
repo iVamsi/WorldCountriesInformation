@@ -36,5 +36,8 @@ include(
     ":feature:countrydetails",
     ":feature:compare",
     ":feature:settings",
-    ":feature:widget"
+    ":feature:widget",
+    ":feature:quiz",
+    ":core:ai",
+    ":feature:wear",
 )
