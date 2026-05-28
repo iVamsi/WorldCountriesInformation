@@ -26,6 +26,7 @@ import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import com.vamsi.worldcountriesinformation.core.designsystem.GradientBackground
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
+import com.vamsi.worldcountriesinformation.core.navigation.CompareRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.Navigator
@@ -45,10 +46,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     companion object {
-        /**
-         * Intent extra key for country code passed from widgets
-         */
         const val EXTRA_COUNTRY_CODE = "extra_country_code"
+        const val EXTRA_COMPARE_CODES = "extra_compare_codes"
     }
 
     // State to trigger recomposition when a new intent arrives
@@ -129,6 +128,18 @@ class MainActivity : ComponentActivity() {
      * and other sources.
      */
     private fun handleDeepLink(intent: Intent, navigator: Navigator) {
+        intent.getStringExtra(EXTRA_COMPARE_CODES)
+            ?.takeIf { it.isNotBlank() }
+            ?.let { codes ->
+                Timber.d("Deep link: Navigating to compare for codes: $codes")
+                try {
+                    navigator.navigateAndClear(CompareRoute(codes))
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to navigate to compare screen")
+                }
+                return
+            }
+
         val countryCode = resolveCountryCode(intent) ?: return
         Timber.d("Deep link: Navigating to country details for code: $countryCode")
         try {

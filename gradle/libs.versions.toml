@@ -86,6 +86,9 @@ hiltWork = "1.3.0"
 # On-device AI
 generativeai = "0.9.0"
 
+# AppFunctions
+appfunctions = "1.0.0-alpha09"
+
 # Wear
 wearCompose = "1.5.4"
 glanceWearTiles = "1.0.0-alpha07"
@@ -204,6 +207,11 @@ androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref 
 
 # On-device AI
 google-generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+
+# AppFunctions
+androidx-appfunctions = { group = "androidx.appfunctions", name = "appfunctions", version.ref = "appfunctions" }
+androidx-appfunctions-service = { group = "androidx.appfunctions", name = "appfunctions-service", version.ref = "appfunctions" }
+androidx-appfunctions-compiler = { group = "androidx.appfunctions", name = "appfunctions-compiler", version.ref = "appfunctions" }
 
 # Wear
 androidx-wear-compose = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "wearCompose" }

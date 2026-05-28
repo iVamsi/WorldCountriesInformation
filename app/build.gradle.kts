@@ -5,6 +5,10 @@ plugins {
     id("kotlin-parcelize")
 }
 
+ksp {
+    arg("appfunctions:aggregateAppFunctions", "true")
+}
+
 android {
     namespace = "com.vamsi.worldcountriesinformation"
 
@@ -90,8 +94,14 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.hilt.compiler)
 
+    // AppFunctions (assistant integration)
+    implementation(libs.androidx.appfunctions)
+    implementation(libs.androidx.appfunctions.service)
+    ksp(libs.androidx.appfunctions.compiler)
+
     // Testing
     testImplementation(libs.junit)
+    androidTestImplementation(project(":core:common"))
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.hilt.android.testing)
