@@ -1,25 +1,42 @@
 package com.vamsi.worldcountriesinformation.feature.countrydetails.map
 
+import android.content.Context
 import android.graphics.Paint
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Polygon
 
 /**
- * Draws a simplified rectangular border around a country pin when GeoJSON is unavailable.
- * Uses lat/lng bounds derived from center point for a lightweight offline overlay.
+ * Draws country border overlays from bundled GeoJSON-like assets, with a
+ * rectangular fallback when no polygon exists for the alpha-3 code.
  */
 object CountryBorderOverlay {
 
     private const val DELTA = 3.0
+    private const val BORDER_TAG = "country_border"
 
-    fun applyApproximateBorder(mapView: MapView, latitude: Double, longitude: Double) {
-        val points = listOf(
+    fun applyBorder(
+        context: Context,
+        mapView: MapView,
+        alpha3Code: String,
+        latitude: Double,
+        longitude: Double,
+    ) {
+        val loader = CountryBorderLoader(context.applicationContext)
+        val points = loader.polygonFor(alpha3Code)
+            ?: approximatePoints(latitude, longitude)
+        drawPolygon(mapView, points)
+    }
+
+    private fun approximatePoints(latitude: Double, longitude: Double): List<GeoPoint> =
+        listOf(
             GeoPoint(latitude + DELTA, longitude - DELTA),
             GeoPoint(latitude + DELTA, longitude + DELTA),
             GeoPoint(latitude - DELTA, longitude + DELTA),
             GeoPoint(latitude - DELTA, longitude - DELTA),
         )
+
+    private fun drawPolygon(mapView: MapView, points: List<GeoPoint>) {
         mapView.overlays.removeAll { it is Polygon && it.title == BORDER_TAG }
         val polygon = Polygon().apply {
             title = BORDER_TAG
@@ -32,6 +49,4 @@ object CountryBorderOverlay {
         mapView.overlays.add(0, polygon)
         mapView.invalidate()
     }
-
-    private const val BORDER_TAG = "country_border"
 }

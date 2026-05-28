@@ -2,6 +2,7 @@ plugins {
     id("worldcountries.android.library")
     id("worldcountries.android.hilt")
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -43,6 +44,7 @@ dependencies {
 
     // OpenStreetMap
     implementation(libs.osmdroid.android)
+    implementation(libs.kotlinx.serialization.json)
 
     // AndroidX
     implementation(libs.androidx.core.ktx)

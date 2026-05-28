@@ -55,6 +55,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -280,6 +282,7 @@ private fun CountryDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
+        modifier = modifier.testTag(UiTestTags.COUNTRY_DETAILS_SCREEN),
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
@@ -576,7 +579,7 @@ private fun CountryFlagCard(country: Country) {
 
 @Composable
 private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
-    LocalContext.current
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -619,10 +622,12 @@ private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
                     val countryLocation = GeoPoint(country.latitude, country.longitude)
                     mapView.controller.setCenter(countryLocation)
                     if (showBorders) {
-                        CountryBorderOverlay.applyApproximateBorder(
-                            mapView,
-                            country.latitude,
-                            country.longitude,
+                        CountryBorderOverlay.applyBorder(
+                            context = context,
+                            mapView = mapView,
+                            alpha3Code = country.threeLetterCode,
+                            latitude = country.latitude,
+                            longitude = country.longitude,
                         )
                     }
                 },
