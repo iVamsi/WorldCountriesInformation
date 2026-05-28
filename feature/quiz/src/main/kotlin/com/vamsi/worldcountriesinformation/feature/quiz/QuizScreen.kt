@@ -104,6 +104,24 @@ private fun QuizScreen(
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                if (state.highScore > 0 || state.bestStreak > 0) {
+                    Text(
+                        text = stringResource(
+                            R.string.quiz_best_stats,
+                            state.highScore,
+                            state.bestStreak,
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (state.currentStreak > 1) {
+                    Text(
+                        text = stringResource(R.string.quiz_current_streak, state.currentStreak),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
             }
 
             when {

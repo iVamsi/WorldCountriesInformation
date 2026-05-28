@@ -3,6 +3,7 @@ package com.vamsi.worldcountriesinformation.feature.quiz
 import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
+import com.vamsi.worldcountriesinformation.core.datastore.QuizStatsDataSource
 import com.vamsi.worldcountriesinformation.domain.quiz.GenerateQuizQuestionUseCase
 import com.vamsi.worldcountriesinformation.domain.quiz.GuessMode
 import com.vamsi.worldcountriesinformation.domain.quiz.ScoreQuizUseCase
@@ -16,9 +17,23 @@ import javax.inject.Inject
 class QuizViewModel @Inject constructor(
     private val generateQuizQuestionUseCase: GenerateQuizQuestionUseCase,
     private val scoreQuizUseCase: ScoreQuizUseCase,
+    private val quizStatsDataSource: QuizStatsDataSource,
 ) : MVIViewModel<QuizContract.Intent, QuizContract.State, QuizContract.Effect>(
     initialState = QuizContract.State(),
 ) {
+
+    init {
+        viewModelScope.launch {
+            quizStatsDataSource.quizStats.collect { stats ->
+                setState {
+                    copy(
+                        highScore = stats.highScore,
+                        bestStreak = stats.bestStreak,
+                    )
+                }
+            }
+        }
+    }
 
     override fun handleIntent(intent: QuizContract.Intent) {
         when (intent) {
@@ -32,6 +47,7 @@ class QuizViewModel @Inject constructor(
                     question = null,
                     selectedIndex = null,
                     lastAnswerCorrect = null,
+                    currentStreak = 0,
                     error = null,
                 )
             }
@@ -46,6 +62,9 @@ class QuizViewModel @Inject constructor(
                 question = null,
                 selectedIndex = null,
                 lastAnswerCorrect = null,
+                score = 0,
+                answered = 0,
+                currentStreak = 0,
                 error = null,
             )
         }
@@ -95,12 +114,24 @@ class QuizViewModel @Inject constructor(
         if (state.value.selectedIndex != null) return
 
         val correct = scoreQuizUseCase(question, index)
+        val newScore = state.value.score + if (correct) 1 else 0
+        val newStreak = if (correct) state.value.currentStreak + 1 else 0
+        val newAnswered = state.value.answered + 1
+
         setState {
             copy(
                 selectedIndex = index,
                 lastAnswerCorrect = correct,
-                score = score + if (correct) 1 else 0,
-                answered = answered + 1,
+                score = newScore,
+                answered = newAnswered,
+                currentStreak = newStreak,
+            )
+        }
+
+        viewModelScope.launch {
+            quizStatsDataSource.recordSessionResult(
+                score = newScore,
+                streak = newStreak,
             )
         }
     }

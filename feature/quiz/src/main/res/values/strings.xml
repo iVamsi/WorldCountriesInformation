@@ -2,6 +2,8 @@
     <string name="quiz_title">Country quiz</string>
     <string name="quiz_navigate_back">Navigate back</string>
     <string name="quiz_score">Score: %1$d / %2$d</string>
+    <string name="quiz_best_stats">Best score: %1$d · Best streak: %2$d</string>
+    <string name="quiz_current_streak">Current streak: %1$d</string>
     <string name="quiz_pick_mode">Pick a quiz mode</string>
     <string name="quiz_mode_flag">Guess the flag</string>
     <string name="quiz_mode_capital">Guess the capital</string>
