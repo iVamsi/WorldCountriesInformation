@@ -2,8 +2,10 @@ package com.vamsi.worldcountriesinformation
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.ui.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -30,6 +32,7 @@ class CountriesFlowTest {
     @Test
     fun countriesScreen_showsTitle() {
         composeRule.waitForIdle()
+        composeRule.onNodeWithTag(UiTestTags.COUNTRIES_SCREEN).assertIsDisplayed()
         composeRule.onNodeWithText("Countries", substring = true, ignoreCase = true)
             .assertIsDisplayed()
     }

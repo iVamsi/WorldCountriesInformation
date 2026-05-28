@@ -40,6 +40,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -92,6 +94,7 @@ private fun CompareScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
+        modifier = Modifier.testTag(UiTestTags.COMPARE_SCREEN),
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.compare_title)) },
