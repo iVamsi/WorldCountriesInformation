@@ -90,7 +90,7 @@ generativeai = "0.9.0"
 appfunctions = "1.0.0-alpha09"
 
 # Wear
-wearCompose = "1.5.4"
+wearCompose = "1.6.2"
 glanceWearTiles = "1.0.0-alpha07"
 playServicesWearable = "20.0.1"
 
