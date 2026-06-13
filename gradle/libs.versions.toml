@@ -53,7 +53,7 @@ room = "2.8.4"
 
 # Networking
 retrofit = "3.0.0"
-okhttp = "5.3.2"
+okhttp = "5.4.0"
 retrofit-kotlinx-serialization = "1.0.0"
 
 # Image Loading
