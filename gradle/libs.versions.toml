@@ -30,7 +30,7 @@ pageIndicator = "1.3.0"
 composeBom = "2026.05.01"
 composeMaterial3Expressive = "1.5.0-alpha21"
 activityCompose = "1.13.0"
-lifecycleRuntimeCompose = "2.10.0"
+lifecycleRuntimeCompose = "2.11.0"
 glance = "1.1.1"
 glanceAppwidget = "1.1.1"
 
