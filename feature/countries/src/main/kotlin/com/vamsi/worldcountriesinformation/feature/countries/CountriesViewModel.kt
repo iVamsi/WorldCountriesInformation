@@ -15,6 +15,9 @@ import com.vamsi.worldcountriesinformation.domain.countries.FilteredSearchCountr
 import com.vamsi.worldcountriesinformation.domain.countries.GenerateSearchSuggestionsUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.SearchCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.ObserveFavoritesUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.ToggleFavoriteUseCase
 import com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
 import com.vamsi.worldcountriesinformation.domain.search.SearchRanker
 import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
@@ -53,16 +56,19 @@ class CountriesViewModel @Inject constructor(
     private val suggestionsUseCase: GenerateSearchSuggestionsUseCase,
     private val searchPreferencesDataSource: SearchPreferencesPort,
     private val searchFiltersUseCase: SearchFiltersUseCase,
+    private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val searchRanker: SearchRanker,
     private val clock: Clock,
 ) : MVIViewModel<CountriesContract.Intent, CountriesContract.State, CountriesContract.Effect>(
-    initialState = CountriesContract.State()
+    initialState = CountriesContract.State(),
 ) {
     private val searchPreferencesFlow = searchPreferencesDataSource.searchPreferences
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = SearchPreferences()
+            initialValue = SearchPreferences(),
         )
 
     private val searchSuggestionsFlow: StateFlow<List<String>> = state
@@ -73,7 +79,7 @@ class CountriesViewModel @Inject constructor(
                 suggestionsUseCase(
                     query = query,
                     allCountries = countries,
-                    maxSuggestions = 5
+                    maxSuggestions = 5,
                 )
             } else {
                 emptyList()
@@ -83,20 +89,31 @@ class CountriesViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000L),
-            initialValue = emptyList()
+            initialValue = emptyList(),
+        )
+
+    private val fetchPolicyFlow = getUserDataPolicyUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000L),
+            initialValue = CachePolicy.CACHE_FIRST,
         )
 
     init {
-        // Load countries on initialization
         processIntent(CountriesContract.Intent.LoadCountries)
 
-        // Observe search preferences and update state
+        viewModelScope.launch {
+            observeFavoritesUseCase().collect { favorites ->
+                setState { copy(favoriteCountryCodes = favorites) }
+            }
+        }
+
         viewModelScope.launch {
             searchPreferencesFlow.collect { prefs ->
                 setState {
                     val recentCountries = mapRecentlyViewedCountries(
                         entries = prefs.recentlyViewed,
-                        countries = countries
+                        countries = countries,
                     )
                     copy(
                         selectedRegions = prefs.filters.selectedRegions,
@@ -104,7 +121,7 @@ class CountriesViewModel @Inject constructor(
                         filteredCountries = applyFiltersAndSort(countries, prefs.filters),
                         searchHistory = prefs.searchHistory,
                         recentlyViewedEntries = prefs.recentlyViewed,
-                        recentlyViewedCountries = recentCountries
+                        recentlyViewedCountries = recentCountries,
                     )
                 }
             }
@@ -149,22 +166,23 @@ class CountriesViewModel @Inject constructor(
     /**
      * Loads countries with configurable cache policy.
      */
-    private fun loadCountries(policy: CachePolicy = CachePolicy.CACHE_FIRST) {
+    private fun loadCountries(policy: CachePolicy? = null) {
         viewModelScope.launch {
-            Timber.d("Loading countries with policy: $policy")
+            val effectivePolicy = policy ?: fetchPolicyFlow.value
+            Timber.d("Loading countries with policy: $effectivePolicy")
 
-            getCountriesUseCase(policy)
+            getCountriesUseCase(effectivePolicy)
                 .catch { exception ->
                     if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading countries")
                     val error = exception.toAppError(
-                        fallback = AppError.Generic(R.string.error_load_countries_failed)
+                        fallback = AppError.Generic(R.string.error_load_countries_failed),
                     )
                     setState {
                         copy(
                             isLoading = false,
                             isRefreshing = false,
-                            error = error
+                            error = error,
                         )
                     }
                     setEffect { CountriesContract.Effect.ShowError(error) }
@@ -189,23 +207,23 @@ class CountriesViewModel @Inject constructor(
                                     filteredCountries = applyFiltersAndSort(countries, currentFilters),
                                     recentlyViewedCountries = mapRecentlyViewedCountries(
                                         entries = recentlyViewed,
-                                        countries = countries
+                                        countries = countries,
                                     ),
                                     lastUpdated = clock.millis(),
-                                    error = null
+                                    error = null,
                                 )
                             }
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading countries")
                             val error = exception.toAppError(
-                                fallback = AppError.Generic(R.string.error_load_countries_failed)
+                                fallback = AppError.Generic(R.string.error_load_countries_failed),
                             )
                             setState {
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    error = error
+                                    error = error,
                                 )
                             }
                             setEffect { CountriesContract.Effect.ShowError(error) }
@@ -228,7 +246,7 @@ class CountriesViewModel @Inject constructor(
      */
     private fun retry() {
         Timber.d("Retry requested")
-        loadCountries(CachePolicy.CACHE_FIRST)
+        loadCountries()
     }
 
     /**
@@ -240,7 +258,7 @@ class CountriesViewModel @Inject constructor(
             val currentlyFocused = isSearchFocused
             copy(
                 searchQuery = query,
-                isSearchActive = query.isNotBlank() || currentlyFocused
+                isSearchActive = query.isNotBlank() || currentlyFocused,
             )
         }
 
@@ -301,7 +319,7 @@ class CountriesViewModel @Inject constructor(
             copy(
                 searchQuery = "",
                 isSearchActive = focused,
-                filteredCountries = applyFiltersAndSort(countries, currentFilters)
+                filteredCountries = applyFiltersAndSort(countries, currentFilters),
             )
         }
     }
@@ -317,14 +335,14 @@ class CountriesViewModel @Inject constructor(
             }
             copy(
                 isSearchFocused = isFocused,
-                isSearchActive = shouldBeActive
+                isSearchActive = shouldBeActive,
             )
         }
     }
 
     private fun onSearchBackPressed() {
         Timber.tag("Analytics").i(
-            "search_back_pressed query_length=${state.value.searchQuery.length}"
+            "search_back_pressed query_length=${state.value.searchQuery.length}",
         )
     }
 
@@ -361,7 +379,7 @@ class CountriesViewModel @Inject constructor(
         viewModelScope.launch {
             Timber.d("Clearing all filters")
             searchPreferencesDataSource.clearFilters()
-            setEffect { CountriesContract.Effect.ShowToast("Filters cleared") }
+            setEffect { CountriesContract.Effect.ShowMessage(R.string.filters_cleared) }
         }
     }
 
@@ -404,18 +422,16 @@ class CountriesViewModel @Inject constructor(
      * Toggle favorite status of a country.
      */
     private fun toggleFavorite(countryCode: String) {
-        setState {
-            val newFavorites = if (favoriteCountryCodes.contains(countryCode)) {
-                favoriteCountryCodes - countryCode
+        viewModelScope.launch {
+            val wasFavorite = state.value.favoriteCountryCodes.contains(countryCode.uppercase())
+            toggleFavoriteUseCase(countryCode)
+            val messageRes = if (wasFavorite) {
+                R.string.removed_from_favorites
             } else {
-                favoriteCountryCodes + countryCode
+                R.string.added_to_favorites
             }
-            copy(favoriteCountryCodes = newFavorites)
+            setEffect { CountriesContract.Effect.ShowMessage(messageRes) }
         }
-
-        val isFavorite = state.value.favoriteCountryCodes.contains(countryCode)
-        val message = if (isFavorite) "Added to favorites" else "Removed from favorites"
-        setEffect { CountriesContract.Effect.ShowToast(message) }
     }
 
     /**
@@ -464,9 +480,7 @@ class CountriesViewModel @Inject constructor(
     /**
      * Apply filters and sorting to countries list.
      */
-    private fun applyFiltersAndSort(countries: List<CountrySummary>, filters: SearchFilters): List<CountrySummary> {
-        return filteredSearchUseCase.applyFiltersAndSort(countries, filters)
-    }
+    private fun applyFiltersAndSort(countries: List<CountrySummary>, filters: SearchFilters): List<CountrySummary> = filteredSearchUseCase.applyFiltersAndSort(countries, filters)
 
     private fun rankResults(query: String, results: List<CountrySummary>): List<CountrySummary> {
         if (query.isBlank()) return results
@@ -562,28 +576,20 @@ class CountriesViewModel @Inject constructor(
     /**
      * Gets search suggestions for current query.
      */
-    fun getSearchSuggestions(): List<String> {
-        return searchSuggestionsFlow.value
-    }
+    fun getSearchSuggestions(): List<String> = searchSuggestionsFlow.value
 
     /**
      * Gets search preferences including history and filters.
      */
-    fun getSearchPreferences(): SearchPreferences {
-        return searchPreferencesFlow.value
-    }
+    fun getSearchPreferences(): SearchPreferences = searchPreferencesFlow.value
 
     /**
      * Checks if filters are active.
      */
-    fun hasActiveFilters(filters: SearchFilters): Boolean {
-        return searchFiltersUseCase.hasActiveFilters(filters)
-    }
+    fun hasActiveFilters(filters: SearchFilters): Boolean = searchFiltersUseCase.hasActiveFilters(filters)
 
     /**
      * Gets count of active filters.
      */
-    fun getActiveFilterCount(filters: SearchFilters): Int {
-        return searchFiltersUseCase.getActiveFilterCount(filters)
-    }
+    fun getActiveFilterCount(filters: SearchFilters): Int = searchFiltersUseCase.getActiveFilterCount(filters)
 }
