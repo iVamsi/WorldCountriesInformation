@@ -24,24 +24,24 @@ data class CountryEntity(
     val longitude: Double,
     val languages: List<LanguageEntity>,
     val currencies: List<CurrencyEntity>,
-    val lastUpdated: Long = System.currentTimeMillis()
+    val lastUpdated: Long = System.currentTimeMillis(),
 )
 
 /**
  * Embedded entity for language information.
- * 
+ *
  * Marked as @Serializable for use with kotlinx.serialization in Room type converters.
  * This provides compile-time safety and better performance compared to reflection-based JSON parsing.
  */
 @Serializable
 data class LanguageEntity(
     val name: String? = null,
-    val nativeName: String? = null
+    val nativeName: String? = null,
 )
 
 /**
  * Embedded entity for currency information.
- * 
+ *
  * Marked as @Serializable for use with kotlinx.serialization in Room type converters.
  * This provides compile-time safety and better performance compared to reflection-based JSON parsing.
  */
@@ -49,5 +49,5 @@ data class LanguageEntity(
 data class CurrencyEntity(
     val code: String? = null,
     val name: String? = null,
-    val symbol: String? = null
+    val symbol: String? = null,
 )

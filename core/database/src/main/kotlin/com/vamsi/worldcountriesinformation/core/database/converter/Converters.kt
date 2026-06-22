@@ -88,10 +88,10 @@ class Converters {
          * - **encodeDefaults**: Always encode null/default values explicitly
          */
         private val json = Json {
-            ignoreUnknownKeys = true  // Ignore extra fields from API
-            isLenient = true           // Be forgiving with JSON format
-            prettyPrint = false        // Compact format for storage
-            encodeDefaults = true      // Always encode null values
+            ignoreUnknownKeys = true // Ignore extra fields from API
+            isLenient = true // Be forgiving with JSON format
+            prettyPrint = false // Compact format for storage
+            encodeDefaults = true // Always encode null values
         }
 
         /**
@@ -160,7 +160,7 @@ class Converters {
             logError(
                 "Converters",
                 "Failed to serialize language list (size=${value.size})",
-                e
+                e,
             )
             EMPTY_JSON_ARRAY
         } catch (e: Exception) {
@@ -168,7 +168,7 @@ class Converters {
             logError(
                 "Converters",
                 "Unexpected error serializing language list (size=${value.size})",
-                e
+                e,
             )
             EMPTY_JSON_ARRAY
         }
@@ -226,7 +226,7 @@ class Converters {
             logError(
                 "Converters",
                 "Failed to deserialize language list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         } catch (e: IllegalArgumentException) {
@@ -235,7 +235,7 @@ class Converters {
             logError(
                 "Converters",
                 "Invalid JSON format for language list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         } catch (e: Exception) {
@@ -244,7 +244,7 @@ class Converters {
             logError(
                 "Converters",
                 "Unexpected error deserializing language list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         }
@@ -301,7 +301,7 @@ class Converters {
             logError(
                 "Converters",
                 "Failed to serialize currency list (size=${value.size})",
-                e
+                e,
             )
             EMPTY_JSON_ARRAY
         } catch (e: Exception) {
@@ -309,7 +309,7 @@ class Converters {
             logError(
                 "Converters",
                 "Unexpected error serializing currency list (size=${value.size})",
-                e
+                e,
             )
             EMPTY_JSON_ARRAY
         }
@@ -367,7 +367,7 @@ class Converters {
             logError(
                 "Converters",
                 "Failed to deserialize currency list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         } catch (e: IllegalArgumentException) {
@@ -376,7 +376,7 @@ class Converters {
             logError(
                 "Converters",
                 "Invalid JSON format for currency list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         } catch (e: Exception) {
@@ -385,7 +385,7 @@ class Converters {
             logError(
                 "Converters",
                 "Unexpected error deserializing currency list. Input preview: '$preview...'",
-                e
+                e,
             )
             emptyList()
         }

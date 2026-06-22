@@ -7,7 +7,6 @@ import com.vamsi.worldcountriesinformation.core.network.WorldCountriesApi
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountries // v3.1 API mapper (List)
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountry // v3.1 API mapper (Single)
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomain
-import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomainList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toSummaryList
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
@@ -170,7 +169,7 @@ class CountriesRepositoryImpl @Inject constructor(
                     emitAll(
                         countryDao.getAllCountries().map { entities ->
                             ApiResponse.Success(entities.toSummaryList())
-                        }
+                        },
                     )
                 } else {
                     Timber.w("CACHE_ONLY: No cached data available")
@@ -189,7 +188,7 @@ class CountriesRepositoryImpl @Inject constructor(
                 val nowMillis = clock.millis()
                 val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, nowMillis = nowMillis)
                 Timber.d(
-                    "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp, nowMillis)}, fresh=$isFresh"
+                    "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp, nowMillis)}, fresh=$isFresh",
                 )
                 isFresh
             } else {
@@ -241,7 +240,6 @@ class CountriesRepositoryImpl @Inject constructor(
 
                     // Note: No manual emit here - the emitAll() below will handle it
                     // This ensures we're always emitting from the single source of truth
-
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: IOException) {
@@ -284,7 +282,7 @@ class CountriesRepositoryImpl @Inject constructor(
             emitAll(
                 countryDao.getAllCountries().map { entities ->
                     ApiResponse.Success(entities.toSummaryList())
-                }
+                },
             )
         }
     }
@@ -339,97 +337,43 @@ class CountriesRepositoryImpl @Inject constructor(
     override fun getCountryByCode(
         code: String,
         policy: CachePolicy,
-    ): Flow<ApiResponse<Country>> {
-        return flow {
-            // Emit loading state
-            emit(ApiResponse.Loading)
+    ): Flow<ApiResponse<Country>> = flow {
+        // Emit loading state
+        emit(ApiResponse.Loading)
 
-            try {
-                // Normalize country code to uppercase
-                val normalizedCode = code.uppercase().trim()
+        try {
+            // Normalize country code to uppercase
+            val normalizedCode = code.uppercase().trim()
 
-                Timber.d("Fetching country by code: $normalizedCode with policy: $policy")
+            Timber.d("Fetching country by code: $normalizedCode with policy: $policy")
 
-                // Check cache based on policy
-                val cachedCountry = countryDao.getCountryByCodeOnce(normalizedCode)?.toDomain()
+            // Check cache based on policy
+            val cachedCountry = countryDao.getCountryByCodeOnce(normalizedCode)?.toDomain()
 
-                when (policy) {
-                    CachePolicy.CACHE_ONLY -> {
-                        // Return cache only, no network call
-                        if (cachedCountry != null) {
-                            Timber.d("Country found in cache (CACHE_ONLY): ${cachedCountry.name}")
-                            emit(ApiResponse.Success(cachedCountry))
-                        } else {
-                            Timber.w("Country not in cache (CACHE_ONLY): $normalizedCode")
-                            emit(
-                                ApiResponse.Error(
-                                    Exception("No cached data available for country '$normalizedCode'")
-                                )
-                            )
-                        }
+            when (policy) {
+                CachePolicy.CACHE_ONLY -> {
+                    // Return cache only, no network call
+                    if (cachedCountry != null) {
+                        Timber.d("Country found in cache (CACHE_ONLY): ${cachedCountry.name}")
+                        emit(ApiResponse.Success(cachedCountry))
+                    } else {
+                        Timber.w("Country not in cache (CACHE_ONLY): $normalizedCode")
+                        emit(
+                            ApiResponse.Error(
+                                Exception("No cached data available for country '$normalizedCode'"),
+                            ),
+                        )
                     }
+                }
 
-                    CachePolicy.CACHE_FIRST -> {
-                        if (cachedCountry != null) {
-                            Timber.d("Country found in cache (CACHE_FIRST): ${cachedCountry.name}")
-                            emit(ApiResponse.Success(cachedCountry))
-                        } else {
-                            Timber.d(
-                                "Country not in cache, fetching from network: $normalizedCode"
-                            )
-                            try {
-                                val freshCountry = fetchCountryFromNetwork(normalizedCode)
-                                if (freshCountry != null) {
-                                    emit(ApiResponse.Success(freshCountry))
-                                } else {
-                                    emit(
-                                        ApiResponse.Error(
-                                            Exception("Country with code '$normalizedCode' not found")
-                                        )
-                                    )
-                                }
-                            } catch (e: CancellationException) {
-                                throw e
-                            } catch (e: IOException) {
-                                emit(countryFetchFailure(normalizedCode, e))
-                            } catch (e: HttpException) {
-                                emit(countryFetchFailure(normalizedCode, e))
-                            } catch (e: SerializationException) {
-                                emit(countryFetchFailure(normalizedCode, e))
-                            }
-                        }
-                    }
-
-                    CachePolicy.NETWORK_FIRST -> {
-                        // Try network first
-                        try {
-                            val freshCountry = fetchCountryFromNetwork(normalizedCode)
-                            if (freshCountry != null) {
-                                emit(ApiResponse.Success(freshCountry))
-                            } else if (cachedCountry != null) {
-                                // Network failed, fall back to cache
-                                Timber.d("Network fetch failed, using cache: ${cachedCountry.name}")
-                                emit(ApiResponse.Success(cachedCountry))
-                            } else {
-                                emit(
-                                    ApiResponse.Error(
-                                        Exception("Country with code '$normalizedCode' not found")
-                                    )
-                                )
-                            }
-                        } catch (e: CancellationException) {
-                            throw e
-                        } catch (e: IOException) {
-                            emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
-                        } catch (e: HttpException) {
-                            emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
-                        } catch (e: SerializationException) {
-                            emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
-                        }
-                    }
-
-                    CachePolicy.FORCE_REFRESH -> {
-                        // Always fetch fresh from network, ignore cache
+                CachePolicy.CACHE_FIRST -> {
+                    if (cachedCountry != null) {
+                        Timber.d("Country found in cache (CACHE_FIRST): ${cachedCountry.name}")
+                        emit(ApiResponse.Success(cachedCountry))
+                    } else {
+                        Timber.d(
+                            "Country not in cache, fetching from network: $normalizedCode",
+                        )
                         try {
                             val freshCountry = fetchCountryFromNetwork(normalizedCode)
                             if (freshCountry != null) {
@@ -437,8 +381,8 @@ class CountriesRepositoryImpl @Inject constructor(
                             } else {
                                 emit(
                                     ApiResponse.Error(
-                                        Exception("Country with code '$normalizedCode' not found")
-                                    )
+                                        Exception("Country with code '$normalizedCode' not found"),
+                                    ),
                                 )
                             }
                         } catch (e: CancellationException) {
@@ -452,12 +396,64 @@ class CountriesRepositoryImpl @Inject constructor(
                         }
                     }
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: SQLiteException) {
-                Timber.e(e, "Failed to fetch country by code: $code")
-                emit(ApiResponse.Error(e))
+
+                CachePolicy.NETWORK_FIRST -> {
+                    // Try network first
+                    try {
+                        val freshCountry = fetchCountryFromNetwork(normalizedCode)
+                        if (freshCountry != null) {
+                            emit(ApiResponse.Success(freshCountry))
+                        } else if (cachedCountry != null) {
+                            // Network failed, fall back to cache
+                            Timber.d("Network fetch failed, using cache: ${cachedCountry.name}")
+                            emit(ApiResponse.Success(cachedCountry))
+                        } else {
+                            emit(
+                                ApiResponse.Error(
+                                    Exception("Country with code '$normalizedCode' not found"),
+                                ),
+                            )
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: IOException) {
+                        emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
+                    } catch (e: HttpException) {
+                        emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
+                    } catch (e: SerializationException) {
+                        emit(networkFirstCountryResponse(normalizedCode, cachedCountry, e))
+                    }
+                }
+
+                CachePolicy.FORCE_REFRESH -> {
+                    // Always fetch fresh from network, ignore cache
+                    try {
+                        val freshCountry = fetchCountryFromNetwork(normalizedCode)
+                        if (freshCountry != null) {
+                            emit(ApiResponse.Success(freshCountry))
+                        } else {
+                            emit(
+                                ApiResponse.Error(
+                                    Exception("Country with code '$normalizedCode' not found"),
+                                ),
+                            )
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: IOException) {
+                        emit(countryFetchFailure(normalizedCode, e))
+                    } catch (e: HttpException) {
+                        emit(countryFetchFailure(normalizedCode, e))
+                    } catch (e: SerializationException) {
+                        emit(countryFetchFailure(normalizedCode, e))
+                    }
+                }
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: SQLiteException) {
+            Timber.e(e, "Failed to fetch country by code: $code")
+            emit(ApiResponse.Error(e))
         }
     }
 
@@ -490,50 +486,42 @@ class CountriesRepositoryImpl @Inject constructor(
         return null
     }
 
-    override fun getCountriesFlow(): Flow<List<CountrySummary>> {
-        return countryDao.getAllCountries().map { entities ->
-            entities.toSummaryList()
-        }
+    override fun getCountriesFlow(): Flow<List<CountrySummary>> = countryDao.getAllCountries().map { entities ->
+        entities.toSummaryList()
     }
 
-    override fun searchCountries(query: String): Flow<List<CountrySummary>> {
-        return countryDao.searchCountries(query).map { entities ->
-            entities.toSummaryList()
-        }
+    override fun searchCountries(query: String): Flow<List<CountrySummary>> = countryDao.searchCountries(query).map { entities ->
+        entities.toSummaryList()
     }
 
-    override fun getCountriesByRegion(region: String): Flow<List<CountrySummary>> {
-        return countryDao.getCountriesByRegion(region).map { entities ->
-            entities.toSummaryList()
-        }
+    override fun getCountriesByRegion(region: String): Flow<List<CountrySummary>> = countryDao.getCountriesByRegion(region).map { entities ->
+        entities.toSummaryList()
     }
 
-    override suspend fun forceRefresh(): Result<Unit> {
-        return try {
-            Timber.d("Force refresh: Fetching fresh data from network")
-            val networkCountries = countriesApi.fetchWorldCountriesInformation()
-            val domainCountries = networkCountries.toCountries()
+    override suspend fun forceRefresh(): Result<Unit> = try {
+        Timber.d("Force refresh: Fetching fresh data from network")
+        val networkCountries = countriesApi.fetchWorldCountriesInformation()
+        val domainCountries = networkCountries.toCountries()
 
-            Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
-            countryDao.refreshCountries(domainCountries.toEntityList())
+        Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
+        countryDao.refreshCountries(domainCountries.toEntityList())
 
-            Timber.d("Force refresh: Completed successfully")
-            Result.success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            Timber.e(e, "Force refresh failed")
-            Result.failure(e)
-        } catch (e: HttpException) {
-            Timber.e(e, "Force refresh failed")
-            Result.failure(e)
-        } catch (e: SerializationException) {
-            Timber.e(e, "Force refresh failed")
-            Result.failure(e)
-        } catch (e: SQLiteException) {
-            Timber.e(e, "Force refresh failed")
-            Result.failure(e)
-        }
+        Timber.d("Force refresh: Completed successfully")
+        Result.success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: IOException) {
+        Timber.e(e, "Force refresh failed")
+        Result.failure(e)
+    } catch (e: HttpException) {
+        Timber.e(e, "Force refresh failed")
+        Result.failure(e)
+    } catch (e: SerializationException) {
+        Timber.e(e, "Force refresh failed")
+        Result.failure(e)
+    } catch (e: SQLiteException) {
+        Timber.e(e, "Force refresh failed")
+        Result.failure(e)
     }
 
     override suspend fun getCountryCacheSnapshot(): CountryCacheSnapshot {
@@ -587,7 +575,7 @@ class CountriesRepositoryImpl @Inject constructor(
     private fun countryFetchFailure(code: String, cause: Throwable): ApiResponse.Error {
         Timber.e(cause, "Country fetch failed for: $code")
         return ApiResponse.Error(
-            Exception("Failed to fetch country '$code': ${cause.message}", cause)
+            Exception("Failed to fetch country '$code': ${cause.message}", cause),
         )
     }
 
@@ -595,12 +583,10 @@ class CountriesRepositoryImpl @Inject constructor(
         code: String,
         cached: Country?,
         e: Exception,
-    ): ApiResponse<Country> {
-        return if (cached != null) {
-            Timber.w(e, "Network failed, using cache: ${cached.name}")
-            ApiResponse.Success(cached)
-        } else {
-            countryFetchFailure(code, e)
-        }
+    ): ApiResponse<Country> = if (cached != null) {
+        Timber.w(e, "Network failed, using cache: ${cached.name}")
+        ApiResponse.Success(cached)
+    } else {
+        countryFetchFailure(code, e)
     }
 }
