@@ -2,4 +2,25 @@
 <resources>
     <string name="search_countries_hint">Buscar países…</string>
     <string name="voice_search">Búsqueda por voz</string>
+    <string name="quiz_open">Quiz de países</string>
+    <string name="countries_title">Países</string>
+    <string name="countries_compare_selection">%1$d seleccionados</string>
+    <string name="countries_compare">Comparar</string>
+    <string name="countries_cancel_compare">Cancelar selección</string>
+    <string name="countries_settings">Ajustes</string>
+    <string name="countries_clear_filters">Borrar filtros</string>
+    <string name="countries_scroll_to_top">Ir arriba</string>
+    <string name="countries_filter_by_region">Filtrar por región</string>
+    <string name="countries_regions_selected">%1$d seleccionados</string>
+    <string name="countries_sort">Ordenar</string>
+    <string name="countries_recently_viewed">Vistos recientemente</string>
+    <string name="countries_recent_searches">Búsquedas recientes</string>
+    <string name="countries_clear_all">Borrar todo</string>
+    <string name="countries_suggestions">Sugerencias</string>
+    <string name="countries_loading">Cargando países…</string>
+    <string name="countries_retry">Reintentar</string>
+    <string name="countries_no_countries">No se encontraron países</string>
+    <string name="countries_no_results">Sin resultados para \"%1$s\"</string>
+    <string name="countries_clear_search">Borrar búsqueda</string>
+    <string name="countries_select_hint">Selecciona un país para ver detalles</string>
 </resources>

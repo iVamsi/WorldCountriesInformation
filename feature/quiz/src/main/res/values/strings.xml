@@ -18,4 +18,7 @@
     <string name="quiz_wrong">Wrong — answer was %1$s</string>
     <string name="quiz_next">Next question</string>
     <string name="quiz_change_mode">Change mode</string>
+    <string name="quiz_answer_correct">Correct answer</string>
+    <string name="quiz_answer_incorrect">Your answer, incorrect</string>
+    <string name="quiz_answer_option">Answer: %1$s</string>
 </resources>
