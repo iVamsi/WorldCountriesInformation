@@ -20,13 +20,14 @@ class AndroidHiltConventionPlugin : Plugin<Project> {
                 }
             }
 
+            val libs = project.extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension::class.java)
+                .named("libs")
             dependencies {
-                "implementation"(project.extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension::class.java)
-                    .named("libs").findLibrary("hilt.android").get())
-                "ksp"(project.extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension::class.java)
-                    .named("libs").findLibrary("hilt.compiler").get())
-                "kspAndroidTest"(project.extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension::class.java)
-                    .named("libs").findLibrary("hilt.compiler").get())
+                "implementation"(libs.findLibrary("hilt.android").get())
+                "ksp"(libs.findLibrary("hilt.compiler").get())
+                "kspAndroidTest"(libs.findLibrary("hilt.compiler").get())
+                // Override Hilt's bundled kotlin-metadata-jvm so Kotlin 2.4 @Metadata parses.
+                "ksp"(libs.findLibrary("kotlin.metadata.jvm").get())
             }
         }
     }

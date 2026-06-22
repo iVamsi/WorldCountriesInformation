@@ -62,3 +62,14 @@ kover {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+subprojects {
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name == "kotlin-metadata-jvm") {
+                useVersion(libs.versions.kotlin.get())
+                because("Hilt annotation processors must parse Kotlin ${libs.versions.kotlin.get()} metadata")
+            }
+        }
+    }
+}
