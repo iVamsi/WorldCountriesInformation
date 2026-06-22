@@ -45,25 +45,21 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Quiz
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -90,14 +86,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -110,16 +107,20 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
-import com.vamsi.worldcountriesinformation.core.common.R as CommonR
+import com.vamsi.worldcountriesinformation.core.designsystem.component.EmptyState
+import com.vamsi.worldcountriesinformation.core.designsystem.component.ErrorState
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import com.vamsi.worldcountriesinformation.domainmodel.Regions
 import com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry
 import com.vamsi.worldcountriesinformation.domainmodel.SortOrder
+import com.vamsi.worldcountriesinformation.feature.countries.component.CountriesListShimmer
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 
 /**
  * Extracts the spoken text from speech recognition results.
@@ -161,15 +162,15 @@ fun CountriesScreen(
 
     // Speech recognition launcher
     val speechLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
+        contract = ActivityResultContracts.StartActivityForResult(),
     ) { result ->
         val spokenText = extractSpokenText(
             result.resultCode,
-            result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            result.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS),
         )
         if (spokenText != null) {
             viewModel.processIntent(
-                CountriesContract.Intent.SearchQueryChanged(spokenText)
+                CountriesContract.Intent.SearchQueryChanged(spokenText),
             )
         }
     }
@@ -180,6 +181,10 @@ fun CountriesScreen(
             when (effect) {
                 is CountriesContract.Effect.NavigateToDetails -> {
                     onNavigateToDetails(effect.countryCode)
+                }
+
+                is CountriesContract.Effect.ShowMessage -> {
+                    SnapNotify.show(context.getString(effect.messageRes))
                 }
 
                 is CountriesContract.Effect.ShowToast -> {
@@ -221,7 +226,7 @@ fun CountriesScreen(
                 val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                     putExtra(
                         RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM,
                     )
                     putExtra(RecognizerIntent.EXTRA_PROMPT, searchHint)
                 }
@@ -229,7 +234,7 @@ fun CountriesScreen(
             }
         } else {
             null
-        }
+        },
     )
 }
 
@@ -257,17 +262,20 @@ private fun CountriesScreenContent(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "${state.compareSelection.size} selected",
+                            text = stringResource(
+                                R.string.countries_compare_selection,
+                                state.compareSelection.size,
+                            ),
                             style = MaterialTheme.typography.titleLargeEmphasized,
                         )
                     },
                     navigationIcon = {
                         IconButton(
-                            onClick = { onIntent(CountriesContract.Intent.ClearCompareSelection) }
+                            onClick = { onIntent(CountriesContract.Intent.ClearCompareSelection) },
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
-                                contentDescription = "Cancel compare selection",
+                                contentDescription = stringResource(R.string.countries_cancel_compare),
                             )
                         }
                     },
@@ -280,7 +288,7 @@ private fun CountriesScreenContent(
                             onClick = { onIntent(CountriesContract.Intent.ConfirmCompare) },
                             enabled = state.canConfirmCompare,
                         ) {
-                            Text("Compare")
+                            Text(stringResource(R.string.countries_compare))
                         }
                     },
                 )
@@ -288,29 +296,29 @@ private fun CountriesScreenContent(
                 TopAppBar(
                     title = {
                         Text(
-                            "Countries",
-                            style = MaterialTheme.typography.titleLargeEmphasized
+                            stringResource(R.string.countries_title),
+                            style = MaterialTheme.typography.titleLargeEmphasized,
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     actions = {
                         if (state.hasActiveFilters) {
                             IconButton(
-                                onClick = { onIntent(CountriesContract.Intent.ClearFilters) }
+                                onClick = { onIntent(CountriesContract.Intent.ClearFilters) },
                             ) {
-                                Icon(Icons.Default.FilterList, "Clear filters")
+                                Icon(Icons.Default.FilterList, stringResource(R.string.countries_clear_filters))
                             }
                         }
                         IconButton(onClick = onNavigateToQuiz) {
                             Icon(Icons.Default.Quiz, stringResource(R.string.quiz_open))
                         }
                         IconButton(onClick = onNavigateToSettings) {
-                            Icon(Icons.Default.Settings, "Settings")
+                            Icon(Icons.Default.Settings, stringResource(R.string.countries_settings))
                         }
-                    }
+                    },
                 )
             }
         },
@@ -319,11 +327,11 @@ private fun CountriesScreenContent(
             AnimatedVisibility(
                 visible = showFab,
                 enter = expandVertically(
-                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
+                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
                 ) + fadeIn(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
                 exit = shrinkVertically(
-                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
-                ) + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec())
+                    animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+                ) + fadeOut(animationSpec = MaterialTheme.motionScheme.defaultEffectsSpec()),
             ) {
                 val coroutineScope = rememberCoroutineScope()
                 ExtendedFloatingActionButton(
@@ -335,23 +343,23 @@ private fun CountriesScreenContent(
                     icon = {
                         Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
                     },
-                    text = { Text("Scroll to top") }
+                    text = { Text(stringResource(R.string.countries_scroll_to_top)) },
                 )
             }
-        }
+        },
     ) { paddingValues ->
         when {
             state.isLoading && state.countries.isEmpty() -> {
-                LoadingContent(Modifier.padding(paddingValues))
+                CountriesListShimmer(modifier = Modifier.padding(paddingValues))
             }
 
             state.showError && state.countries.isEmpty() -> {
                 val errorContext = LocalContext.current
-                ErrorContent(
+                ErrorState(
                     message = state.error?.let { errorContext.message(it) }
                         ?: stringResource(CommonR.string.error_unknown),
                     onRetry = { onIntent(CountriesContract.Intent.RetryLoading) },
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
                 )
             }
 
@@ -359,7 +367,7 @@ private fun CountriesScreenContent(
                 PullToRefreshBox(
                     isRefreshing = state.isRefreshing,
                     onRefresh = { onIntent(CountriesContract.Intent.RefreshCountries) },
-                    modifier = Modifier.padding(paddingValues)
+                    modifier = Modifier.padding(paddingValues),
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         // Search bar
@@ -374,7 +382,7 @@ private fun CountriesScreenContent(
                             onMicClick = onMicClick,
                             onFocusChanged = { isFocused ->
                                 onIntent(
-                                    CountriesContract.Intent.SearchFocusChanged(isFocused)
+                                    CountriesContract.Intent.SearchFocusChanged(isFocused),
                                 )
                             },
                             onBackClick = {
@@ -382,7 +390,7 @@ private fun CountriesScreenContent(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(16.dp),
                         )
 
                         if (state.shouldShowSearchHistory) {
@@ -390,12 +398,12 @@ private fun CountriesScreenContent(
                                 history = state.searchHistory,
                                 onHistoryItemClick = { query ->
                                     onIntent(
-                                        CountriesContract.Intent.SearchHistoryItemSelected(query)
+                                        CountriesContract.Intent.SearchHistoryItemSelected(query),
                                     )
                                 },
                                 onHistoryItemDelete = { query ->
                                     onIntent(
-                                        CountriesContract.Intent.DeleteSearchHistoryItem(query)
+                                        CountriesContract.Intent.DeleteSearchHistoryItem(query),
                                     )
                                 },
                                 onClearAll = {
@@ -403,19 +411,19 @@ private fun CountriesScreenContent(
                                 },
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(horizontal = 16.dp)
+                                    .padding(horizontal = 16.dp),
                             )
                         } else if (state.shouldShowSearchSuggestions) {
                             SearchSuggestionsSection(
                                 suggestions = state.searchSuggestions,
                                 onSuggestionClick = { suggestion ->
                                     onIntent(
-                                        CountriesContract.Intent.SearchSuggestionSelected(suggestion)
+                                        CountriesContract.Intent.SearchSuggestionSelected(suggestion),
                                     )
                                 },
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(horizontal = 16.dp)
+                                    .padding(horizontal = 16.dp),
                             )
                         } else {
                             // Single scrollable column: filters, recently viewed, list
@@ -423,18 +431,18 @@ private fun CountriesScreenContent(
                                 ScrollableCountriesContent(
                                     state = state,
                                     listState = listState,
-                                    onIntent = onIntent
+                                    onIntent = onIntent,
                                 )
                                 Box(
                                     modifier = Modifier.align(Alignment.CenterEnd),
-                                    contentAlignment = Alignment.CenterEnd
+                                    contentAlignment = Alignment.CenterEnd,
                                 ) {
                                     AlphabetJumpIndexWithVisibility(
                                         visible = scrolledPastTop,
                                         countries = state.filteredCountries,
                                         listState = listState,
                                         headerItemCount = getHeaderItemCount(state),
-                                        modifier = Modifier.padding(end = 8.dp)
+                                        modifier = Modifier.padding(end = 8.dp),
                                     )
                                 }
                             }
@@ -461,18 +469,18 @@ private fun SearchBar(
 
     Row(
         modifier = modifier.animateContentSize(
-            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec()
+            animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
         ),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AnimatedVisibility(
             visible = isFocused,
             enter = expandHorizontally(
-                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
             ) + fadeIn(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
             exit = shrinkHorizontally(
-                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec()
-            ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec())
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+            ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -486,9 +494,9 @@ private fun SearchBar(
                         focusManager.clearFocus(force = true)
                         onFocusChanged(false)
                         onBackClick()
-                    }
+                    },
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.countries_back))
                 }
                 Spacer(Modifier.width(4.dp))
             }
@@ -508,33 +516,33 @@ private fun SearchBar(
             placeholder = {
                 Text(
                     stringResource(R.string.search_countries_hint),
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             },
             leadingIcon = {
-                Icon(Icons.Default.Search, "Search")
+                Icon(Icons.Default.Search, stringResource(R.string.countries_search))
             },
             trailingIcon = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (onMicClick != null) {
                         IconButton(onClick = onMicClick) {
                             Icon(
                                 Icons.Default.Mic,
-                                contentDescription = stringResource(R.string.voice_search)
+                                contentDescription = stringResource(R.string.voice_search),
                             )
                         }
                     }
                     if (query.isNotEmpty()) {
                         IconButton(onClick = onClearClick) {
-                            Icon(Icons.Default.Clear, "Clear")
+                            Icon(Icons.Default.Clear, stringResource(R.string.countries_clear))
                         }
                     }
                 }
             },
-            singleLine = true
+            singleLine = true,
         )
     }
 }
@@ -545,7 +553,9 @@ private fun getHeaderItemCount(state: CountriesContract.State): Int {
         state.recentlyViewedCountries.isNotEmpty() &&
         state.searchQuery.isBlank() &&
         !state.isSearchFocused
-    ) count++
+    ) {
+        count++
+    }
     if (state.selectedRegions.isNotEmpty() || !state.isSearchActive) count++
     count++ // SortSelector
     return count
@@ -561,7 +571,7 @@ private fun ScrollableCountriesContent(
         modifier = Modifier.fillMaxSize(),
         state = listState,
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (
             state.recentlyViewedCountries.isNotEmpty() &&
@@ -573,7 +583,7 @@ private fun ScrollableCountriesContent(
                     countries = state.recentlyViewedCountries,
                     onCountryClick = { country ->
                         onIntent(CountriesContract.Intent.CountryClicked(country.threeLetterCode))
-                    }
+                    },
                 )
             }
         }
@@ -584,7 +594,7 @@ private fun ScrollableCountriesContent(
                     selectedRegions = state.selectedRegions,
                     onRegionToggle = { region ->
                         onIntent(CountriesContract.Intent.ToggleRegion(region))
-                    }
+                    },
                 )
             }
         }
@@ -594,7 +604,7 @@ private fun ScrollableCountriesContent(
                 currentSort = state.sortOrder,
                 onSortChange = { sortOrder ->
                     onIntent(CountriesContract.Intent.ChangeSortOrder(sortOrder))
-                }
+                },
             )
         }
 
@@ -607,7 +617,7 @@ private fun ScrollableCountriesContent(
                             onClearSearch = {
                                 onIntent(CountriesContract.Intent.ClearSearch)
                             },
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
                         )
                     }
                 }
@@ -616,7 +626,10 @@ private fun ScrollableCountriesContent(
             state.filteredCountries.isEmpty() && !state.isLoading -> {
                 item(key = "empty-state", contentType = "empty-state") {
                     Box(Modifier.fillParentMaxHeight()) {
-                        EmptyState(modifier = Modifier.fillMaxSize())
+                        EmptyState(
+                            message = stringResource(R.string.countries_no_countries),
+                            modifier = Modifier.fillMaxSize(),
+                        )
                     }
                 }
             }
@@ -627,7 +640,7 @@ private fun ScrollableCountriesContent(
                 items(
                     items = state.filteredCountries,
                     key = { it.threeLetterCode },
-                    contentType = { "country-card" }
+                    contentType = { "country-card" },
                 ) { country ->
                     val code = country.threeLetterCode
                     val isSelectedForCompare = state.compareSelection.contains(code)
@@ -667,17 +680,18 @@ private fun RegionFilters(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "Filter by Region",
-                style = MaterialTheme.typography.labelLargeEmphasized
+                text = stringResource(R.string.countries_filter_by_region),
+                style = MaterialTheme.typography.labelLargeEmphasized,
+                modifier = Modifier.semantics { heading() },
             )
             if (selectedRegions.isNotEmpty()) {
                 Text(
-                    text = "${selectedRegions.size} selected",
+                    text = stringResource(R.string.countries_regions_selected, selectedRegions.size),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }
@@ -685,14 +699,14 @@ private fun RegionFilters(
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(items = Regions.ALL.toList(), key = { it }) { region ->
                 FilterChip(
                     selected = selectedRegions.contains(region),
                     onClick = { onRegionToggle(region) },
                     label = { Text(region, style = MaterialTheme.typography.labelMedium) },
-                    shape = MaterialTheme.shapes.small
+                    shape = MaterialTheme.shapes.small,
                 )
             }
         }
@@ -712,27 +726,28 @@ private fun SortSelector(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "Sort",
-            style = MaterialTheme.typography.labelLargeEmphasized
+            text = stringResource(R.string.countries_sort),
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            modifier = Modifier.semantics { heading() },
         )
 
         Box {
             OutlinedButton(onClick = { isMenuOpen = true }) {
-                Text(currentSort.humanReadableLabel())
+                Text(currentSort.label())
                 Spacer(Modifier.width(4.dp))
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Change sort order")
+                Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.countries_change_sort))
             }
 
             DropdownMenu(
                 expanded = isMenuOpen,
-                onDismissRequest = { isMenuOpen = false }
+                onDismissRequest = { isMenuOpen = false },
             ) {
                 SortOrder.entries.forEach { sortOption ->
                     DropdownMenuItem(
-                        text = { Text(sortOption.humanReadableLabel()) },
+                        text = { Text(sortOption.label()) },
                         trailingIcon = {
                             if (sortOption == currentSort) {
                                 Icon(Icons.Default.Check, contentDescription = null)
@@ -743,7 +758,7 @@ private fun SortSelector(
                             if (sortOption != currentSort) {
                                 onSortChange(sortOption)
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -751,13 +766,14 @@ private fun SortSelector(
     }
 }
 
-private fun SortOrder.humanReadableLabel(): String = when (this) {
-    SortOrder.NAME_ASC -> "Name · A to Z"
-    SortOrder.NAME_DESC -> "Name · Z to A"
-    SortOrder.POPULATION_ASC -> "Population · Low to High"
-    SortOrder.POPULATION_DESC -> "Population · High to Low"
-    SortOrder.AREA_ASC -> "Area · Small to Large"
-    SortOrder.AREA_DESC -> "Area · Large to Small"
+@Composable
+private fun SortOrder.label(): String = when (this) {
+    SortOrder.NAME_ASC -> stringResource(R.string.countries_sort_name_asc)
+    SortOrder.NAME_DESC -> stringResource(R.string.countries_sort_name_desc)
+    SortOrder.POPULATION_ASC -> stringResource(R.string.countries_sort_population_asc)
+    SortOrder.POPULATION_DESC -> stringResource(R.string.countries_sort_population_desc)
+    SortOrder.AREA_ASC -> stringResource(R.string.countries_sort_area_asc)
+    SortOrder.AREA_DESC -> stringResource(R.string.countries_sort_area_desc)
 }
 
 @Composable
@@ -768,18 +784,20 @@ private fun RecentlyViewedSection(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = "Recently viewed",
+            text = stringResource(R.string.countries_recently_viewed),
             style = MaterialTheme.typography.titleMediumEmphasized,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .semantics { heading() },
         )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(items = countries, key = { it.threeLetterCode }) { country ->
                 RecentlyViewedCard(
                     country = country,
-                    onClick = { onCountryClick(country) }
+                    onClick = { onCountryClick(country) },
                 )
             }
         }
@@ -798,7 +816,7 @@ private fun RecentlyViewedCard(
         context.resources.getIdentifier(
             flagResourceName,
             "drawable",
-            context.packageName
+            context.packageName,
         )
     }
     val interactionSource = rememberPressScaleInteractionSource()
@@ -809,17 +827,17 @@ private fun RecentlyViewedCard(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
             )
             .pressScaleEffect(interactionSource),
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             if (flagResourceId != 0) {
                 AsyncImage(
@@ -827,15 +845,15 @@ private fun RecentlyViewedCard(
                         .data(flagResourceId)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "${country.name} flag",
-                    modifier = Modifier.size(56.dp, 36.dp)
+                    contentDescription = stringResource(R.string.countries_flag_desc, country.name),
+                    modifier = Modifier.size(56.dp, 36.dp),
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(56.dp, 36.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(country.twoLetterCode, style = MaterialTheme.typography.labelMedium)
                 }
@@ -844,7 +862,7 @@ private fun RecentlyViewedCard(
             Text(
                 text = country.name,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2
+                maxLines = 2,
             )
         }
     }
@@ -861,13 +879,13 @@ private fun AlphabetJumpIndexWithVisibility(
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn(),
-        exit = fadeOut()
+        exit = fadeOut(),
     ) {
         AlphabetJumpIndex(
             countries = countries,
             listState = listState,
             headerItemCount = headerItemCount,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -889,14 +907,16 @@ private fun AlphabetJumpIndex(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         indexMap.keys.forEach { letter ->
+            val jumpDescription = stringResource(R.string.countries_alphabet_jump, letter)
             Text(
                 text = letter,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
+                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                     .clickable {
                         val countryIndex = indexMap[letter] ?: return@clickable
                         val targetIndex = headerItemCount + countryIndex
@@ -904,7 +924,8 @@ private fun AlphabetJumpIndex(
                             listState.animateScrollToItem(targetIndex)
                         }
                     }
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .semantics { contentDescription = jumpDescription }
+                    .padding(horizontal = 6.dp),
             )
         }
     }
@@ -942,7 +963,7 @@ private fun CountryCard(
         context.resources.getIdentifier(
             flagResourceName,
             "drawable",
-            context.packageName
+            context.packageName,
         )
     }
     val interactionSource = rememberPressScaleInteractionSource()
@@ -965,14 +986,14 @@ private fun CountryCard(
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = containerColor
-        )
+            containerColor = containerColor,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .padding(20.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Flag
             if (flagResourceId != 0) {
@@ -981,19 +1002,19 @@ private fun CountryCard(
                         .data(flagResourceId)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "${country.name} flag",
-                    modifier = Modifier.size(64.dp, 44.dp)
+                    contentDescription = stringResource(R.string.countries_flag_desc, country.name),
+                    modifier = Modifier.size(64.dp, 44.dp),
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .size(64.dp, 44.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = country.twoLetterCode,
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelMedium,
                     )
                 }
             }
@@ -1004,12 +1025,12 @@ private fun CountryCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = country.name,
-                    style = MaterialTheme.typography.titleMediumEmphasized
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                 )
                 Text(
                     text = country.capital,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -1017,16 +1038,23 @@ private fun CountryCard(
             val favoriteScale by animateFloatAsState(
                 targetValue = if (isFavorite) 1.1f else 1f,
                 animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-                label = "favoriteScale"
+                label = "favoriteScale",
             )
             IconButton(
                 onClick = onFavoriteClick,
-                modifier = Modifier.graphicsLayer { scaleX = favoriteScale; scaleY = favoriteScale }
+                modifier = Modifier.graphicsLayer {
+                    scaleX = favoriteScale
+                    scaleY = favoriteScale
+                },
             ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                    tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                    contentDescription = if (isFavorite) {
+                        stringResource(R.string.countries_favorite_remove)
+                    } else {
+                        stringResource(R.string.countries_favorite_add)
+                    },
+                    tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -1047,27 +1075,28 @@ private fun SearchHistorySection(
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Recent searches",
-                style = MaterialTheme.typography.titleMediumEmphasized
+                text = stringResource(R.string.countries_recent_searches),
+                style = MaterialTheme.typography.titleMediumEmphasized,
+                modifier = Modifier.semantics { heading() },
             )
             TextButton(onClick = onClearAll) {
-                Text("Clear all")
+                Text(stringResource(R.string.countries_clear_all))
             }
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(items = history, key = { it.query.lowercase() }) { entry ->
                 SearchHistoryItemRow(
                     entry = entry,
                     onClick = { onHistoryItemClick(entry.query) },
-                    onDelete = { onHistoryItemDelete(entry.query) }
+                    onDelete = { onHistoryItemDelete(entry.query) },
                 )
             }
         }
@@ -1090,7 +1119,7 @@ private fun SearchHistoryItemRow(
             } else {
                 false
             }
-        }
+        },
     )
 
     SwipeToDismissBox(
@@ -1102,16 +1131,16 @@ private fun SearchHistoryItemRow(
                     .fillMaxSize()
                     .padding(horizontal = 8.dp)
                     .background(MaterialTheme.colorScheme.errorContainer),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = Alignment.CenterEnd,
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.padding(end = 24.dp)
+                    modifier = Modifier.padding(end = 24.dp),
                 )
             }
-        }
+        },
     ) {
         Row(
             modifier = modifier
@@ -1119,18 +1148,18 @@ private fun SearchHistoryItemRow(
                 .defaultMinSize(minHeight = 48.dp)
                 .clickable(onClick = onClick)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
                 imageVector = Icons.Default.History,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
             Spacer(Modifier.width(16.dp))
             Text(
                 text = entry.query,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -1147,23 +1176,24 @@ private fun SearchSuggestionsSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Suggestions",
-                style = MaterialTheme.typography.titleMediumEmphasized
+                text = stringResource(R.string.countries_suggestions),
+                style = MaterialTheme.typography.titleMediumEmphasized,
+                modifier = Modifier.semantics { heading() },
             )
         }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(items = suggestions, key = { it.lowercase() }) { suggestion ->
                 SearchSuggestionItemRow(
                     suggestion = suggestion,
-                    onClick = { onSuggestionClick(suggestion) }
+                    onClick = { onSuggestionClick(suggestion) },
                 )
             }
         }
@@ -1181,84 +1211,18 @@ private fun SearchSuggestionItemRow(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = Icons.Default.Search,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.width(16.dp))
         Text(
             text = suggestion,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            LoadingIndicator(
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            Text(
-                "Loading countries...",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ErrorContent(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Error,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.error
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
-        )
-        Spacer(Modifier.height(16.dp))
-        Button(onClick = onRetry) {
-            Icon(Icons.Default.Refresh, null)
-            Spacer(Modifier.width(8.dp))
-            Text("Retry")
-        }
-    }
-}
-
-@Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "No countries found",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -1269,27 +1233,16 @@ private fun EmptySearchResults(
     onClearSearch: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    EmptyState(
+        message = stringResource(R.string.countries_no_results, query),
         modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Search,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            text = "No results for \"$query\"",
-            style = MaterialTheme.typography.titleMediumEmphasized
-        )
-        Spacer(Modifier.height(8.dp))
-        TextButton(onClick = onClearSearch) {
-            Text("Clear search")
-        }
-    }
+        icon = Icons.Default.Search,
+        action = {
+            TextButton(onClick = onClearSearch) {
+                Text(stringResource(R.string.countries_clear_search))
+            }
+        },
+    )
 }
 
 // -----------------------------------------------------------------------------
@@ -1306,7 +1259,7 @@ private fun CountriesScreenPreview() {
         countries = PreviewCountries,
         filteredCountries = PreviewCountries,
         favoriteCountryCodes = setOf("CAN"),
-        lastUpdated = System.currentTimeMillis()
+        lastUpdated = System.currentTimeMillis(),
     )
 
     WorldCountriesTheme {
@@ -1314,7 +1267,7 @@ private fun CountriesScreenPreview() {
             state = previewState,
             listState = rememberLazyListState(),
             onNavigateToSettings = {},
-            onIntent = {}
+            onIntent = {},
         )
     }
 }
@@ -1329,8 +1282,8 @@ private fun CountriesScreenSearchHistoryPreview() {
         searchHistory = listOf(
             SearchHistoryEntry("Canada"),
             SearchHistoryEntry("Japan"),
-            SearchHistoryEntry("Australia")
-        )
+            SearchHistoryEntry("Australia"),
+        ),
     )
 
     WorldCountriesTheme {
@@ -1338,7 +1291,7 @@ private fun CountriesScreenSearchHistoryPreview() {
             state = previewState,
             listState = rememberLazyListState(),
             onNavigateToSettings = {},
-            onIntent = {}
+            onIntent = {},
         )
     }
 }

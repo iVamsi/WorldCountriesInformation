@@ -33,14 +33,14 @@ fun CountryDetailsShimmer(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Flag placeholder
         ShimmerEffect(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(8.dp)),
         )
 
         // Country name placeholder
@@ -48,45 +48,45 @@ fun CountryDetailsShimmer(
             modifier = Modifier
                 .fillMaxWidth(0.6f)
                 .height(32.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp)),
         )
 
         // Basic info card placeholder
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Section title
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth(0.4f)
                         .height(20.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
 
                 // Info rows
                 repeat(4) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         ShimmerEffect(
                             modifier = Modifier
                                 .width(100.dp)
                                 .height(16.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.dp)),
                         )
                         ShimmerEffect(
                             modifier = Modifier
                                 .width(120.dp)
                                 .height(16.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(4.dp)),
                         )
                     }
                 }
@@ -96,20 +96,20 @@ fun CountryDetailsShimmer(
         // Languages card placeholder
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Section title
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth(0.3f)
                         .height(20.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
 
                 // Language items
@@ -118,7 +118,7 @@ fun CountryDetailsShimmer(
                         modifier = Modifier
                             .fillMaxWidth(0.5f)
                             .height(16.dp)
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(4.dp)),
                     )
                 }
             }
@@ -129,7 +129,7 @@ fun CountryDetailsShimmer(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(250.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(8.dp)),
         )
     }
 }
@@ -145,20 +145,20 @@ fun DetailSectionShimmer(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             // Title
             ShimmerEffect(
                 modifier = Modifier
                     .fillMaxWidth(0.4f)
                     .height(18.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.dp)),
             )
 
             // Content rows
@@ -167,7 +167,7 @@ fun DetailSectionShimmer(
                     modifier = Modifier
                         .fillMaxWidth(0.7f - (it * 0.1f))
                         .height(14.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
             }
         }

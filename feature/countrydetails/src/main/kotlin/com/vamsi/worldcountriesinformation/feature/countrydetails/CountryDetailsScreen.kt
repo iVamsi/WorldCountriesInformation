@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
@@ -30,16 +29,15 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,12 +53,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,8 +74,10 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
-import com.vamsi.worldcountriesinformation.core.common.R as CommonR
+import com.vamsi.worldcountriesinformation.core.designsystem.component.EmptyState
+import com.vamsi.worldcountriesinformation.core.designsystem.component.ErrorState
 import com.vamsi.worldcountriesinformation.core.designsystem.component.pressScaleEffect
 import com.vamsi.worldcountriesinformation.core.designsystem.component.rememberPressScaleInteractionSource
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -94,7 +93,9 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.CopyrightOverlay
 import org.osmdroid.views.overlay.Marker
+import java.text.NumberFormat
 import java.util.Locale
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 
 /**
  * Country details route with pull-to-refresh, cache age indicators, sharing,
@@ -125,7 +126,7 @@ fun CountryDetailsRoute(
 
                 is CountryDetailsContract.Effect.ShowMessage -> {
                     SnapNotify.show(
-                        resources.getString(effect.messageRes, *effect.formatArgs.toTypedArray())
+                        resources.getString(effect.messageRes, *effect.formatArgs.toTypedArray()),
                     )
                 }
 
@@ -133,7 +134,7 @@ fun CountryDetailsRoute(
                     val text = effect.error?.let { resources.message(it) }
                         ?: resources.getString(
                             effect.messageRes!!,
-                            *effect.formatArgs.toTypedArray()
+                            *effect.formatArgs.toTypedArray(),
                         )
                     SnapNotify.showError(text)
                 }
@@ -149,7 +150,7 @@ fun CountryDetailsRoute(
                         putExtra(Intent.EXTRA_SUBJECT, "Country Information")
                     }
                     context.startActivity(
-                        Intent.createChooser(shareIntent, "Share country info")
+                        Intent.createChooser(shareIntent, "Share country info"),
                     )
                 }
 
@@ -157,9 +158,9 @@ fun CountryDetailsRoute(
                     val geoUri = Uri.parse(
                         "geo:${effect.latitude},${effect.longitude}?q=${effect.latitude},${effect.longitude}(${
                             Uri.encode(
-                                effect.countryName
+                                effect.countryName,
                             )
-                        })"
+                        })",
                     )
                     val mapIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
                         setPackage("com.google.android.apps.maps")
@@ -174,7 +175,7 @@ fun CountryDetailsRoute(
                         } else {
                             // Ultimate fallback: open Google Maps in browser
                             val browserUri = Uri.parse(
-                                "https://www.google.com/maps/search/?api=1&query=${effect.latitude},${effect.longitude}"
+                                "https://www.google.com/maps/search/?api=1&query=${effect.latitude},${effect.longitude}",
                             )
                             context.startActivity(Intent(Intent.ACTION_VIEW, browserUri))
                         }
@@ -197,7 +198,7 @@ fun CountryDetailsRoute(
         countryCode = countryCode,
         onIntent = { intent -> viewModel.processIntent(intent) },
         cacheAge = viewModel.getCacheAge(),
-        isCacheFresh = viewModel.isCacheFresh()
+        isCacheFresh = viewModel.isCacheFresh(),
     )
 }
 
@@ -222,7 +223,7 @@ private fun CountryDetailsScreenContent(
                 message = state.error?.let { errorContext.message(it) }
                     ?: stringResource(CommonR.string.error_unknown),
                 onRetry = { onIntent(CountryDetailsContract.Intent.RetryLoading(countryCode)) },
-                onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) }
+                onNavigateBack = { onIntent(CountryDetailsContract.Intent.NavigateBack) },
             )
         }
 
@@ -245,14 +246,14 @@ private fun CountryDetailsScreenContent(
                 },
                 cacheAge = cacheAge,
                 isCacheFresh = isCacheFresh,
-                modifier = modifier
+                modifier = modifier,
             )
         }
 
         else -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text("Initializing...")
             }
@@ -268,7 +269,6 @@ private fun CountryDetailsScreen(
     showMapBorders: Boolean = true,
     isFavorite: Boolean,
     nearbyCountries: List<CountrySummary> = emptyList(),
-
     isLoadingNearby: Boolean = false,
     onNavigateBack: () -> Unit,
     isRefreshing: Boolean = false,
@@ -298,7 +298,7 @@ private fun CountryDetailsScreen(
                                     MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                                 } else {
                                     MaterialTheme.colorScheme.error.copy(alpha = 0.7f)
-                                }
+                                },
                             )
                         }
                     }
@@ -307,7 +307,7 @@ private fun CountryDetailsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
+                            contentDescription = "Navigate back",
                         )
                     }
                 },
@@ -317,7 +317,7 @@ private fun CountryDetailsScreen(
                         Icon(
                             imageVector = Icons.Default.Share,
                             contentDescription = "Share country information",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                     // Favorite button
@@ -325,34 +325,34 @@ private fun CountryDetailsScreen(
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
-                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                     // Manual refresh button
                     IconButton(
                         onClick = onRefresh,
-                        enabled = !isRefreshing
+                        enabled = !isRefreshing,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh country details",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
             )
-        }
+        },
     ) { paddingValues ->
         // Pull-to-refresh wrapper
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = onRefresh,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
         ) {
             val detailsList = getCountryDetailsList(country)
 
@@ -360,7 +360,7 @@ private fun CountryDetailsScreen(
                 // Wavy progress indicator during refresh
                 if (isRefreshing) {
                     LinearWavyProgressIndicator(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
 
@@ -369,7 +369,7 @@ private fun CountryDetailsScreen(
                         .fillMaxSize()
                         .weight(1f),
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     item(key = "flag-card", contentType = "flag-card") {
                         CountryFlagCard(country = country)
@@ -395,18 +395,18 @@ private fun CountryDetailsScreen(
                         Text(
                             text = "Country Information",
                             style = MaterialTheme.typography.titleLargeEmphasized,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                            modifier = Modifier.padding(vertical = 8.dp),
                         )
                     }
 
                     items(
                         items = detailsList,
                         key = { it.label },
-                        contentType = { "country-detail" }
+                        contentType = { "country-detail" },
                     ) { detail ->
                         CountryDetailItem(
                             label = detail.label,
-                            value = detail.value
+                            value = detail.value,
                         )
                     }
 
@@ -415,7 +415,7 @@ private fun CountryDetailsScreen(
                             region = country.region,
                             nearbyCountries = nearbyCountries,
                             isLoading = isLoadingNearby,
-                            onCountryClick = onNearbyCountryClick
+                            onCountryClick = onNearbyCountryClick,
                         )
                     }
                 }
@@ -524,7 +524,7 @@ private fun CountryFlagCard(country: Country) {
         context.resources.getIdentifier(
             flagResourceName,
             "drawable",
-            context.packageName
+            context.packageName,
         )
     }
 
@@ -536,12 +536,12 @@ private fun CountryFlagCard(country: Country) {
         shape = MaterialTheme.shapes.extraExtraLarge,
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+        ),
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             if (flagResourceId != 0) {
                 AsyncImage(
@@ -553,22 +553,22 @@ private fun CountryFlagCard(country: Country) {
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(MaterialTheme.shapes.extraExtraLarge),
-                    contentScale = ContentScale.FillBounds
+                    contentScale = ContentScale.FillBounds,
                 )
             } else {
                 // Fallback if flag not found
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.primaryContainer
+                    color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = country.twoLetterCode,
                             style = MaterialTheme.typography.displayLargeEmphasized,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
@@ -586,7 +586,7 @@ private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
             .fillMaxWidth()
             .height(250.dp),
         shape = MaterialTheme.shapes.extraLarge,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         if (country.latitude != 0.0 && country.longitude != 0.0) {
             AndroidView(
@@ -637,12 +637,12 @@ private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = "Location data not available",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -660,17 +660,17 @@ private fun OpenInMapsButton(
     FilledTonalButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.large
+        shape = MaterialTheme.shapes.large,
     ) {
         Icon(
             imageVector = Icons.Default.Map,
             contentDescription = null,
-            modifier = Modifier.size(18.dp)
+            modifier = Modifier.size(18.dp),
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Open in Maps",
-            style = MaterialTheme.typography.labelLargeEmphasized
+            style = MaterialTheme.typography.labelLargeEmphasized,
         )
     }
 }
@@ -691,7 +691,7 @@ private fun NearbyCountriesSection(
         Text(
             text = "Nearby Countries ($region)",
             style = MaterialTheme.typography.titleLargeEmphasized,
-            modifier = Modifier.padding(bottom = 12.dp)
+            modifier = Modifier.padding(bottom = 12.dp),
         )
 
         when {
@@ -700,39 +700,33 @@ private fun NearbyCountriesSection(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     ContainedLoadingIndicator(modifier = Modifier.size(48.dp))
                 }
             }
 
             nearbyCountries.isEmpty() -> {
-                Box(
+                EmptyState(
+                    message = "No nearby countries found",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No nearby countries found",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                )
             }
 
             else -> {
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(end = 4.dp)
+                    contentPadding = PaddingValues(end = 4.dp),
                 ) {
                     items(
                         items = nearbyCountries,
-                        key = { it.threeLetterCode }
+                        key = { it.threeLetterCode },
                     ) { country ->
                         NearbyCountryCard(
                             country = country,
-                            onClick = { onCountryClick(country.threeLetterCode) }
+                            onClick = { onCountryClick(country.threeLetterCode) },
                         )
                     }
                 }
@@ -758,7 +752,7 @@ private fun NearbyCountryCard(
         context.resources.getIdentifier(
             flagResourceName,
             "drawable",
-            context.packageName
+            context.packageName,
         )
     }
     val interactionSource = rememberPressScaleInteractionSource()
@@ -769,25 +763,25 @@ private fun NearbyCountryCard(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
             )
             .pressScaleEffect(interactionSource),
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Column(
             modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Flag
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
             ) {
                 if (flagResourceId != 0) {
                     AsyncImage(
@@ -797,16 +791,16 @@ private fun NearbyCountryCard(
                             .build(),
                         contentDescription = "Flag of ${country.name}",
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
+                        contentScale = ContentScale.Fit,
                     )
                 } else {
                     Box(
                         modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
                         Text(
                             text = CountryDetailsViewModel.countryCodeToFlagEmoji(country.twoLetterCode),
-                            style = MaterialTheme.typography.headlineMediumEmphasized
+                            style = MaterialTheme.typography.headlineMediumEmphasized,
                         )
                     }
                 }
@@ -821,7 +815,7 @@ private fun NearbyCountryCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             // Capital
@@ -833,7 +827,7 @@ private fun NearbyCountryCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -851,24 +845,24 @@ private fun CountryDetailItem(
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelLargeEmphasized,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
@@ -881,17 +875,18 @@ private data class CountryDetail(
 
 @Composable
 private fun getCountryDetailsList(country: Country): List<CountryDetail> {
+    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
     return remember(country) {
         listOf(
             CountryDetail("Country Name", country.name),
             CountryDetail("Capital City", country.capital),
-            CountryDetail("Population", country.population.toString()),
+            CountryDetail("Population", numberFormat.format(country.population)),
             CountryDetail("Calling Code", country.callingCode),
             CountryDetail("Languages", country.languages.joinToString(", ") { it.name ?: "" }),
             CountryDetail("Currencies", country.currencies.joinToString(", ") { it.name ?: "" }),
             CountryDetail("Region", country.region),
             CountryDetail("Two Letter Code", country.twoLetterCode),
-            CountryDetail("Three Letter Code", country.threeLetterCode)
+            CountryDetail("Three Letter Code", country.threeLetterCode),
         )
     }
 }
@@ -913,44 +908,25 @@ private fun CountryDetailsErrorContent(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
+                            contentDescription = "Navigate back",
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.95f),
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ),
             )
-        }
+        },
     ) { paddingValues ->
-        Box(
+        ErrorState(
+            message = message,
+            onRetry = onRetry,
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Error,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.error
-                )
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Button(onClick = onRetry) {
-                    Text("Retry")
-                }
-            }
-        }
+        )
     }
 }
 
@@ -966,7 +942,7 @@ private fun getSampleCountry() = Country(
     currencies = listOf(Currency(code = "USD", name = "United States dollar", symbol = "$")),
     languages = listOf(Language(name = "English")),
     latitude = 38.8951,
-    longitude = -77.0364
+    longitude = -77.0364,
 )
 
 // Previews
@@ -987,7 +963,7 @@ private fun CountryDetailsScreenPreview() {
             onFavoriteClick = {},
             onShareClick = {},
             onOpenInMapsClick = {},
-            onNearbyCountryClick = {}
+            onNearbyCountryClick = {},
         )
     }
 }
@@ -1005,7 +981,7 @@ private fun CountryDetailsScreenFavoritePreview() {
             onFavoriteClick = {},
             onShareClick = {},
             onOpenInMapsClick = {},
-            onNearbyCountryClick = {}
+            onNearbyCountryClick = {},
         )
     }
 }
@@ -1024,7 +1000,7 @@ private fun CountryDetailItemPreview() {
     WorldCountriesTheme {
         CountryDetailItem(
             label = "Capital City",
-            value = "Washington, D.C."
+            value = "Washington, D.C.",
         )
     }
 }
@@ -1037,7 +1013,7 @@ private fun NearbyCountriesSectionPreview() {
             region = "Americas",
             nearbyCountries = getSampleNearbyCountries(),
             isLoading = false,
-            onCountryClick = {}
+            onCountryClick = {},
         )
     }
 }
@@ -1049,7 +1025,7 @@ private fun CountryDetailsErrorContentPreview() {
         CountryDetailsErrorContent(
             message = "Failed to load country details. Please try again.",
             onRetry = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
         )
     }
 }

@@ -4,17 +4,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +34,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -37,7 +46,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
+import com.vamsi.worldcountriesinformation.core.designsystem.component.ErrorState
 import com.vamsi.worldcountriesinformation.domain.quiz.GuessMode
 import com.vamsi.worldcountriesinformation.domain.quiz.QuizQuestion
 import kotlinx.coroutines.flow.collectLatest
@@ -63,7 +74,7 @@ fun QuizRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun QuizScreen(
     state: QuizContract.State,
@@ -71,6 +82,8 @@ private fun QuizScreen(
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
+        modifier = modifier.testTag(UiTestTags.QUIZ_SCREEN),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.quiz_title)) },
@@ -86,7 +99,7 @@ private fun QuizScreen(
         },
     ) { padding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp)
@@ -127,7 +140,7 @@ private fun QuizScreen(
             when {
                 state.isLoading -> LoadingContent()
                 state.showModePicker -> ModePicker(onSelectMode = { onIntent(QuizContract.Intent.SelectMode(it)) })
-                state.showError -> ErrorContent(
+                state.showError -> QuizErrorContent(
                     message = state.error?.let { LocalQuizErrorMessage(it) }
                         ?: stringResource(R.string.quiz_error_load),
                     onRetry = { onIntent(QuizContract.Intent.LoadQuestion) },
@@ -160,7 +173,7 @@ private fun LoadingContent() {
             .padding(vertical = 48.dp),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+        CircularWavyProgressIndicator(modifier = Modifier.size(48.dp))
     }
 }
 
@@ -169,7 +182,9 @@ private fun ModePicker(onSelectMode: (GuessMode) -> Unit) {
     Text(
         text = stringResource(R.string.quiz_pick_mode),
         style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(vertical = 8.dp),
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .semantics { heading() },
     )
     ModeButton(label = stringResource(R.string.quiz_mode_flag)) { onSelectMode(GuessMode.FLAG) }
     ModeButton(label = stringResource(R.string.quiz_mode_capital)) { onSelectMode(GuessMode.CAPITAL) }
@@ -187,17 +202,21 @@ private fun ModeButton(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ErrorContent(
+private fun QuizErrorContent(
     message: String,
     onRetry: () -> Unit,
     onChangeMode: () -> Unit,
 ) {
-    Text(text = message, style = MaterialTheme.typography.bodyLarge)
-    Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.quiz_retry))
-    }
-    OutlinedButton(onClick = onChangeMode, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.quiz_change_mode))
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ErrorState(
+            message = message,
+            onRetry = onRetry,
+            modifier = Modifier.fillMaxWidth(),
+            retryLabel = stringResource(R.string.quiz_retry),
+        )
+        OutlinedButton(onClick = onChangeMode, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.quiz_change_mode))
+        }
     }
 }
 
@@ -254,11 +273,33 @@ private fun ColumnScope.QuestionContent(
         val isCorrectOption = index == question.correctOptionIndex
         val showResult = answered && (isSelected || isCorrectOption)
 
+        val answerDescription = stringResource(R.string.quiz_answer_option, option)
+
         OutlinedButton(
             onClick = { if (!answered) onAnswer(index) },
             enabled = !answered,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = answerDescription },
         ) {
+            if (showResult) {
+                Icon(
+                    imageVector = if (isCorrectOption) Icons.Default.Check else Icons.Default.Close,
+                    contentDescription = if (isCorrectOption) {
+                        stringResource(R.string.quiz_answer_correct)
+                    } else if (isSelected) {
+                        stringResource(R.string.quiz_answer_incorrect)
+                    } else {
+                        null
+                    },
+                    tint = if (isCorrectOption) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                )
+                Spacer(Modifier.width(8.dp))
+            }
             Text(
                 text = option,
                 fontWeight = if (showResult) FontWeight.Bold else FontWeight.Normal,
@@ -291,15 +332,13 @@ private fun ColumnScope.QuestionContent(
     }
 }
 
-private fun flagEmoji(countryCode: String): String {
-    return try {
-        val code = countryCode.uppercase()
-        val first = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
-        val second = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
-        String(Character.toChars(first)) + String(Character.toChars(second))
-    } catch (_: Exception) {
-        "🏳️"
-    }
+private fun flagEmoji(countryCode: String): String = try {
+    val code = countryCode.uppercase()
+    val first = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
+    val second = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
+    String(Character.toChars(first)) + String(Character.toChars(second))
+} catch (_: Exception) {
+    "🏳️"
 }
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)

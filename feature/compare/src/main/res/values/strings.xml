@@ -11,4 +11,5 @@
     <string name="compare_label_languages">Languages</string>
     <string name="compare_label_currencies">Currencies</string>
     <string name="compare_label_calling_code">Calling code</string>
+    <string name="compare_insight_title">Insight</string>
 </resources>

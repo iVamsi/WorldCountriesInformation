@@ -43,7 +43,7 @@ fun ShimmerEffect(
     val colors = shimmerColors ?: listOf(
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
     )
 
     val transition = rememberInfiniteTransition(label = "shimmer")
@@ -53,21 +53,21 @@ fun ShimmerEffect(
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1500,
-                easing = LinearEasing
+                easing = LinearEasing,
             ),
-            repeatMode = RepeatMode.Restart
+            repeatMode = RepeatMode.Restart,
         ),
-        label = "shimmer_translate"
+        label = "shimmer_translate",
     )
 
     val brush = Brush.linearGradient(
         colors = colors,
         start = Offset(translateAnim.value - 1000f, translateAnim.value - 1000f),
-        end = Offset(translateAnim.value, translateAnim.value)
+        end = Offset(translateAnim.value, translateAnim.value),
     )
 
     Box(
         modifier = modifier
-            .background(brush)
+            .background(brush),
     )
 }

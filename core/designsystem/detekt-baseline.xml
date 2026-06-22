@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>UnusedPrivateMember:ShimmerPreviews.kt$@Preview(name = "Card Shimmer Layout", showBackground = true) @Composable private fun CardShimmerPreview()</ID>
+    <ID>UnusedPrivateMember:ShimmerPreviews.kt$@Preview(name = "Circular Shimmer", showBackground = true) @Composable private fun CircularShimmerPreview()</ID>
+    <ID>UnusedPrivateMember:ShimmerPreviews.kt$@Preview(name = "List Item Shimmer", showBackground = true) @Composable private fun ListItemShimmerPreview()</ID>
+    <ID>UnusedPrivateMember:ShimmerPreviews.kt$@Preview(name = "Multiple Shimmers", showBackground = true) @Composable private fun MultipleShimmersPreview()</ID>
+    <ID>UnusedPrivateMember:ShimmerPreviews.kt$@Preview(name = "Simple Shimmer", showBackground = true) @Composable private fun SimpleShimmerPreview()</ID>
+  </CurrentIssues>
+</SmellBaseline>
