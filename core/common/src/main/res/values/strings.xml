@@ -8,4 +8,7 @@
     <string name="error_load_countries_failed">Failed to load countries. Please try again.</string>
     <string name="error_load_country_details_failed">Failed to load country details. Please try again.</string>
     <string name="error_unknown">Something went wrong. Please try again.</string>
+    <string name="added_to_favorites">Added to favorites</string>
+    <string name="removed_from_favorites">Removed from favorites</string>
+    <string name="filters_cleared">Filters cleared</string>
 </resources>

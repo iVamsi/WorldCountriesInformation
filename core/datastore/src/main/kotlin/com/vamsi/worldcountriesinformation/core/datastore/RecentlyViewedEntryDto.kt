@@ -8,20 +8,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class RecentlyViewedEntryDto(
     val countryCode: String,
-    val timestamp: Long
+    val timestamp: Long,
 )
 
 /**
  * Converts domain RecentlyViewedEntry to DTO.
  */
-internal fun com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry.toDto() =
-    RecentlyViewedEntryDto(countryCode = countryCode, timestamp = timestamp)
+internal fun com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry.toDto() = RecentlyViewedEntryDto(countryCode = countryCode, timestamp = timestamp)
 
 /**
  * Converts DTO to domain RecentlyViewedEntry.
  */
-internal fun RecentlyViewedEntryDto.toDomain() =
-    com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry(
-        countryCode = countryCode,
-        timestamp = timestamp
-    )
+internal fun RecentlyViewedEntryDto.toDomain() = com.vamsi.worldcountriesinformation.domainmodel.RecentlyViewedEntry(
+    countryCode = countryCode,
+    timestamp = timestamp,
+)

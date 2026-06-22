@@ -11,17 +11,18 @@ import kotlinx.serialization.Serializable
 @Serializable
 internal data class SearchHistoryEntryDto(
     val query: String,
-    val timestamp: Long
+    val timestamp: Long,
 )
 
 /**
  * Converts domain SearchHistoryEntry to DTO.
  */
-internal fun com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry.toDto() =
-    SearchHistoryEntryDto(query = query, timestamp = timestamp)
+internal fun com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry.toDto() = SearchHistoryEntryDto(query = query, timestamp = timestamp)
 
 /**
  * Converts DTO to domain SearchHistoryEntry.
  */
-internal fun SearchHistoryEntryDto.toDomain() =
-    com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry(query = query, timestamp = timestamp)
+internal fun SearchHistoryEntryDto.toDomain() = com.vamsi.worldcountriesinformation.domainmodel.SearchHistoryEntry(
+    query = query,
+    timestamp = timestamp,
+)
