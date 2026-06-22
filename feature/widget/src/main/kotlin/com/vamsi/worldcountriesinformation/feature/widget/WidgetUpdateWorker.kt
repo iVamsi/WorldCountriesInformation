@@ -28,22 +28,20 @@ class WidgetUpdateWorker @AssistedInject constructor(
     private val liveUpdateManager: LiveUpdateManager,
 ) : CoroutineWorker(context, workerParams) {
 
-    override suspend fun doWork(): Result {
-        return try {
-            Timber.d("Updating Country Widget")
+    override suspend fun doWork(): Result = try {
+        Timber.d("Updating Country Widget")
 
-            liveUpdateManager.publishCountryOfDayUpdate()
+        liveUpdateManager.publishCountryOfDayUpdate()
 
-            // Update all widget instances
-            CountryWidget().updateAll(context)
+        // Update all widget instances
+        CountryWidget().updateAll(context)
 
-            Timber.d("Country Widget updated successfully")
-            Result.success()
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            Timber.e(e, "Failed to update Country Widget")
-            Result.retry()
-        }
+        Timber.d("Country Widget updated successfully")
+        Result.success()
+    } catch (e: Exception) {
+        if (e is CancellationException) throw e
+        Timber.e(e, "Failed to update Country Widget")
+        Result.retry()
     }
 
     companion object {
@@ -61,7 +59,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
 
             val workRequest = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
                 UPDATE_INTERVAL_HOURS,
-                TimeUnit.HOURS
+                TimeUnit.HOURS,
             )
                 .setConstraints(constraints)
                 .addTag(WORK_NAME)
@@ -70,7 +68,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                 WORK_NAME,
                 ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
+                workRequest,
             )
 
             Timber.d("Scheduled periodic widget updates every $UPDATE_INTERVAL_HOURS hours")
@@ -98,4 +96,3 @@ class WidgetUpdateWorker @AssistedInject constructor(
         }
     }
 }
-

@@ -11,5 +11,5 @@ package com.vamsi.worldcountriesinformation.domainmodel
  */
 data class SearchHistoryEntry(
     val query: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )

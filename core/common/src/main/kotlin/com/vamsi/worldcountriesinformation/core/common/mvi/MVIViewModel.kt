@@ -78,7 +78,6 @@ import kotlinx.coroutines.launch
 abstract class MVIViewModel<Intent : MVIIntent, State : MVIState, Effect : MVIEffect>(
     initialState: State,
 ) : ViewModel() {
-
     /**
      * Internal mutable state.
      * Only accessible within this ViewModel for state updates.

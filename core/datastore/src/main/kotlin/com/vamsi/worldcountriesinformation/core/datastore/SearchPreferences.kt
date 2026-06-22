@@ -22,5 +22,5 @@ data class SearchPreferences(
     val filters: SearchFilters = SearchFilters(),
     val searchHistory: List<SearchHistoryEntry> = emptyList(),
     val enableSuggestions: Boolean = true,
-    val recentlyViewed: List<RecentlyViewedEntry> = emptyList()
+    val recentlyViewed: List<RecentlyViewedEntry> = emptyList(),
 )

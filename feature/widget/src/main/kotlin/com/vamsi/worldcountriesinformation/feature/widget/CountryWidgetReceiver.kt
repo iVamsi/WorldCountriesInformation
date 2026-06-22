@@ -33,4 +33,3 @@ class CountryWidgetReceiver : GlanceAppWidgetReceiver() {
         Timber.d("Country Widget deleted: ${appWidgetIds.contentToString()}")
     }
 }
-

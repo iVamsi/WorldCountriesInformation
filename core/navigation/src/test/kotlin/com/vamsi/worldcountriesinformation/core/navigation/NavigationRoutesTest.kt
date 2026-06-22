@@ -99,7 +99,7 @@ class NavigationRoutesTest {
             assertEquals(
                 "Route for code '$code' should be correct",
                 code,
-                route.countryCode
+                route.countryCode,
             )
         }
     }

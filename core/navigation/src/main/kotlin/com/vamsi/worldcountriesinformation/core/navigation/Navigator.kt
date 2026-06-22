@@ -121,9 +121,7 @@ class Navigator(val state: NavigationState) {
      *
      * @return `true` if back navigation is possible, `false` otherwise
      */
-    fun canGoBack(): Boolean {
-        return state.backStack.size > 1
-    }
+    fun canGoBack(): Boolean = state.backStack.size > 1
 
     /**
      * Navigate to a destination, clearing the back stack up to the start route.

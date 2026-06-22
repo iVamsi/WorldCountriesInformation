@@ -16,8 +16,7 @@ data class WidgetData(
  * Widget size configurations
  */
 enum class WidgetSize {
-    SMALL,  // Shows only featured country name and flag
+    SMALL, // Shows only featured country name and flag
     MEDIUM, // Shows featured country with basic info
-    LARGE   // Shows featured country with full details
+    LARGE, // Shows featured country with full details
 }
-
