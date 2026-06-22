@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":domain"))
     implementation(project(":core:model"))
 
     implementation(libs.google.generativeai)
@@ -16,4 +17,6 @@ dependencies {
     implementation(libs.timber)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
 }

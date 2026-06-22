@@ -4,18 +4,19 @@ import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
-import com.vamsi.worldcountriesinformation.core.ai.CountrySummaryGenerator
-import com.vamsi.worldcountriesinformation.core.ai.toSummaryDetails
-import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
-import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.core.onError
 import com.vamsi.worldcountriesinformation.domain.core.onLoading
 import com.vamsi.worldcountriesinformation.domain.core.onSuccess
 import com.vamsi.worldcountriesinformation.domain.countries.CountryByCodeParams
+import com.vamsi.worldcountriesinformation.domain.countries.GenerateCountrySummaryUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetNearbyCountriesUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.ObserveFavoritesUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.ToggleFavoriteUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -27,6 +28,7 @@ import java.text.NumberFormat
 import java.time.Clock
 import java.util.Locale
 import javax.inject.Inject
+import com.vamsi.worldcountriesinformation.core.common.R as CommonR
 
 /**
  * Central state holder for the country details experience.
@@ -40,17 +42,28 @@ class CountryDetailsViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
     private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase,
     private val searchPreferencesDataSource: SearchPreferencesPort,
-    private val preferencesDataSource: PreferencesDataSource,
-    private val countrySummaryGenerator: CountrySummaryGenerator,
+    private val userPreferencesPort: UserPreferencesPort,
+    private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase,
+    private val observeFavoritesUseCase: ObserveFavoritesUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val generateCountrySummaryUseCase: GenerateCountrySummaryUseCase,
     private val clock: Clock,
 ) : MVIViewModel<CountryDetailsContract.Intent, CountryDetailsContract.State, CountryDetailsContract.Effect>(
-    initialState = CountryDetailsContract.State()
+    initialState = CountryDetailsContract.State(),
 ) {
 
     init {
         viewModelScope.launch {
-            preferencesDataSource.userPreferences.collect { prefs ->
+            userPreferencesPort.userPreferences.collect { prefs ->
                 setState { copy(showMapBorders = prefs.showMapBorders) }
+            }
+        }
+        viewModelScope.launch {
+            observeFavoritesUseCase().collect { favorites ->
+                val code = state.value.country?.threeLetterCode?.uppercase()
+                setState {
+                    copy(isFavorite = code != null && code in favorites)
+                }
             }
         }
     }
@@ -77,23 +90,24 @@ class CountryDetailsViewModel @Inject constructor(
      */
     private fun loadCountryDetails(
         countryCode: String,
-        policy: CachePolicy = CachePolicy.NETWORK_FIRST,
+        policy: CachePolicy? = null,
     ) {
         viewModelScope.launch {
-            Timber.d("Loading country details for: $countryCode with policy: $policy")
+            val effectivePolicy = policy ?: getUserDataPolicyUseCase().first()
+            Timber.d("Loading country details for: $countryCode with policy: $effectivePolicy")
 
-            getCountryByCodeUseCase(CountryByCodeParams(countryCode, policy))
+            getCountryByCodeUseCase(CountryByCodeParams(countryCode, effectivePolicy))
                 .catch { exception ->
                     if (exception is CancellationException) throw exception
                     Timber.e(exception, "Unexpected error loading country: $countryCode")
                     val error = exception.toAppError(
-                        fallback = AppError.Generic(CommonR.string.error_load_country_details_failed)
+                        fallback = AppError.Generic(CommonR.string.error_load_country_details_failed),
                     )
                     setState {
                         copy(
                             isLoading = false,
                             isRefreshing = false,
-                            error = error
+                            error = error,
                         )
                     }
                     setEffect { CountryDetailsContract.Effect.ShowError(error = error) }
@@ -108,18 +122,20 @@ class CountryDetailsViewModel @Inject constructor(
                         }
                         .onSuccess { country ->
                             Timber.d("Country details loaded: ${country.name}")
+                            val favorites = observeFavoritesUseCase().first()
                             setState {
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
                                     country = country,
+                                    isFavorite = country.threeLetterCode.uppercase() in favorites,
                                     lastUpdated = clock.millis(),
-                                    error = null
+                                    error = null,
                                 )
                             }
                             viewModelScope.launch {
                                 searchPreferencesDataSource.addToRecentlyViewedCountry(
-                                    country.threeLetterCode
+                                    country.threeLetterCode,
                                 )
                             }
                             loadAiSummary(country)
@@ -128,9 +144,11 @@ class CountryDetailsViewModel @Inject constructor(
                         }
                         .onError { exception ->
                             Timber.e(exception, "Error loading country: $countryCode")
-                            val error = when (val mapped = exception.toAppError(
-                                fallback = AppError.Generic(CommonR.string.error_load_country_details_failed)
-                            )) {
+                            val error = when (
+                                val mapped = exception.toAppError(
+                                    fallback = AppError.Generic(CommonR.string.error_load_country_details_failed),
+                                )
+                            ) {
                                 is AppError.NotFound -> AppError.NotFound(identifier = countryCode)
                                 else -> mapped
                             }
@@ -138,7 +156,7 @@ class CountryDetailsViewModel @Inject constructor(
                                 copy(
                                     isLoading = false,
                                     isRefreshing = false,
-                                    error = error
+                                    error = error,
                                 )
                             }
                             setEffect { CountryDetailsContract.Effect.ShowError(error = error) }
@@ -152,7 +170,7 @@ class CountryDetailsViewModel @Inject constructor(
      */
     private fun loadAiSummary(country: Country) {
         viewModelScope.launch {
-            val aiSummaryEnabled = preferencesDataSource.userPreferences
+            val aiSummaryEnabled = userPreferencesPort.userPreferences
                 .first()
                 .aiSummaryEnabled
 
@@ -164,7 +182,7 @@ class CountryDetailsViewModel @Inject constructor(
             setState { copy(aiSummary = CountryDetailsContract.AiSummaryState.Loading) }
 
             val summary = runCatching {
-                countrySummaryGenerator.generateSummary(country.toSummaryDetails())
+                generateCountrySummaryUseCase(country)
             }.onFailure { error ->
                 if (error is CancellationException) throw error
                 Timber.w(error, "Failed to generate AI summary for ${country.name}")
@@ -175,7 +193,7 @@ class CountryDetailsViewModel @Inject constructor(
                     aiSummary = when {
                         summary != null -> CountryDetailsContract.AiSummaryState.Ready(summary)
                         else -> CountryDetailsContract.AiSummaryState.Unavailable
-                    }
+                    },
                 )
             }
         }
@@ -198,7 +216,7 @@ class CountryDetailsViewModel @Inject constructor(
                     setState {
                         copy(
                             nearbyCountries = countries,
-                            isLoadingNearby = false
+                            isLoadingNearby = false,
                         )
                     }
                 }
@@ -219,20 +237,21 @@ class CountryDetailsViewModel @Inject constructor(
      */
     private fun retry(countryCode: String) {
         Timber.d("Retry requested for country: $countryCode")
-        loadCountryDetails(countryCode, CachePolicy.NETWORK_FIRST)
+        loadCountryDetails(countryCode)
     }
 
-    /**
-     * Toggle favorite status of the country.
-     */
     private fun toggleFavorite() {
-        setState { copy(isFavorite = !isFavorite) }
-        val messageRes = if (state.value.isFavorite) {
-            R.string.details_added_to_favorites
-        } else {
-            R.string.details_removed_from_favorites
+        val countryCode = state.value.country?.threeLetterCode ?: return
+        viewModelScope.launch {
+            val wasFavorite = state.value.isFavorite
+            toggleFavoriteUseCase(countryCode)
+            val messageRes = if (wasFavorite) {
+                R.string.details_removed_from_favorites
+            } else {
+                R.string.details_added_to_favorites
+            }
+            setEffect { CountryDetailsContract.Effect.ShowMessage(messageRes = messageRes) }
         }
-        setEffect { CountryDetailsContract.Effect.ShowMessage(messageRes = messageRes) }
     }
 
     /**
@@ -257,7 +276,7 @@ class CountryDetailsViewModel @Inject constructor(
             setEffect {
                 CountryDetailsContract.Effect.ShowError(
                     messageRes = R.string.details_location_unavailable,
-                    formatArgs = listOf(country.name)
+                    formatArgs = listOf(country.name),
                 )
             }
             return
@@ -267,7 +286,7 @@ class CountryDetailsViewModel @Inject constructor(
             CountryDetailsContract.Effect.OpenInMaps(
                 latitude = country.latitude,
                 longitude = country.longitude,
-                countryName = country.name
+                countryName = country.name,
             )
         }
     }
@@ -372,4 +391,3 @@ class CountryDetailsViewModel @Inject constructor(
         }
     }
 }
-

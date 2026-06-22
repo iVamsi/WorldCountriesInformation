@@ -4,9 +4,9 @@ import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
-import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
-import com.vamsi.worldcountriesinformation.core.datastore.ThemeMode
-import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
 
 object SettingsContract {
 
