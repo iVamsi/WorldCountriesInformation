@@ -21,6 +21,7 @@ import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -59,8 +60,12 @@ class CountriesViewModelTest {
     private lateinit var suggestionsUseCase: GenerateSearchSuggestionsUseCase
     private lateinit var searchPreferencesDataSource: SearchPreferencesPort
     private lateinit var searchFiltersUseCase: com.vamsi.worldcountriesinformation.domain.search.SearchFiltersUseCase
+    private lateinit var getUserDataPolicyUseCase: com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
+    private lateinit var observeFavoritesUseCase: com.vamsi.worldcountriesinformation.domain.preferences.ObserveFavoritesUseCase
+    private lateinit var toggleFavoriteUseCase: com.vamsi.worldcountriesinformation.domain.preferences.ToggleFavoriteUseCase
 
     private val testDispatcher = StandardTestDispatcher()
+    private val favoritesFlow = MutableStateFlow<Set<String>>(emptySet())
 
     private val testClock: Clock =
         Clock.fixed(Instant.ofEpochMilli(1_718_452_800_000L), ZoneOffset.UTC)
@@ -101,6 +106,7 @@ class CountriesViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+        favoritesFlow.value = emptySet()
 
         getCountriesUseCase = mockk()
         searchCountriesUseCase = mockk()
@@ -108,10 +114,25 @@ class CountriesViewModelTest {
         suggestionsUseCase = mockk()
         searchPreferencesDataSource = mockk(relaxed = true)
         searchFiltersUseCase = mockk()
+        getUserDataPolicyUseCase = mockk()
+        observeFavoritesUseCase = mockk()
+        toggleFavoriteUseCase = mockk()
+
+        every { getUserDataPolicyUseCase() } returns flowOf(CachePolicy.CACHE_FIRST)
+        every { observeFavoritesUseCase() } returns favoritesFlow
+        coEvery { toggleFavoriteUseCase(any()) } coAnswers {
+            val code = firstArg<String>().uppercase()
+            favoritesFlow.value = if (code in favoritesFlow.value) {
+                favoritesFlow.value - code
+            } else {
+                favoritesFlow.value + code
+            }
+            ApiResponse.Success(Unit)
+        }
 
         // Setup default mocks
         coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
-            com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences()
+            com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(),
         )
         every { suggestionsUseCase(any(), any(), any()) } returns emptyList()
         every { filteredSearchUseCase.applyFiltersAndSort(any(), any()) } answers { firstArg() }
@@ -124,18 +145,19 @@ class CountriesViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun createViewModel(): CountriesViewModel {
-        return CountriesViewModel(
-            getCountriesUseCase = getCountriesUseCase,
-            searchCountriesUseCase = searchCountriesUseCase,
-            filteredSearchUseCase = filteredSearchUseCase,
-            suggestionsUseCase = suggestionsUseCase,
-            searchPreferencesDataSource = searchPreferencesDataSource,
-            searchFiltersUseCase = searchFiltersUseCase,
-            searchRanker = com.vamsi.worldcountriesinformation.domain.search.SearchRanker(),
-            clock = testClock,
-        )
-    }
+    private fun createViewModel(): CountriesViewModel = CountriesViewModel(
+        getCountriesUseCase = getCountriesUseCase,
+        searchCountriesUseCase = searchCountriesUseCase,
+        filteredSearchUseCase = filteredSearchUseCase,
+        suggestionsUseCase = suggestionsUseCase,
+        searchPreferencesDataSource = searchPreferencesDataSource,
+        searchFiltersUseCase = searchFiltersUseCase,
+        getUserDataPolicyUseCase = getUserDataPolicyUseCase,
+        observeFavoritesUseCase = observeFavoritesUseCase,
+        toggleFavoriteUseCase = toggleFavoriteUseCase,
+        searchRanker = com.vamsi.worldcountriesinformation.domain.search.SearchRanker(),
+        clock = testClock,
+    )
 
     // ============================================================================
     // Initial State Tests
@@ -172,7 +194,7 @@ class CountriesViewModelTest {
         // Given
         coEvery { getCountriesUseCase(CachePolicy.CACHE_FIRST) } returns flowOf(
             ApiResponse.Loading,
-            ApiResponse.Success(testCountries)
+            ApiResponse.Success(testCountries),
         )
 
         // When
@@ -195,7 +217,7 @@ class CountriesViewModelTest {
         val errorMessage = "Network error"
         coEvery { getCountriesUseCase(CachePolicy.CACHE_FIRST) } returns flowOf(
             ApiResponse.Loading,
-            ApiResponse.Error(Exception(errorMessage))
+            ApiResponse.Error(Exception(errorMessage)),
         )
 
         // When
@@ -313,10 +335,10 @@ class CountriesViewModelTest {
     fun `refresh should use force refresh policy`() = runTest {
         // Given
         coEvery { getCountriesUseCase(CachePolicy.CACHE_FIRST) } returns flowOf(
-            ApiResponse.Success(testCountries)
+            ApiResponse.Success(testCountries),
         )
         coEvery { getCountriesUseCase(CachePolicy.FORCE_REFRESH) } returns flowOf(
-            ApiResponse.Success(testCountries)
+            ApiResponse.Success(testCountries),
         )
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -476,8 +498,8 @@ class CountriesViewModelTest {
         val history = listOf(SearchHistoryEntry(query = "USA"))
         coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
             com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(
-                searchHistory = history
-            )
+                searchHistory = history,
+            ),
         )
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
 
@@ -495,8 +517,8 @@ class CountriesViewModelTest {
         val history = listOf(SearchHistoryEntry(query = "USA"))
         coEvery { searchPreferencesDataSource.searchPreferences } returns flowOf(
             com.vamsi.worldcountriesinformation.core.datastore.SearchPreferences(
-                searchHistory = history
-            )
+                searchHistory = history,
+            ),
         )
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
 
@@ -568,26 +590,25 @@ class CountriesViewModelTest {
     }
 
     @Test
-    fun `search suggestions should show when focused with suggestions and non-blank query`() =
-        runTest {
-            // Given
-            val suggestions = listOf("United States")
-            coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
-            coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
-            every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
-            viewModel = createViewModel()
-            advanceUntilIdle()
+    fun `search suggestions should show when focused with suggestions and non-blank query`() = runTest {
+        // Given
+        val suggestions = listOf("United States")
+        coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Success(testCountries))
+        coEvery { searchCountriesUseCase(any()) } returns flowOf(testCountries.take(1))
+        every { suggestionsUseCase(any(), testCountries, any()) } returns suggestions
+        viewModel = createViewModel()
+        advanceUntilIdle()
 
-            // When
-            viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("Uni"))
-            advanceTimeBy(400)
-            advanceUntilIdle()
-            viewModel.processIntent(CountriesContract.Intent.SearchFocusChanged(true))
-            advanceUntilIdle()
+        // When
+        viewModel.processIntent(CountriesContract.Intent.SearchQueryChanged("Uni"))
+        advanceTimeBy(400)
+        advanceUntilIdle()
+        viewModel.processIntent(CountriesContract.Intent.SearchFocusChanged(true))
+        advanceUntilIdle()
 
-            // Then
-            assertTrue(viewModel.state.value.shouldShowSearchSuggestions)
-        }
+        // Then
+        assertTrue(viewModel.state.value.shouldShowSearchSuggestions)
+    }
 
     @Test
     fun `search suggestion selection should restore query and save it`() = runTest {
@@ -616,7 +637,7 @@ class CountriesViewModelTest {
     fun `error shown intent should clear error message`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(
-            ApiResponse.Error(Exception("Error"))
+            ApiResponse.Error(Exception("Error")),
         )
         viewModel = createViewModel()
         advanceUntilIdle()
@@ -633,14 +654,14 @@ class CountriesViewModelTest {
     fun `retry should reload countries with cache first policy`() = runTest {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(
-            ApiResponse.Error(Exception("Error"))
+            ApiResponse.Error(Exception("Error")),
         )
         viewModel = createViewModel()
         advanceUntilIdle()
 
         clearMocks(getCountriesUseCase)
         coEvery { getCountriesUseCase(CachePolicy.CACHE_FIRST) } returns flowOf(
-            ApiResponse.Success(testCountries)
+            ApiResponse.Success(testCountries),
         )
 
         // When

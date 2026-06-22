@@ -193,23 +193,25 @@ import javax.inject.Inject
  *
  * @since 2.0.0
  */
-class GetCountriesByRegionUseCase @Inject constructor(
-    private val countriesRepository: CountriesRepository
+class GetCountriesByRegionUseCase
+@Inject
+constructor(
+    private val countriesRepository: CountriesRepository,
 ) {
-
     companion object {
         /**
          * List of valid region names.
          * These match the region values in the REST Countries API.
          */
-        val VALID_REGIONS = setOf(
-            "Africa",
-            "Americas",
-            "Asia",
-            "Europe",
-            "Oceania",
-            "Antarctic"
-        )
+        val VALID_REGIONS =
+            setOf(
+                "Africa",
+                "Americas",
+                "Asia",
+                "Europe",
+                "Oceania",
+                "Antarctic",
+            )
     }
 
     /**

@@ -17,7 +17,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class FlowUseCaseTest {
-
     // Overrides Dispatchers.Main used in Coroutines
     @get:Rule
     var coroutineRule = MainCoroutineRule()
@@ -42,14 +41,17 @@ class FlowUseCaseTest {
         }
     }
 
-    class ExceptionUseCase(dispatcher: CoroutineDispatcher) : FlowUseCase<Unit, Unit>(dispatcher) {
+    class ExceptionUseCase(
+        dispatcher: CoroutineDispatcher,
+    ) : FlowUseCase<Unit, Unit>(dispatcher) {
         override fun execute(parameters: Unit): Flow<ApiResponse<Unit>> = flow {
             throw Exception("Test exception")
         }
     }
 
-    private class CancellationUseCase(dispatcher: CoroutineDispatcher) :
-        FlowUseCase<Unit, Unit>(dispatcher) {
+    private class CancellationUseCase(
+        dispatcher: CoroutineDispatcher,
+    ) : FlowUseCase<Unit, Unit>(dispatcher) {
         override fun execute(parameters: Unit): Flow<ApiResponse<Unit>> = flow {
             throw CancellationException("cancelled")
         }

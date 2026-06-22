@@ -6,4 +6,5 @@ object UiTestTags {
     const val SETTINGS_SCREEN = "screen_settings"
     const val COMPARE_SCREEN = "screen_compare"
     const val COUNTRY_DETAILS_SCREEN = "screen_country_details"
+    const val QUIZ_SCREEN = "screen_quiz"
 }

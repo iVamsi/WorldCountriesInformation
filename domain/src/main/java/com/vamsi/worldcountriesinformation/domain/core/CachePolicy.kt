@@ -290,7 +290,7 @@ enum class CachePolicy {
      *     } else {
      *         CachePolicy.CACHE_FIRST
      *     }
-     *     
+     *
      *     repository.getCountries(policy)
      *         .collect { response ->
      *             when (response) {
@@ -306,7 +306,9 @@ enum class CachePolicy {
      * - Emission 2: `Success(cachedData)` [if cache exists]
      * - OR Emission 2: `Error("No cached data available")` [if cache empty]
      */
-    CACHE_ONLY;
+    CACHE_ONLY,
+
+    ;
 
     /**
      * Checks if this policy should check network for fresh data.
@@ -379,9 +381,7 @@ enum class CachePolicy {
         fun getCacheAge(
             lastUpdated: Long,
             nowMillis: Long = System.currentTimeMillis(),
-        ): Long {
-            return nowMillis - lastUpdated
-        }
+        ): Long = nowMillis - lastUpdated
 
         /**
          * Gets a human-readable description of cache age.

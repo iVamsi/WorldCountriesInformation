@@ -153,10 +153,11 @@ import javax.inject.Inject
  *
  * @since 2.0.0
  */
-class SearchCountriesUseCase @Inject constructor(
-    private val countriesRepository: CountriesRepository
+class SearchCountriesUseCase
+@Inject
+constructor(
+    private val countriesRepository: CountriesRepository,
 ) {
-
     /**
      * Executes the search operation.
      *

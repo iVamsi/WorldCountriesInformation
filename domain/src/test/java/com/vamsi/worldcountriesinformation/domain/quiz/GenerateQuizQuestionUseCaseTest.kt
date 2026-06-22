@@ -16,19 +16,19 @@ import org.junit.Before
 import org.junit.Test
 
 class GenerateQuizQuestionUseCaseTest {
-
     private lateinit var getCountriesUseCase: GetCountriesUseCase
     private lateinit var useCase: GenerateQuizQuestionUseCase
 
-    private val countries = listOf(
-        summary("United States", "Washington", "Americas", "USA"),
-        summary("Canada", "Ottawa", "Americas", "CAN"),
-        summary("Japan", "Tokyo", "Asia", "JPN"),
-        summary("France", "Paris", "Europe", "FRA"),
-        summary("Germany", "Berlin", "Europe", "DEU"),
-        summary("Egypt", "Cairo", "Africa", "EGY"),
-        summary("Australia", "Canberra", "Oceania", "AUS"),
-    )
+    private val countries =
+        listOf(
+            summary("United States", "Washington", "Americas", "USA"),
+            summary("Canada", "Ottawa", "Americas", "CAN"),
+            summary("Japan", "Tokyo", "Asia", "JPN"),
+            summary("France", "Paris", "Europe", "FRA"),
+            summary("Germany", "Berlin", "Europe", "DEU"),
+            summary("Egypt", "Cairo", "Africa", "EGY"),
+            summary("Australia", "Canberra", "Oceania", "AUS"),
+        )
 
     @Before
     fun setup() {
