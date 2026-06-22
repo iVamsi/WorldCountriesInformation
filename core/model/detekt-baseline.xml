@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>SerialVersionUIDInSerializableClass:Country.kt$Country : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Currency.kt$Currency : Serializable</ID>
+    <ID>SerialVersionUIDInSerializableClass:Language.kt$Language : Serializable</ID>
+  </CurrentIssues>
+</SmellBaseline>

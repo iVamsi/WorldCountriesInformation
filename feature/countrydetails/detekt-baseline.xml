@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:CountryDetailsScreen.kt$@Composable fun CountryDetailsRoute( countryCode: String, onNavigateBack: () -&gt; Unit, onNavigateToCountry: (String) -&gt; Unit = {}, viewModel: CountryDetailsViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:CountryDetailsScreen.kt$@Composable fun CountryDetailsRoute( countryCode: String, onNavigateBack: () -&gt; Unit, onNavigateToCountry: (String) -&gt; Unit = {}, viewModel: CountryDetailsViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:CountryDetailsScreen.kt$@Composable private fun AiSummaryCard( aiSummary: CountryDetailsContract.AiSummaryState, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:CountryDetailsScreen.kt$@Composable private fun CountryMapCard(country: Country, showBorders: Boolean = true)</ID>
+    <ID>LongMethod:CountryDetailsScreen.kt$@Composable private fun NearbyCountryCard( country: CountrySummary, onClick: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:CountryDetailsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun CountryDetailsScreen( country: Country, aiSummary: CountryDetailsContract.AiSummaryState = CountryDetailsContract.AiSummaryState.Disabled, showMapBorders: Boolean = true, isFavorite: Boolean, nearbyCountries: List&lt;CountrySummary&gt; = emptyList(), isLoadingNearby: Boolean = false, onNavigateBack: () -&gt; Unit, isRefreshing: Boolean = false, onRefresh: () -&gt; Unit = {}, onFavoriteClick: () -&gt; Unit = {}, onShareClick: () -&gt; Unit = {}, onOpenInMapsClick: () -&gt; Unit = {}, onNearbyCountryClick: (String) -&gt; Unit = {}, cacheAge: String = "Never", isCacheFresh: Boolean = false, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:CountryDetailsShimmer.kt$@Composable fun CountryDetailsShimmer( modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:CountryDetailsViewModel.kt$CountryDetailsViewModel$private fun loadCountryDetails( countryCode: String, policy: CachePolicy? = null, )</ID>
+    <ID>LongParameterList:CountryDetailsScreen.kt$( country: Country, aiSummary: CountryDetailsContract.AiSummaryState = CountryDetailsContract.AiSummaryState.Disabled, showMapBorders: Boolean = true, isFavorite: Boolean, nearbyCountries: List&lt;CountrySummary&gt; = emptyList(), isLoadingNearby: Boolean = false, onNavigateBack: () -&gt; Unit, isRefreshing: Boolean = false, onRefresh: () -&gt; Unit = {}, onFavoriteClick: () -&gt; Unit = {}, onShareClick: () -&gt; Unit = {}, onOpenInMapsClick: () -&gt; Unit = {}, onNearbyCountryClick: (String) -&gt; Unit = {}, cacheAge: String = "Never", isCacheFresh: Boolean = false, modifier: Modifier = Modifier, )</ID>
+    <ID>LongParameterList:CountryDetailsViewModel.kt$CountryDetailsViewModel$( private val getCountryByCodeUseCase: GetCountryByCodeUseCase, private val getNearbyCountriesUseCase: GetNearbyCountriesUseCase, private val searchPreferencesDataSource: SearchPreferencesPort, private val userPreferencesPort: UserPreferencesPort, private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase, private val observeFavoritesUseCase: ObserveFavoritesUseCase, private val toggleFavoriteUseCase: ToggleFavoriteUseCase, private val generateCountrySummaryUseCase: GenerateCountrySummaryUseCase, private val clock: Clock, )</ID>
+    <ID>SpreadOperator:CountryDetailsScreen.kt$( effect.messageRes!!, *effect.formatArgs.toTypedArray(), )</ID>
+    <ID>SpreadOperator:CountryDetailsScreen.kt$(effect.messageRes, *effect.formatArgs.toTypedArray())</ID>
+    <ID>TooManyFunctions:CountryDetailsScreen.kt$com.vamsi.worldcountriesinformation.feature.countrydetails.CountryDetailsScreen.kt</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @PreviewLightDark @PreviewFontScale @PreviewScreenSizes @Preview(name = "Country Details Screen", showBackground = true) @Composable private fun CountryDetailsScreenPreview()</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@Preview(name = "Country Detail Item", showBackground = true) @Composable private fun CountryDetailItemPreview()</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@Preview(name = "Country Details Screen - Favorite", showBackground = true) @Composable private fun CountryDetailsScreenFavoritePreview()</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@Preview(name = "Country Flag Card", showBackground = true) @Composable private fun CountryFlagCardPreview()</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@Preview(name = "Error Content", showBackground = true) @Composable private fun CountryDetailsErrorContentPreview()</ID>
+    <ID>UnusedPrivateMember:CountryDetailsScreen.kt$@Preview(name = "Nearby Countries Section", showBackground = true) @Composable private fun NearbyCountriesSectionPreview()</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MaxLineLength:RecentlyViewedEntryDto.kt$internal</ID>
+    <ID>MaxLineLength:SearchHistoryEntryDto.kt$internal</ID>
+    <ID>ReturnCount:PreferencesDataSource.kt$PreferencesDataSource$private fun parseCachePolicy(raw: String?): CachePolicy</ID>
+    <ID>SwallowedException:SearchPreferencesDataSource.kt$SearchPreferencesDataSource$e: Exception</ID>
+    <ID>SwallowedException:SearchPreferencesDataSource.kt$SearchPreferencesDataSource$e: IllegalArgumentException</ID>
+    <ID>TooGenericExceptionCaught:SearchPreferencesDataSource.kt$SearchPreferencesDataSource$e: Exception</ID>
+  </CurrentIssues>
+</SmellBaseline>

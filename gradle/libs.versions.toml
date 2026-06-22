@@ -89,9 +89,11 @@ generativeai = "0.9.0"
 # AppFunctions
 appfunctions = "1.0.0-alpha09"
 
-# Wear
-wearCompose = "1.6.2"
+# OSS licenses
+playServicesOssLicenses = "17.5.1"
+ossLicensesPlugin = "0.12.0"
 glanceWearTiles = "1.0.0-alpha07"
+wearCompose = "1.6.2"
 playServicesWearable = "20.0.1"
 
 # Testing
@@ -109,6 +111,9 @@ rules = "1.7.0"
 turbine = "1.2.1"
 benchmarkMacro = "1.4.1"
 uiautomator = "2.3.0"
+detekt = "1.23.8"
+spotless = "8.7.0"
+kover = "0.9.8"
 
 [libraries]
 # Android Core
@@ -213,6 +218,8 @@ androidx-appfunctions = { group = "androidx.appfunctions", name = "appfunctions"
 androidx-appfunctions-service = { group = "androidx.appfunctions", name = "appfunctions-service", version.ref = "appfunctions" }
 androidx-appfunctions-compiler = { group = "androidx.appfunctions", name = "appfunctions-compiler", version.ref = "appfunctions" }
 
+play-services-oss-licenses = { group = "com.google.android.gms", name = "play-services-oss-licenses", version.ref = "playServicesOssLicenses" }
+
 # Wear
 androidx-wear-compose = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "wearCompose" }
 androidx-glance-wear-tiles = { group = "androidx.glance", name = "glance-wear-tiles", version.ref = "glanceWearTiles" }
@@ -237,9 +244,12 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-composeCompilerGradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+kover-gradlePlugin = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 androidx-benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmarkMacro" }
 androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+detekt-gradlePlugin = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+spotless-gradlePlugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -250,3 +260,7 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 navigation-safeargs = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigationVersion" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+oss-licenses = { id = "com.google.android.gms.oss-licenses-plugin", version.ref = "ossLicensesPlugin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

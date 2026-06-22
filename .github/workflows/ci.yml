@@ -46,8 +46,20 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Run Detekt
+        run: ./gradlew detekt --stacktrace
+
+      - name: Run Spotless
+        run: ./gradlew spotlessCheck --stacktrace
+
       - name: Run unit tests (JVM + Android)
         run: ./gradlew test testDebugUnitTest --stacktrace
+
+      - name: Verify code coverage (Kover)
+        run: ./gradlew koverVerifyCoverage --stacktrace
+
+      - name: Compile instrumentation tests
+        run: ./gradlew :app:compileDebugAndroidTestSources --stacktrace
 
       - name: Run lint
         run: ./gradlew lintDebug --stacktrace
@@ -77,3 +89,31 @@ jobs:
             **/build/reports/lint-results-*.html
             **/build/reports/lint-results-*.xml
           if-no-files-found: ignore
+
+      - name: Upload Detekt reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: detekt-reports
+          path: |
+            **/build/reports/detekt/**
+          if-no-files-found: ignore
+
+  # Instrumentation smoke template (enable when emulator runner is available in CI):
+  # instrumentation-smoke:
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   steps:
+  #     - uses: actions/checkout@v7
+  #     - uses: actions/setup-java@v5
+  #       with:
+  #         distribution: temurin
+  #         java-version: 21
+  #     - uses: android-actions/setup-android@v4
+  #     - uses: gradle/actions/setup-gradle@v6
+  #     - run: chmod +x gradlew
+  #     - name: Run connected debug tests
+  #       uses: reactivecircus/android-emulator-runner@v2
+  #       with:
+  #         api-level: 34
+  #         script: ./gradlew :app:connectedDebugAndroidTest --stacktrace
