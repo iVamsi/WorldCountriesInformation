@@ -45,7 +45,7 @@ lifecycleViewmodelNav3 = "2.11.0"
 kotlinxSerializationCore = "1.11.0"
 
 # Dependency Injection
-hilt = "2.59.2"
+hilt = "2.60"
 javax-inject = "1"
 
 # Database
