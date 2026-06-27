@@ -134,11 +134,11 @@ class CachePolicyTest {
     fun `isCacheFresh respects custom validity period`() {
         // Custom validity: 1 hour
         val oneHourMs = 60 * 60 * 1000L
-        
+
         // Data updated 30 minutes ago (fresh)
         val thirtyMinutesAgo = System.currentTimeMillis() - (30 * 60 * 1000)
         assertTrue(CachePolicy.isCacheFresh(thirtyMinutesAgo, oneHourMs))
-        
+
         // Data updated 2 hours ago (stale)
         val twoHoursAgo = System.currentTimeMillis() - (2 * 60 * 60 * 1000)
         assertFalse(CachePolicy.isCacheFresh(twoHoursAgo, oneHourMs))
@@ -158,17 +158,19 @@ class CachePolicyTest {
     fun `getCacheAge returns positive age for past timestamp`() {
         val oneHourAgo = System.currentTimeMillis() - (60 * 60 * 1000)
         val age = CachePolicy.getCacheAge(oneHourAgo)
-        
+
         // Age should be approximately 1 hour (allowing for test execution time)
-        assertTrue("Age should be around 1 hour (3600000ms), was $age", 
-            age in 3600000L..3605000L)
+        assertTrue(
+            "Age should be around 1 hour (3600000ms), was $age",
+            age in 3600000L..3605000L,
+        )
     }
 
     @Test
     fun `getCacheAge returns zero for current timestamp`() {
         val now = System.currentTimeMillis()
         val age = CachePolicy.getCacheAge(now)
-        
+
         // Age should be very close to zero (< 100ms for test execution)
         assertTrue("Age should be near zero, was $age", age < 100L)
     }
@@ -178,7 +180,7 @@ class CachePolicyTest {
         // Edge case: Clock skew
         val futureTimestamp = System.currentTimeMillis() + 10000
         val age = CachePolicy.getCacheAge(futureTimestamp)
-        
+
         assertTrue("Age should be negative for future timestamp", age < 0)
     }
 
@@ -186,11 +188,13 @@ class CachePolicyTest {
     fun `getCacheAge for very old data`() {
         val thirtyDaysAgo = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
         val age = CachePolicy.getCacheAge(thirtyDaysAgo)
-        
+
         // 30 days in milliseconds
         val expectedAge = 30L * 24 * 60 * 60 * 1000
-        assertTrue("Age should be around 30 days", 
-            age in expectedAge..(expectedAge + 10000))
+        assertTrue(
+            "Age should be around 30 days",
+            age in expectedAge..(expectedAge + 10000),
+        )
     }
 
     // ===========================================
@@ -251,8 +255,10 @@ class CachePolicyTest {
         // Just under 24 hours (should show hours, not days)
         val almostOneDay = System.currentTimeMillis() - (23 * 60 * 60 * 1000 + 59 * 60 * 1000)
         val description = CachePolicy.getCacheAgeDescription(almostOneDay)
-        assertTrue("Should show hours, got: $description", 
-            description.contains("hour"))
+        assertTrue(
+            "Should show hours, got: $description",
+            description.contains("hour"),
+        )
     }
 
     @Test
@@ -284,16 +290,20 @@ class CachePolicyTest {
         val age = CachePolicy.getCacheAge(0L)
         // Age should be approximately current time
         val now = System.currentTimeMillis()
-        assertTrue("Age should be close to current time", 
-            age in (now - 1000)..(now + 1000))
+        assertTrue(
+            "Age should be close to current time",
+            age in (now - 1000)..(now + 1000),
+        )
     }
 
     @Test
     fun `getCacheAgeDescription handles zero timestamp`() {
         // Very old data from epoch
         val description = CachePolicy.getCacheAgeDescription(0L)
-        assertTrue("Should show days for epoch time", 
-            description.contains("days ago"))
+        assertTrue(
+            "Should show days for epoch time",
+            description.contains("days ago"),
+        )
     }
 
     @Test
@@ -328,18 +338,24 @@ class CachePolicyTest {
     fun `all policies have consistent behavior patterns`() {
         val policies = CachePolicy.values()
         assertEquals("Should have 4 cache policies", 4, policies.size)
-        
+
         // At least one policy should fetch from network
-        assertTrue("At least one policy should fetch from network",
-            policies.any { it.shouldFetchFromNetwork() })
-        
+        assertTrue(
+            "At least one policy should fetch from network",
+            policies.any { it.shouldFetchFromNetwork() },
+        )
+
         // At least one policy should not fetch from network
-        assertTrue("At least one policy should not fetch from network",
-            policies.any { !it.shouldFetchFromNetwork() })
-        
+        assertTrue(
+            "At least one policy should not fetch from network",
+            policies.any { !it.shouldFetchFromNetwork() },
+        )
+
         // At least one policy should require staleness check
-        assertTrue("At least one policy should require staleness check",
-            policies.any { it.requiresStalenessCheck() })
+        assertTrue(
+            "At least one policy should require staleness check",
+            policies.any { it.requiresStalenessCheck() },
+        )
     }
 
     @Test
@@ -347,10 +363,10 @@ class CachePolicyTest {
         // FORCE_REFRESH should:
         // - Always fetch from network
         assertTrue(CachePolicy.FORCE_REFRESH.shouldFetchFromNetwork())
-        
+
         // - Not allow cache fallback
         assertFalse(CachePolicy.FORCE_REFRESH.allowsCacheFallback())
-        
+
         // - Not require staleness check (always fresh from network)
         assertFalse(CachePolicy.FORCE_REFRESH.requiresStalenessCheck())
     }
@@ -360,10 +376,10 @@ class CachePolicyTest {
         // CACHE_ONLY should:
         // - Never fetch from network
         assertFalse(CachePolicy.CACHE_ONLY.shouldFetchFromNetwork())
-        
+
         // - Allow using cache (any age)
         assertTrue(CachePolicy.CACHE_ONLY.allowsCacheFallback())
-        
+
         // - Not require staleness check (uses any cached data)
         assertFalse(CachePolicy.CACHE_ONLY.requiresStalenessCheck())
     }
@@ -373,10 +389,10 @@ class CachePolicyTest {
         // CACHE_FIRST should:
         // - Only fetch when needed (not always)
         assertFalse(CachePolicy.CACHE_FIRST.shouldFetchFromNetwork())
-        
+
         // - Allow cache fallback
         assertTrue(CachePolicy.CACHE_FIRST.allowsCacheFallback())
-        
+
         // - Require staleness check to determine if fetch is needed
         assertTrue(CachePolicy.CACHE_FIRST.requiresStalenessCheck())
     }
@@ -386,10 +402,10 @@ class CachePolicyTest {
         // NETWORK_FIRST should:
         // - Always try network first
         assertTrue(CachePolicy.NETWORK_FIRST.shouldFetchFromNetwork())
-        
+
         // - Allow cache fallback on network failure
         assertTrue(CachePolicy.NETWORK_FIRST.allowsCacheFallback())
-        
+
         // - Not require staleness check (always tries network anyway)
         assertFalse(CachePolicy.NETWORK_FIRST.requiresStalenessCheck())
     }
@@ -402,29 +418,35 @@ class CachePolicyTest {
     fun `isCacheFresh at exact 24 hour boundary`() {
         // Exactly 24 hours (86400000 milliseconds)
         val exactlyOneDayAgo = System.currentTimeMillis() - CachePolicy.DEFAULT_CACHE_VALIDITY_MS
-        
+
         // Should be stale (boundary is exclusive: age < validityPeriod)
-        assertFalse("Data exactly 24 hours old should be stale", 
-            CachePolicy.isCacheFresh(exactlyOneDayAgo))
+        assertFalse(
+            "Data exactly 24 hours old should be stale",
+            CachePolicy.isCacheFresh(exactlyOneDayAgo),
+        )
     }
 
     @Test
     fun `isCacheFresh one millisecond before 24 hour boundary`() {
         // One millisecond before 24 hours
         val justUnderOneDay = System.currentTimeMillis() - CachePolicy.DEFAULT_CACHE_VALIDITY_MS + 1
-        
+
         // Should be fresh
-        assertTrue("Data 1ms before 24 hours should be fresh", 
-            CachePolicy.isCacheFresh(justUnderOneDay))
+        assertTrue(
+            "Data 1ms before 24 hours should be fresh",
+            CachePolicy.isCacheFresh(justUnderOneDay),
+        )
     }
 
     @Test
     fun `isCacheFresh one millisecond after 24 hour boundary`() {
         // One millisecond after 24 hours
         val justOverOneDay = System.currentTimeMillis() - CachePolicy.DEFAULT_CACHE_VALIDITY_MS - 1
-        
+
         // Should be stale
-        assertFalse("Data 1ms after 24 hours should be stale", 
-            CachePolicy.isCacheFresh(justOverOneDay))
+        assertFalse(
+            "Data 1ms after 24 hours should be stale",
+            CachePolicy.isCacheFresh(justOverOneDay),
+        )
     }
 }

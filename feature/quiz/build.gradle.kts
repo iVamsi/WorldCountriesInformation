@@ -2,6 +2,7 @@ plugins {
     id("worldcountries.android.library")
     id("worldcountries.android.hilt")
     alias(libs.plugins.compose.compiler)
+    id("worldcountries.kover")
 }
 
 android {

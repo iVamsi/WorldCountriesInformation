@@ -1,7 +1,6 @@
 package com.vamsi.worldcountriesinformation.domain.countries
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
-import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -45,32 +44,32 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class GetCountryByCodeUseCaseTest {
-
     // Test dispatcher for controlling coroutine execution
     private val testDispatcher = StandardTestDispatcher()
 
     // Mock repository
     private lateinit var countriesRepository: CountriesRepository
-    
+
     // System under test
     private lateinit var useCase: GetCountryByCodeUseCase
 
     /**
      * Test data: Sample country for testing
      */
-    private val sampleCountry = Country(
-        name = "United States",
-        capital = "Washington, D.C.",
-        languages = listOf(Language("English", "English")),
-        twoLetterCode = "US",
-        threeLetterCode = "USA",
-        population = 331000000,
-        region = "Americas",
-        currencies = listOf(Currency("USD", "United States dollar", "$")),
-        callingCode = "1",
-        latitude = 38.0,
-        longitude = -97.0
-    )
+    private val sampleCountry =
+        Country(
+            name = "United States",
+            capital = "Washington, D.C.",
+            languages = listOf(Language("English", "English")),
+            twoLetterCode = "US",
+            threeLetterCode = "USA",
+            population = 331000000,
+            region = "Americas",
+            currencies = listOf(Currency("USD", "United States dollar", "$")),
+            callingCode = "1",
+            latitude = 38.0,
+            longitude = -97.0,
+        )
 
     @Before
     fun setUp() {
@@ -79,7 +78,7 @@ class GetCountryByCodeUseCaseTest {
 
         // Initialize mock repository
         countriesRepository = mockk()
-        
+
         // Initialize use case with mock repository
         useCase = GetCountryByCodeUseCase(countriesRepository, testDispatcher)
     }
@@ -111,12 +110,12 @@ class GetCountryByCodeUseCaseTest {
         // Then
         assertEquals(1, result.size)
         assertTrue("Result should be Success", result[0] is ApiResponse.Success)
-        
+
         val successResponse = result[0] as ApiResponse.Success
         assertEquals(sampleCountry, successResponse.data)
         assertEquals("United States", successResponse.data.name)
         assertEquals("USA", successResponse.data.threeLetterCode)
-        
+
         // Verify repository was called with correct code
         verify { countriesRepository.getCountryByCode(countryCode) }
     }
@@ -143,10 +142,10 @@ class GetCountryByCodeUseCaseTest {
         // Then
         assertEquals(1, result.size)
         assertTrue("Result should be Error", result[0] is ApiResponse.Error)
-        
+
         val errorResponse = result[0] as ApiResponse.Error
         assertEquals(expectedException, errorResponse.exception)
-        
+
         // Verify repository was called
         verify { countriesRepository.getCountryByCode(countryCode) }
     }
@@ -173,7 +172,7 @@ class GetCountryByCodeUseCaseTest {
         // Then
         assertEquals(1, result.size)
         assertTrue("Result should be Error", result[0] is ApiResponse.Error)
-        
+
         val errorResponse = result[0] as ApiResponse.Error
         assertEquals(expectedException, errorResponse.exception)
         assertTrue(errorResponse.exception is IOException)
@@ -200,7 +199,7 @@ class GetCountryByCodeUseCaseTest {
 
         // Then
         assertTrue("Result should be Success", result[0] is ApiResponse.Success)
-        
+
         // Verify repository was called with normalized (uppercase) code
         verify { countriesRepository.getCountryByCode(normalizedCode) }
     }
@@ -226,7 +225,7 @@ class GetCountryByCodeUseCaseTest {
 
         // Then
         assertTrue("Result should be Success", result[0] is ApiResponse.Success)
-        
+
         // Verify repository was called with trimmed code
         verify { countriesRepository.getCountryByCode(trimmedCode) }
     }
@@ -281,10 +280,11 @@ class GetCountryByCodeUseCaseTest {
         // Given
         val countryCode = "USA"
         val params = CountryByCodeParams(code = countryCode)
-        val expectedResponse = flowOf(
-            ApiResponse.Loading,
-            ApiResponse.Success(sampleCountry)
-        )
+        val expectedResponse =
+            flowOf(
+                ApiResponse.Loading,
+                ApiResponse.Success(sampleCountry),
+            )
         coEvery { countriesRepository.getCountryByCode(countryCode) } returns expectedResponse
 
         // When

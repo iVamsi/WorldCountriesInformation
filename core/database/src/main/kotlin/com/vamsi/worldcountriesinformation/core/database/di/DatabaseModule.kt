@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.vamsi.worldcountriesinformation.core.database.WorldCountriesDatabase
 import com.vamsi.worldcountriesinformation.core.database.dao.CountryDao
+import com.vamsi.worldcountriesinformation.core.database.migration.DatabaseMigrations
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,23 +25,19 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideWorldCountriesDatabase(
-        @ApplicationContext context: Context
-    ): WorldCountriesDatabase {
-        return Room.databaseBuilder(
-            context,
-            WorldCountriesDatabase::class.java,
-            WorldCountriesDatabase.DATABASE_NAME
-        )
-            .fallbackToDestructiveMigration()
-            .build()
-    }
+        @ApplicationContext context: Context,
+    ): WorldCountriesDatabase = Room.databaseBuilder(
+        context,
+        WorldCountriesDatabase::class.java,
+        WorldCountriesDatabase.DATABASE_NAME,
+    )
+        .addMigrations(DatabaseMigrations.MIGRATION_1_2)
+        .build()
 
     /**
      * Provides the CountryDao
      */
     @Provides
     @Singleton
-    fun provideCountryDao(database: WorldCountriesDatabase): CountryDao {
-        return database.countryDao()
-    }
+    fun provideCountryDao(database: WorldCountriesDatabase): CountryDao = database.countryDao()
 }

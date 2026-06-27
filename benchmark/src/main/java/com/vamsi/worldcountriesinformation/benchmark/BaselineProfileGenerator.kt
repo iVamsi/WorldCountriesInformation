@@ -10,7 +10,6 @@ import org.junit.Test
  * Then merge the generated profile into [app/src/main/baseline-prof.txt] if you replace the checked-in rules.
  */
 class BaselineProfileGenerator {
-
     @get:Rule
     val baselineRule = BaselineProfileRule()
 

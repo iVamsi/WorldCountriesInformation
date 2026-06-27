@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LoopWithTooManyJumpStatements:SearchRanker.kt$SearchRanker$for</ID>
+    <ID>ReturnCount:GenerateQuizQuestionUseCase.kt$GenerateQuizQuestionUseCase$suspend operator fun invoke(mode: GuessMode): QuizQuestion?</ID>
+    <ID>ReturnCount:SearchRanker.kt$SearchRanker$fun rank( query: String, countries: List&lt;CountrySummary&gt;, recentCodes: Set&lt;String&gt; = emptySet(), favoriteCodes: Set&lt;String&gt; = emptySet(), ): List&lt;CountrySummary&gt;</ID>
+    <ID>SwallowedException:FlowUseCaseTest.kt$FlowUseCaseTest$e: CancellationException</ID>
+    <ID>SwallowedException:UseCaseTest.kt$UseCaseTest$e: CancellationException</ID>
+    <ID>TooGenericExceptionCaught:UseCase.kt$UseCase$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:FlowUseCaseTest.kt$FlowUseCaseTest.ExceptionUseCase$throw Exception("Test exception")</ID>
+    <ID>WildcardImport:CachePolicyTest.kt$import org.junit.Assert.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

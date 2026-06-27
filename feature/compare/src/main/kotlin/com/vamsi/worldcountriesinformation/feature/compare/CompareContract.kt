@@ -21,6 +21,7 @@ object CompareContract {
         val isLoading: Boolean = false,
         val countries: List<Country> = emptyList(),
         val error: AppError? = null,
+        val insight: String? = null,
     ) : MVIState {
         val showError: Boolean get() = error != null && !isLoading
         val showLoading: Boolean get() = isLoading && countries.isEmpty()

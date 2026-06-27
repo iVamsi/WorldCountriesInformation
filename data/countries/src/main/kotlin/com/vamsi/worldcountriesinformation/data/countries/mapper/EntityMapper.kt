@@ -13,104 +13,84 @@ import com.vamsi.worldcountriesinformation.domainmodel.Language
  */
 
 // Entity to Domain
-fun CountryEntity.toDomain(): Country {
-    return Country(
-        name = name,
-        capital = capital,
-        languages = languages.map { it.toDomain() },
-        twoLetterCode = twoLetterCode,
-        threeLetterCode = threeLetterCode,
-        population = population,
-        region = region,
-        currencies = currencies.map { it.toDomain() },
-        callingCode = callingCode,
-        latitude = latitude,
-        longitude = longitude
-    )
-}
+fun CountryEntity.toDomain(): Country = Country(
+    name = name,
+    capital = capital,
+    languages = languages.map { it.toDomain() },
+    twoLetterCode = twoLetterCode,
+    threeLetterCode = threeLetterCode,
+    population = population,
+    region = region,
+    currencies = currencies.map { it.toDomain() },
+    callingCode = callingCode,
+    latitude = latitude,
+    longitude = longitude,
+)
 
-fun LanguageEntity.toDomain(): Language {
-    return Language(
-        name = name,
-        nativeName = nativeName
-    )
-}
+fun LanguageEntity.toDomain(): Language = Language(
+    name = name,
+    nativeName = nativeName,
+)
 
-fun CurrencyEntity.toDomain(): Currency {
-    return Currency(
-        code = code,
-        name = name,
-        symbol = symbol
-    )
-}
+fun CurrencyEntity.toDomain(): Currency = Currency(
+    code = code,
+    name = name,
+    symbol = symbol,
+)
 
-fun List<CountryEntity>.toDomainList(): List<Country> {
-    return this.map { it.toDomain() }
-}
+fun List<CountryEntity>.toDomainList(): List<Country> = this.map { it.toDomain() }
 
 // Entity to Summary (light projection)
-fun CountryEntity.toSummary(): CountrySummary {
-    return CountrySummary(
-        name = name,
-        capital = capital,
-        region = region,
-        population = population,
-        twoLetterCode = twoLetterCode,
-        threeLetterCode = threeLetterCode,
-        latitude = latitude,
-        longitude = longitude,
-    )
-}
+fun CountryEntity.toSummary(): CountrySummary = CountrySummary(
+    name = name,
+    capital = capital,
+    region = region,
+    population = population,
+    twoLetterCode = twoLetterCode,
+    threeLetterCode = threeLetterCode,
+    latitude = latitude,
+    longitude = longitude,
+)
 
 fun List<CountryEntity>.toSummaryList(): List<CountrySummary> = map { it.toSummary() }
 
 // Domain (full) -> Summary
-fun Country.toSummary(): CountrySummary {
-    return CountrySummary(
-        name = name,
-        capital = capital,
-        region = region,
-        population = population,
-        twoLetterCode = twoLetterCode,
-        threeLetterCode = threeLetterCode,
-        latitude = latitude,
-        longitude = longitude,
-    )
-}
+fun Country.toSummary(): CountrySummary = CountrySummary(
+    name = name,
+    capital = capital,
+    region = region,
+    population = population,
+    twoLetterCode = twoLetterCode,
+    threeLetterCode = threeLetterCode,
+    latitude = latitude,
+    longitude = longitude,
+)
 
 // Domain to Entity
-fun Country.toEntity(): CountryEntity {
-    return CountryEntity(
-        name = name,
-        capital = capital,
-        languages = languages.map { it.toEntity() },
-        twoLetterCode = twoLetterCode,
-        threeLetterCode = threeLetterCode,
-        population = population,
-        region = region,
-        currencies = currencies.map { it.toEntity() },
-        callingCode = callingCode,
-        latitude = latitude,
-        longitude = longitude,
-        lastUpdated = System.currentTimeMillis()
-    )
-}
+fun Country.toEntity(): CountryEntity = CountryEntity(
+    name = name,
+    capital = capital,
+    languages = languages.map { it.toEntity() },
+    twoLetterCode = twoLetterCode,
+    threeLetterCode = threeLetterCode,
+    population = population,
+    region = region,
+    currencies = currencies.map { it.toEntity() },
+    callingCode = callingCode,
+    latitude = latitude,
+    longitude = longitude,
+    lastUpdated = System.currentTimeMillis(),
+)
 
-fun Language.toEntity(): LanguageEntity {
-    return LanguageEntity(
-        name = name,
-        nativeName = nativeName
-    )
-}
+fun Language.toEntity(): LanguageEntity = LanguageEntity(
+    name = name,
+    nativeName = nativeName,
+)
 
-fun Currency.toEntity(): CurrencyEntity {
-    return CurrencyEntity(
-        code = code,
-        name = name,
-        symbol = symbol
-    )
-}
+fun Currency.toEntity(): CurrencyEntity = CurrencyEntity(
+    code = code,
+    name = name,
+    symbol = symbol,
+)
 
-fun List<Country>.toEntityList(): List<CountryEntity> {
-    return this.map { it.toEntity() }
-}
+fun List<Country>.toEntityList(): List<CountryEntity> = this.map { it.toEntity() }

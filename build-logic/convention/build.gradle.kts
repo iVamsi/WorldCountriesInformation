@@ -22,6 +22,9 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kotlin.composeCompilerGradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.kover.gradlePlugin)
+    implementation(libs.detekt.gradlePlugin)
+    implementation(libs.spotless.gradlePlugin)
 }
 
 gradlePlugin {
@@ -45,6 +48,14 @@ gradlePlugin {
         register("jvmLibrary") {
             id = "worldcountries.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
+        }
+        register("kover") {
+            id = "worldcountries.kover"
+            implementationClass = "KoverConventionPlugin"
+        }
+        register("quality") {
+            id = "worldcountries.quality"
+            implementationClass = "QualityConventionPlugin"
         }
     }
 }

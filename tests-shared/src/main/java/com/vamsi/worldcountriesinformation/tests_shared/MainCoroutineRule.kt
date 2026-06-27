@@ -29,7 +29,7 @@ import org.junit.runner.Description
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainCoroutineRule(
-    val testDispatcher: TestDispatcher = StandardTestDispatcher()
+    val testDispatcher: TestDispatcher = StandardTestDispatcher(),
 ) : TestWatcher() {
 
     override fun starting(description: Description?) {
@@ -44,10 +44,9 @@ class MainCoroutineRule(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-fun runBlockingTest(block: suspend () -> Unit) =
-    runTest {
-        block()
-    }
+fun runBlockingTest(block: suspend () -> Unit) = runTest {
+    block()
+}
 
 /**
  * Creates a new [CoroutineScope] with the rule's testDispatcher

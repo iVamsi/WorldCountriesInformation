@@ -17,13 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.R
-import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
-import com.vamsi.worldcountriesinformation.core.datastore.UserPreferences
 import com.vamsi.worldcountriesinformation.core.designsystem.GradientBackground
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.navigation.CompareRoute
@@ -31,6 +30,9 @@ import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountryDetailsRoute
 import com.vamsi.worldcountriesinformation.core.navigation.Navigator
 import com.vamsi.worldcountriesinformation.core.navigation.rememberNavigationState
+import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.feature.widget.notification.NotificationScheduler
 import com.vamsi.worldcountriesinformation.ui.compose.navigation.WorldCountriesNavigation
 import dagger.hilt.android.AndroidEntryPoint
@@ -54,7 +56,7 @@ class MainActivity : ComponentActivity() {
     private var currentIntent by mutableStateOf<Intent?>(null)
 
     @Inject
-    lateinit var preferencesDataSource: PreferencesDataSource
+    lateinit var userPreferencesPort: UserPreferencesPort
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -74,12 +76,17 @@ class MainActivity : ComponentActivity() {
         currentIntent = intent
 
         setContent {
-            val userPrefs by preferencesDataSource.userPreferences.collectAsStateWithLifecycle(
+            val userPrefs by userPreferencesPort.userPreferences.collectAsStateWithLifecycle(
                 initialValue = UserPreferences(),
                 lifecycle = lifecycle,
             )
+            val darkTheme = when (userPrefs.themeMode) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+            }
             WorldCountriesTheme(
-                darkTheme = isSystemInDarkTheme(),
+                darkTheme = darkTheme,
                 dynamicColor = userPrefs.useDynamicColor,
             ) {
                 SnapNotifyProvider {
@@ -105,6 +112,9 @@ class MainActivity : ComponentActivity() {
                             navigator = navigator,
                             onDailyNotificationChanged = { enabled ->
                                 handleDailyNotificationChanged(enabled)
+                            },
+                            onOpenLicenses = {
+                                startActivity(Intent(this@MainActivity, OssLicensesMenuActivity::class.java))
                             },
                         )
                     }

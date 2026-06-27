@@ -15,8 +15,9 @@ import kotlin.math.max
  *
  * Pure Kotlin so it is fully unit-testable and free of Android deps.
  */
-class SearchRanker @Inject constructor() {
-
+class SearchRanker
+@Inject
+constructor() {
     fun rank(
         query: String,
         countries: List<CountrySummary>,
@@ -38,8 +39,7 @@ class SearchRanker @Inject constructor() {
             .sortedWith(
                 compareByDescending<Pair<CountrySummary, Double>> { it.second }
                     .thenBy { it.first.name },
-            )
-            .map { it.first }
+            ).map { it.first }
     }
 
     private fun scoreCountry(
@@ -53,19 +53,20 @@ class SearchRanker @Inject constructor() {
         val code3 = country.threeLetterCode.lowercase()
         val code2 = country.twoLetterCode.lowercase()
 
-        var score = when {
-            name == query -> EXACT_MATCH
-            code2 == query || code3 == query -> EXACT_MATCH - 1.0
-            name.startsWith(query) -> PREFIX_NAME
-            capital.startsWith(query) -> PREFIX_CAPITAL
-            name.contains(query) -> SUBSTRING_NAME
-            capital.contains(query) -> SUBSTRING_CAPITAL
-            code3.contains(query) -> SUBSTRING_CODE
-            else -> {
-                val jw = max(jaroWinkler(name, query), jaroWinkler(capital, query))
-                if (jw >= FUZZY_THRESHOLD) FUZZY_BASE * jw else 0.0
+        var score =
+            when {
+                name == query -> EXACT_MATCH
+                code2 == query || code3 == query -> EXACT_MATCH - 1.0
+                name.startsWith(query) -> PREFIX_NAME
+                capital.startsWith(query) -> PREFIX_CAPITAL
+                name.contains(query) -> SUBSTRING_NAME
+                capital.contains(query) -> SUBSTRING_CAPITAL
+                code3.contains(query) -> SUBSTRING_CODE
+                else -> {
+                    val jw = max(jaroWinkler(name, query), jaroWinkler(capital, query))
+                    if (jw >= FUZZY_THRESHOLD) FUZZY_BASE * jw else 0.0
+                }
             }
-        }
 
         if (score > 0.0) {
             if (country.threeLetterCode in recentCodes) score += RECENT_BOOST
@@ -78,7 +79,11 @@ class SearchRanker @Inject constructor() {
      * Jaro-Winkler similarity in [0.0, 1.0]. Tuned for short strings such as
      * country names, with the standard prefix scaling factor (0.1, capped at 4).
      */
-    internal fun jaroWinkler(s1: String, s2: String): Double {
+    @Suppress("CyclomaticComplexMethod", "ReturnCount")
+    internal fun jaroWinkler(
+        s1: String,
+        s2: String,
+    ): Double {
         if (s1.isEmpty() || s2.isEmpty()) return 0.0
         if (s1 == s2) return 1.0
 

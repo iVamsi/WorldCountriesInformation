@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,21 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,19 +34,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
+import com.vamsi.worldcountriesinformation.core.designsystem.component.ErrorState
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
@@ -65,11 +64,15 @@ fun CompareRoute(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is CompareContract.Effect.NavigateBack -> onNavigateBack()
-                is CompareContract.Effect.ShowError -> Unit
+                is CompareContract.Effect.ShowError -> {
+                    SnapNotify.showError(context.message(effect.error))
+                }
             }
         }
     }
@@ -85,7 +88,7 @@ fun CompareRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CompareScreen(
     state: CompareContract.State,
@@ -95,6 +98,7 @@ private fun CompareScreen(
 ) {
     Scaffold(
         modifier = Modifier.testTag(UiTestTags.COMPARE_SCREEN),
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.compare_title)) },
@@ -120,9 +124,35 @@ private fun CompareScreen(
                     message = state.error?.let { LocalContextMessage(it) }
                         ?: stringResource(R.string.compare_error_load_failed),
                     onRetry = onRetry,
+                    retryLabel = stringResource(R.string.compare_retry),
                 )
 
-                state.hasData -> CompareTable(state.countries)
+                state.hasData -> Column(modifier = Modifier.fillMaxSize()) {
+                    state.insight?.let { insight ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = stringResource(R.string.compare_insight_title),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                Text(
+                                    text = insight,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(top = 4.dp),
+                                )
+                            }
+                        }
+                    }
+                    CompareTable(
+                        countries = state.countries,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         }
     }
@@ -140,38 +170,19 @@ private fun LoadingState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(48.dp))
-    }
-}
-
-@Composable
-private fun ErrorState(
-    message: String,
-    onRetry: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        Button(onClick = onRetry, modifier = Modifier.padding(top = 16.dp)) {
-            Text(stringResource(R.string.compare_retry))
-        }
+        CircularWavyProgressIndicator(modifier = Modifier.size(48.dp))
     }
 }
 
 private data class CompareRow(val label: String, val values: List<String>)
 
 @Composable
-private fun CompareTable(countries: List<Country>) {
-    val rows = remember(countries) { buildRows(countries) }
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+private fun CompareTable(
+    countries: List<Country>,
+    modifier: Modifier = Modifier,
+) {
+    val rows = buildRows(countries)
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         if (maxWidth >= 600.dp) {
             CompareGridLayout(rows = rows, countries = countries)
         } else {
@@ -271,23 +282,24 @@ private fun BodyCell(text: String, width: androidx.compose.ui.unit.Dp, emphasize
     )
 }
 
+@Composable
 private fun buildRows(countries: List<Country>): List<CompareRow> {
     val nf = NumberFormat.getNumberInstance(Locale.getDefault())
     return listOf(
         CompareRow(
-            label = "Capital",
+            label = stringResource(R.string.compare_label_capital),
             values = countries.map { it.capital.ifEmpty { "—" } },
         ),
         CompareRow(
-            label = "Region",
+            label = stringResource(R.string.compare_label_region),
             values = countries.map { it.region.ifEmpty { "—" } },
         ),
         CompareRow(
-            label = "Population",
+            label = stringResource(R.string.compare_label_population),
             values = countries.map { nf.format(it.population) },
         ),
         CompareRow(
-            label = "Languages",
+            label = stringResource(R.string.compare_label_languages),
             values = countries.map { country ->
                 country.languages
                     .mapNotNull { it.name }
@@ -296,7 +308,7 @@ private fun buildRows(countries: List<Country>): List<CompareRow> {
             },
         ),
         CompareRow(
-            label = "Currencies",
+            label = stringResource(R.string.compare_label_currencies),
             values = countries.map { country ->
                 country.currencies
                     .mapNotNull { c -> c.name?.let { name -> c.code?.let { "$name ($it)" } ?: name } }
@@ -305,7 +317,7 @@ private fun buildRows(countries: List<Country>): List<CompareRow> {
             },
         ),
         CompareRow(
-            label = "Calling code",
+            label = stringResource(R.string.compare_label_calling_code),
             values = countries.map { it.callingCode.ifEmpty { "—" } },
         ),
     )

@@ -21,7 +21,9 @@ sealed interface UiState<out T> {
      * Success state with data
      * @param data The successful result data
      */
-    data class Success<T>(val data: T) : UiState<T>
+    data class Success<T>(
+        val data: T,
+    ) : UiState<T>
 
     /**
      * Error state with exception details
@@ -30,7 +32,7 @@ sealed interface UiState<out T> {
      */
     data class Error(
         val exception: Exception,
-        val message: String? = exception.message
+        val message: String? = exception.message,
     ) : UiState<Nothing>
 }
 
@@ -55,13 +57,9 @@ val UiState<*>.isError: Boolean
 /**
  * Extension to get data from Success state or return fallback
  */
-fun <T> UiState<T>.getDataOrNull(): T? {
-    return (this as? UiState.Success)?.data
-}
+fun <T> UiState<T>.getDataOrNull(): T? = (this as? UiState.Success)?.data
 
 /**
  * Extension to get data from Success state or return fallback
  */
-fun <T> UiState<T>.getDataOr(fallback: T): T {
-    return (this as? UiState.Success)?.data ?: fallback
-}
+fun <T> UiState<T>.getDataOr(fallback: T): T = (this as? UiState.Success)?.data ?: fallback

@@ -2,6 +2,7 @@ plugins {
     id("worldcountries.android.library")
     id("worldcountries.android.hilt")
     alias(libs.plugins.compose.compiler)
+    id("worldcountries.kover")
 }
 
 android {
@@ -28,12 +29,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.snapnotify)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
 
+    implementation(libs.snapnotify)
     implementation(libs.timber)
 
     testImplementation(libs.junit)

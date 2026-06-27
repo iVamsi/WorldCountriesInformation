@@ -49,20 +49,23 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse.Success
  * @see Error for failed state with exception
  */
 sealed class ApiResponse<out R> {
-
     /**
      * Represents a successful operation with resulting data.
      *
      * @param data The result data of type [T]
      */
-    data class Success<out T>(val data: T) : ApiResponse<T>()
+    data class Success<out T>(
+        val data: T,
+    ) : ApiResponse<T>()
 
     /**
      * Represents a failed operation with an exception.
      *
      * @param exception The exception that caused the failure
      */
-    data class Error(val exception: Exception) : ApiResponse<Nothing>()
+    data class Error(
+        val exception: Exception,
+    ) : ApiResponse<Nothing>()
 
     /**
      * Represents an operation in progress.
@@ -71,12 +74,10 @@ sealed class ApiResponse<out R> {
      */
     data object Loading : ApiResponse<Nothing>()
 
-    override fun toString(): String {
-        return when (this) {
-            is Success<*> -> "Success[data=$data]"
-            is Error -> "Error[exception=$exception]"
-            Loading -> "Loading"
-        }
+    override fun toString(): String = when (this) {
+        is Success<*> -> "Success[data=$data]"
+        is Error -> "Error[exception=$exception]"
+        Loading -> "Loading"
     }
 }
 
@@ -133,9 +134,7 @@ val ApiResponse<*>.exception: Exception?
  * val data = response.successOr("default") // "default"
  * ```
  */
-fun <T> ApiResponse<T>.successOr(fallback: T): T {
-    return (this as? Success<T>)?.data ?: fallback
-}
+fun <T> ApiResponse<T>.successOr(fallback: T): T = (this as? Success<T>)?.data ?: fallback
 
 /**
  * Returns the data if [Success], or the result of [onFailure] if [Error].
@@ -149,12 +148,10 @@ fun <T> ApiResponse<T>.successOr(fallback: T): T {
  * }
  * ```
  */
-inline fun <T> ApiResponse<T>.getOrElse(onFailure: (Exception) -> T): T? {
-    return when (this) {
-        is Success -> data
-        is ApiResponse.Error -> onFailure(exception)
-        is ApiResponse.Loading -> null
-    }
+inline fun <T> ApiResponse<T>.getOrElse(onFailure: (Exception) -> T): T? = when (this) {
+    is Success -> data
+    is ApiResponse.Error -> onFailure(exception)
+    is ApiResponse.Loading -> null
 }
 
 /**
@@ -177,12 +174,10 @@ fun <T> ApiResponse<T>.getOrNull(): T? = data
  * // ApiResponse.Success("42")
  * ```
  */
-inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
-    return when (this) {
-        is Success -> Success(transform(data))
-        is ApiResponse.Error -> this
-        is ApiResponse.Loading -> this
-    }
+inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> = when (this) {
+    is Success -> Success(transform(data))
+    is ApiResponse.Error -> this
+    is ApiResponse.Loading -> this
 }
 
 /**
@@ -197,12 +192,10 @@ inline fun <T, R> ApiResponse<T>.map(transform: (T) -> R): ApiResponse<R> {
  * }
  * ```
  */
-inline fun <T, R> ApiResponse<T>.flatMap(transform: (T) -> ApiResponse<R>): ApiResponse<R> {
-    return when (this) {
-        is Success -> transform(data)
-        is ApiResponse.Error -> this
-        is ApiResponse.Loading -> this
-    }
+inline fun <T, R> ApiResponse<T>.flatMap(transform: (T) -> ApiResponse<R>): ApiResponse<R> = when (this) {
+    is Success -> transform(data)
+    is ApiResponse.Error -> this
+    is ApiResponse.Loading -> this
 }
 
 /**
@@ -265,19 +258,17 @@ inline fun <T> ApiResponse<T>.onLoading(action: () -> Unit): ApiResponse<T> {
  * // ApiResponse.Success("data")
  * ```
  */
-fun <T> Result<T>.toApiResponse(): ApiResponse<T> {
-    return fold(
-        onSuccess = { Success(it) },
-        onFailure = {
-            ApiResponse.Error(
-                when (it) {
-                    is Exception -> it
-                    else -> Exception(it)
-                }
-            )
-        }
-    )
-}
+fun <T> Result<T>.toApiResponse(): ApiResponse<T> = fold(
+    onSuccess = { Success(it) },
+    onFailure = {
+        ApiResponse.Error(
+            when (it) {
+                is Exception -> it
+                else -> Exception(it)
+            },
+        )
+    },
+)
 
 /**
  * Converts [ApiResponse]<T> to Kotlin's [Result]<T>.
@@ -295,14 +286,13 @@ fun <T> Result<T>.toApiResponse(): ApiResponse<T> {
  * // Result.success("data")
  * ```
  */
-fun <T> ApiResponse<T>.toResult(): Result<T> {
-    return when (this) {
-        is Success -> Result.success(data)
-        is ApiResponse.Error -> Result.failure(exception)
-        is ApiResponse.Loading -> Result.failure(
-            IllegalStateException("Cannot convert Loading state to Result")
+fun <T> ApiResponse<T>.toResult(): Result<T> = when (this) {
+    is Success -> Result.success(data)
+    is ApiResponse.Error -> Result.failure(exception)
+    is ApiResponse.Loading ->
+        Result.failure(
+            IllegalStateException("Cannot convert Loading state to Result"),
         )
-    }
 }
 
 /**
@@ -315,10 +305,8 @@ fun <T> ApiResponse<T>.toResult(): Result<T> {
  * // null
  * ```
  */
-fun <T> ApiResponse<T>.toResultOrNull(): Result<T>? {
-    return when (this) {
-        is Success -> Result.success(data)
-        is ApiResponse.Error -> Result.failure(exception)
-        is ApiResponse.Loading -> null
-    }
+fun <T> ApiResponse<T>.toResultOrNull(): Result<T>? = when (this) {
+    is Success -> Result.success(data)
+    is ApiResponse.Error -> Result.failure(exception)
+    is ApiResponse.Loading -> null
 }

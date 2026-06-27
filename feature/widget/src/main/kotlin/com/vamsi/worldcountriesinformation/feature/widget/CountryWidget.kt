@@ -62,8 +62,8 @@ class CountryWidget : GlanceAppWidget() {
         setOf(
             DpSize(120.dp, 120.dp), // Small
             DpSize(180.dp, 180.dp), // Medium
-            DpSize(250.dp, 250.dp)  // Large
-        )
+            DpSize(250.dp, 250.dp), // Large
+        ),
     )
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -73,34 +73,32 @@ class CountryWidget : GlanceAppWidget() {
             GlanceTheme {
                 CountryWidgetContent(
                     widgetData = widgetData,
-                    context = context
+                    context = context,
                 )
             }
         }
     }
 
-    private suspend fun getWidgetData(context: Context): WidgetData {
-        return try {
-            val hiltEntryPoint = EntryPointAccessors.fromApplication(
-                context.applicationContext,
-                WidgetEntryPoint::class.java
-            )
-            val dataSource = hiltEntryPoint.widgetDataSource()
-            val data = dataSource.getWidgetData()
+    private suspend fun getWidgetData(context: Context): WidgetData = try {
+        val hiltEntryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WidgetEntryPoint::class.java,
+        )
+        val dataSource = hiltEntryPoint.widgetDataSource()
+        val data = dataSource.getWidgetData()
 
-            Timber.d("Widget data loaded: country=${data.featuredCountry?.name}, total=${data.totalCountries}, error=${data.error}")
+        Timber.d("Widget data loaded: country=${data.featuredCountry?.name}, total=${data.totalCountries}, error=${data.error}")
 
-            data
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            Timber.e(e, "Failed to load widget data")
-            WidgetData(
-                featuredCountry = null,
-                totalCountries = 0,
-                isLoading = false,
-                error = "Failed to load data: ${e.message}"
-            )
-        }
+        data
+    } catch (e: Exception) {
+        if (e is CancellationException) throw e
+        Timber.e(e, "Failed to load widget data")
+        WidgetData(
+            featuredCountry = null,
+            totalCountries = 0,
+            isLoading = false,
+            error = "Failed to load data: ${e.message}",
+        )
     }
 }
 
@@ -125,7 +123,7 @@ private fun CountryWidgetContent(
             .background(GlanceTheme.colors.surface)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         when {
             widgetData.isLoading -> {
@@ -140,7 +138,7 @@ private fun CountryWidgetContent(
                 SuccessState(
                     widgetData = widgetData,
                     widgetSize = widgetSize,
-                    context = context
+                    context = context,
                 )
             }
 
@@ -155,9 +153,9 @@ private fun CountryWidgetContent(
  * Widget size categories
  */
 private enum class WidgetSize {
-    SMALL,  // < 150dp width: Show only flag and name
+    SMALL, // < 150dp width: Show only flag and name
     MEDIUM, // 150-220dp: Show flag, name, and basic info
-    LARGE   // > 220dp: Show all information
+    LARGE, // > 220dp: Show all information
 }
 
 /**
@@ -168,7 +166,7 @@ private fun LoadingState() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = GlanceModifier.fillMaxSize()
+        modifier = GlanceModifier.fillMaxSize(),
     ) {
         CircularProgressIndicator()
         Spacer(modifier = GlanceModifier.height(8.dp))
@@ -176,8 +174,8 @@ private fun LoadingState() {
             text = "Loading...",
             style = TextStyle(
                 fontSize = 14.sp,
-                color = GlanceTheme.colors.onSurface
-            )
+                color = GlanceTheme.colors.onSurface,
+            ),
         )
     }
 }
@@ -192,12 +190,12 @@ private fun ErrorState(error: String, context: Context) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = GlanceModifier
             .fillMaxSize()
-            .clickable(onClick = actionStartActivity(getLaunchIntent(context)))
+            .clickable(onClick = actionStartActivity(getLaunchIntent(context))),
     ) {
         Image(
             provider = ImageProvider(R.drawable.ic_error),
             contentDescription = "Error",
-            modifier = GlanceModifier.size(36.dp)
+            modifier = GlanceModifier.size(36.dp),
         )
         Spacer(modifier = GlanceModifier.height(8.dp))
         Text(
@@ -205,8 +203,8 @@ private fun ErrorState(error: String, context: Context) {
             style = TextStyle(
                 fontSize = 11.sp,
                 color = GlanceTheme.colors.error,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
         Spacer(modifier = GlanceModifier.height(4.dp))
         Text(
@@ -214,8 +212,8 @@ private fun ErrorState(error: String, context: Context) {
             style = TextStyle(
                 fontSize = 10.sp,
                 color = GlanceTheme.colors.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
     }
 }
@@ -230,11 +228,11 @@ private fun EmptyState(context: Context) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = GlanceModifier
             .fillMaxSize()
-            .clickable(onClick = actionStartActivity(getLaunchIntent(context)))
+            .clickable(onClick = actionStartActivity(getLaunchIntent(context))),
     ) {
         Text(
             text = "🌍",
-            style = TextStyle(fontSize = 48.sp)
+            style = TextStyle(fontSize = 48.sp),
         )
         Spacer(modifier = GlanceModifier.height(8.dp))
         Text(
@@ -242,8 +240,8 @@ private fun EmptyState(context: Context) {
             style = TextStyle(
                 fontSize = 13.sp,
                 color = GlanceTheme.colors.onSurface,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
         Spacer(modifier = GlanceModifier.height(4.dp))
         Text(
@@ -251,8 +249,8 @@ private fun EmptyState(context: Context) {
             style = TextStyle(
                 fontSize = 11.sp,
                 color = GlanceTheme.colors.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
     }
 }
@@ -285,15 +283,15 @@ private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domai
             .fillMaxSize()
             .clickable(
                 onClick = actionStartActivity(
-                    getCountryDetailsIntent(context, country.threeLetterCode)
-                )
+                    getCountryDetailsIntent(context, country.threeLetterCode),
+                ),
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = getFlagEmoji(country.twoLetterCode),
-            style = TextStyle(fontSize = 40.sp)
+            style = TextStyle(fontSize = 40.sp),
         )
         Spacer(modifier = GlanceModifier.height(4.dp))
         Text(
@@ -302,9 +300,9 @@ private fun SmallWidgetLayout(country: com.vamsi.worldcountriesinformation.domai
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = GlanceTheme.colors.onSurface,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             ),
-            maxLines = 2
+            maxLines = 2,
         )
     }
 }
@@ -323,25 +321,25 @@ private fun MediumWidgetLayout(
             .fillMaxSize()
             .clickable(
                 onClick = actionStartActivity(
-                    getCountryDetailsIntent(context, country.threeLetterCode)
-                )
+                    getCountryDetailsIntent(context, country.threeLetterCode),
+                ),
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "🌍 Country of Day",
             style = TextStyle(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = GlanceTheme.colors.primary
-            )
+                color = GlanceTheme.colors.primary,
+            ),
         )
 
         Spacer(modifier = GlanceModifier.height(6.dp))
 
         Text(
             text = getFlagEmoji(country.twoLetterCode),
-            style = TextStyle(fontSize = 48.sp)
+            style = TextStyle(fontSize = 48.sp),
         )
 
         Spacer(modifier = GlanceModifier.height(4.dp))
@@ -352,9 +350,9 @@ private fun MediumWidgetLayout(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = GlanceTheme.colors.onSurface,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             ),
-            maxLines = 2
+            maxLines = 2,
         )
 
         Spacer(modifier = GlanceModifier.height(6.dp))
@@ -363,17 +361,17 @@ private fun MediumWidgetLayout(
             text = "📍 ${country.capital}",
             style = TextStyle(
                 fontSize = 11.sp,
-                color = GlanceTheme.colors.onSurface
+                color = GlanceTheme.colors.onSurface,
             ),
-            maxLines = 1
+            maxLines = 1,
         )
 
         Text(
             text = "👥 ${formatPopulation(country.population)}",
             style = TextStyle(
                 fontSize = 11.sp,
-                color = GlanceTheme.colors.onSurface
-            )
+                color = GlanceTheme.colors.onSurface,
+            ),
         )
     }
 }
@@ -392,24 +390,24 @@ private fun LargeWidgetLayout(
             .fillMaxSize()
             .clickable(
                 onClick = actionStartActivity(
-                    getCountryDetailsIntent(context, country.threeLetterCode)
-                )
+                    getCountryDetailsIntent(context, country.threeLetterCode),
+                ),
             ),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Header
         Row(
             modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "🌍 Country of the Day",
                 style = TextStyle(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = GlanceTheme.colors.primary
+                    color = GlanceTheme.colors.primary,
                 ),
-                modifier = GlanceModifier.defaultWeight()
+                modifier = GlanceModifier.defaultWeight(),
             )
         }
 
@@ -418,7 +416,7 @@ private fun LargeWidgetLayout(
         // Country Flag Emoji
         Text(
             text = getFlagEmoji(country.twoLetterCode),
-            style = TextStyle(fontSize = 56.sp)
+            style = TextStyle(fontSize = 56.sp),
         )
 
         Spacer(modifier = GlanceModifier.height(6.dp))
@@ -430,9 +428,9 @@ private fun LargeWidgetLayout(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = GlanceTheme.colors.onSurface,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             ),
-            maxLines = 2
+            maxLines = 2,
         )
 
         Spacer(modifier = GlanceModifier.height(8.dp))
@@ -442,7 +440,7 @@ private fun LargeWidgetLayout(
         CountryInfoRow(label = "Region", value = country.region)
         CountryInfoRow(
             label = "Population",
-            value = formatPopulation(country.population)
+            value = formatPopulation(country.population),
         )
 
         Spacer(modifier = GlanceModifier.height(10.dp))
@@ -452,8 +450,8 @@ private fun LargeWidgetLayout(
             text = "Total Countries: ${widgetData.totalCountries}",
             style = TextStyle(
                 fontSize = 11.sp,
-                color = GlanceTheme.colors.secondary
-            )
+                color = GlanceTheme.colors.secondary,
+            ),
         )
     }
 }
@@ -467,23 +465,23 @@ private fun CountryInfoRow(label: String, value: String) {
         modifier = GlanceModifier
             .fillMaxWidth()
             .padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = "$label:",
             style = TextStyle(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = GlanceTheme.colors.onSurfaceVariant
+                color = GlanceTheme.colors.onSurfaceVariant,
             ),
-            modifier = GlanceModifier.width(80.dp)
+            modifier = GlanceModifier.width(80.dp),
         )
         Text(
             text = value,
             style = TextStyle(
                 fontSize = 12.sp,
-                color = GlanceTheme.colors.onSurface
-            )
+                color = GlanceTheme.colors.onSurface,
+            ),
         )
     }
 }
@@ -491,56 +489,48 @@ private fun CountryInfoRow(label: String, value: String) {
 /**
  * Convert country code to flag emoji
  */
-private fun getFlagEmoji(countryCode: String): String {
-    return try {
-        val code = countryCode.uppercase()
-        val firstChar = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
-        val secondChar = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
-        String(Character.toChars(firstChar)) + String(Character.toChars(secondChar))
-    } catch (e: Exception) {
-        "🏳️" // Default flag if conversion fails
-    }
+private fun getFlagEmoji(countryCode: String): String = try {
+    val code = countryCode.uppercase()
+    val firstChar = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
+    val secondChar = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
+    String(Character.toChars(firstChar)) + String(Character.toChars(secondChar))
+} catch (e: Exception) {
+    "🏳️" // Default flag if conversion fails
 }
 
 /**
  * Format population number with commas
  */
-private fun formatPopulation(population: Int): String {
-    return when {
-        population >= 1_000_000_000 -> "${population / 1_000_000_000}B+"
-        population >= 1_000_000 -> "${population / 1_000_000}M+"
-        population >= 1_000 -> "${population / 1_000}K+"
-        else -> population.toString()
-    }
+private fun formatPopulation(population: Int): String = when {
+    population >= 1_000_000_000 -> "${population / 1_000_000_000}B+"
+    population >= 1_000_000 -> "${population / 1_000_000}M+"
+    population >= 1_000 -> "${population / 1_000}K+"
+    else -> population.toString()
 }
 
 /**
  * Get launch intent for the main app
  */
-private fun getLaunchIntent(context: Context): Intent {
-    return context.packageManager.getLaunchIntentForPackage(context.packageName)
-        ?: Intent().apply {
-            // Fallback: try to launch main activity
-            setClassName(
-                context.packageName,
-                "${context.packageName}.ui.MainActivity"
-            )
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-}
+private fun getLaunchIntent(context: Context): Intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+    ?: Intent().apply {
+        // Fallback: try to launch main activity
+        setClassName(
+            context.packageName,
+            "${context.packageName}.ui.MainActivity",
+        )
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
 
 /**
  * Get launch intent for opening a specific country's details screen
  * @param context Android context
  * @param countryCode Three-letter ISO country code
  */
-private fun getCountryDetailsIntent(context: Context, countryCode: String): Intent {
-    return Intent().apply {
-        setClassName(
-            context.packageName,
-            "${context.packageName}.ui.MainActivity"
-        )
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        putExtra("extra_country_code", countryCode)
-    }
+private fun getCountryDetailsIntent(context: Context, countryCode: String): Intent = Intent().apply {
+    setClassName(
+        context.packageName,
+        "${context.packageName}.ui.MainActivity",
+    )
+    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    putExtra("extra_country_code", countryCode)
 }

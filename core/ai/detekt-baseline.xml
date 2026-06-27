@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ReturnCount:CountrySummaryGenerator.kt$CountrySummaryGeneratorImpl$override suspend fun generateSummary(details: List&lt;CountryDetailsModel&gt;): String?</ID>
+  </CurrentIssues>
+</SmellBaseline>

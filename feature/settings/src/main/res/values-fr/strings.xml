@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_navigate_back">Retour</string>
+    <string name="settings_section_cache_policy">Politique de cache</string>
+    <string name="settings_section_network">Réseau</string>
+    <string name="settings_section_appearance">Apparence</string>
+    <string name="settings_section_features">Fonctionnalités</string>
+    <string name="settings_section_cache_stats">Statistiques du cache</string>
+    <string name="settings_section_about">À propos</string>
+    <string name="cache_policy_cache_first">Cache d\'abord</string>
+    <string name="cache_policy_cache_first_desc">Données en cache si disponibles, sinon réseau</string>
+    <string name="cache_policy_network_first">Réseau d\'abord</string>
+    <string name="cache_policy_network_first_desc">Données fraîches du réseau, cache en secours</string>
+    <string name="cache_policy_cache_only">Cache uniquement</string>
+    <string name="cache_policy_cache_only_desc">Cache seulement, pas de requêtes réseau</string>
+    <string name="settings_dynamic_colors">Couleurs dynamiques</string>
+    <string name="settings_dynamic_colors_desc">Accents du fond d\'écran sur Android 12+. Désactiver pour Explorer.</string>
+    <string name="settings_ai_summaries">Résumés IA sur l\'appareil</string>
+    <string name="settings_ai_summaries_desc">Bref aperçu du pays sur appareils compatibles. Désactivé par défaut.</string>
+    <string name="settings_daily_notification">Notification pays du jour</string>
+    <string name="settings_daily_notification_desc">Pays du jour chaque jour. Appuyer pour les détails.</string>
+    <string name="settings_map_borders">Frontières sur la carte</string>
+    <string name="settings_map_borders_desc">Afficher les frontières sur la carte des détails.</string>
+    <string name="settings_offline_mode">Mode hors ligne</string>
+    <string name="settings_offline_mode_desc">Utiliser uniquement les données en cache</string>
+    <string name="settings_cached_countries">Pays en cache</string>
+    <string name="settings_estimated_size">Taille estimée</string>
+    <string name="settings_oldest_entry">Entrée la plus ancienne</string>
+    <string name="settings_clear_cache">Effacer tout le cache</string>
+    <string name="settings_no_data">Aucune donnée</string>
+    <string name="settings_age_just_now">À l\'instant</string>
+    <string name="settings_app_name">World Countries Information</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_features_header">Fonctionnalités :</string>
+    <string name="settings_clear_cache_title">Effacer tout le cache ?</string>
+    <string name="settings_clear_cache_message">Toutes les données pays en cache seront supprimées. Connexion internet requise pour recharger.</string>
+    <string name="settings_clear">Effacer</string>
+    <string name="settings_cancel">Annuler</string>
+    <string name="settings_oss_licenses">Licences open source</string>
+</resources>

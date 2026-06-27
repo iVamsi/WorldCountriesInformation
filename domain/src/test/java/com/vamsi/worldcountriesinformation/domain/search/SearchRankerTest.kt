@@ -7,7 +7,6 @@ import org.junit.Before
 import org.junit.Test
 
 class SearchRankerTest {
-
     private lateinit var ranker: SearchRanker
 
     private val unitedStates = country("United States", "Washington D.C.", "US", "USA")
@@ -35,12 +34,13 @@ class SearchRankerTest {
 
     @Test
     fun `blank query promotes favorites then recents`() {
-        val result = ranker.rank(
-            query = "",
-            countries = all,
-            recentCodes = setOf("CAN"),
-            favoriteCodes = setOf("UKR"),
-        )
+        val result =
+            ranker.rank(
+                query = "",
+                countries = all,
+                recentCodes = setOf("CAN"),
+                favoriteCodes = setOf("UKR"),
+            )
         assertEquals("Ukraine", result.first().name)
         assertEquals("Canada", result[1].name)
     }
@@ -62,11 +62,12 @@ class SearchRankerTest {
     @Test
     fun `recent boost reorders ties`() {
         val withoutBoost = ranker.rank("united", all)
-        val withBoost = ranker.rank(
-            query = "united",
-            countries = all,
-            recentCodes = setOf("USA"),
-        )
+        val withBoost =
+            ranker.rank(
+                query = "united",
+                countries = all,
+                recentCodes = setOf("USA"),
+            )
         // Without boost: alphabetical tiebreak among the three "United*" prefix matches.
         assertEquals(unitedArab, withoutBoost.first())
         // With recent boost: USA jumps ahead of the alphabetical winner.
@@ -75,12 +76,13 @@ class SearchRankerTest {
 
     @Test
     fun `favorite boost outranks recent`() {
-        val result = ranker.rank(
-            query = "united",
-            countries = all,
-            recentCodes = setOf("USA"),
-            favoriteCodes = setOf("GBR"),
-        )
+        val result =
+            ranker.rank(
+                query = "united",
+                countries = all,
+                recentCodes = setOf("USA"),
+                favoriteCodes = setOf("GBR"),
+            )
         assertEquals(unitedKingdom, result.first())
     }
 

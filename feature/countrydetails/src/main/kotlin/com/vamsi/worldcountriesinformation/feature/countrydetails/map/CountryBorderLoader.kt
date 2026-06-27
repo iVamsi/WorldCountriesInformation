@@ -1,7 +1,6 @@
 package com.vamsi.worldcountriesinformation.feature.countrydetails.map
 
 import android.content.Context
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.osmdroid.util.GeoPoint
@@ -22,9 +21,7 @@ class CountryBorderLoader(context: Context) {
         }.getOrDefault(emptyMap())
     }
 
-    fun polygonFor(alpha3Code: String): List<GeoPoint>? {
-        return borders[alpha3Code.uppercase()]
-    }
+    fun polygonFor(alpha3Code: String): List<GeoPoint>? = borders[alpha3Code.uppercase()]
 
     @Serializable
     private data class CountryBordersFile(

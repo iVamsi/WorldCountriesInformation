@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:CountriesViewModel.kt$CountriesViewModel$override fun handleIntent(intent: CountriesContract.Intent)</ID>
+    <ID>LongMethod:CountriesScreen.kt$@Composable private fun ScrollableCountriesContent( state: CountriesContract.State, listState: LazyListState, onIntent: (CountriesContract.Intent) -&gt; Unit, )</ID>
+    <ID>LongMethod:CountriesScreen.kt$@Composable private fun SearchBar( query: String, onQueryChange: (String) -&gt; Unit, onClearClick: () -&gt; Unit, onMicClick: (() -&gt; Unit)? = null, onFocusChanged: (Boolean) -&gt; Unit = {}, onBackClick: () -&gt; Unit = {}, modifier: Modifier = Modifier, )</ID>
+    <ID>LongMethod:CountriesScreen.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun CountryCard( country: CountrySummary, isFavorite: Boolean, onClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit, modifier: Modifier = Modifier, isSelecting: Boolean = false, isSelectedForCompare: Boolean = false, onLongClick: () -&gt; Unit = {}, )</ID>
+    <ID>LongMethod:CountriesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun CountriesScreen( onNavigateToDetails: (String) -&gt; Unit, onNavigateToSettings: () -&gt; Unit = {}, onNavigateToCompare: (List&lt;String&gt;) -&gt; Unit = {}, onNavigateToQuiz: () -&gt; Unit = {}, viewModel: CountriesViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:CountriesScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable private fun CountriesScreenContent( state: CountriesContract.State, listState: LazyListState, onNavigateToSettings: () -&gt; Unit, onNavigateToQuiz: () -&gt; Unit = {}, onIntent: (CountriesContract.Intent) -&gt; Unit, onMicClick: (() -&gt; Unit)? = null, )</ID>
+    <ID>LongMethod:CountriesViewModel.kt$CountriesViewModel$private fun loadCountries(policy: CachePolicy? = null)</ID>
+    <ID>LongParameterList:CountriesScreen.kt$( country: CountrySummary, isFavorite: Boolean, onClick: () -&gt; Unit, onFavoriteClick: () -&gt; Unit, modifier: Modifier = Modifier, isSelecting: Boolean = false, isSelectedForCompare: Boolean = false, onLongClick: () -&gt; Unit = {}, )</ID>
+    <ID>LongParameterList:CountriesViewModel.kt$CountriesViewModel$( private val getCountriesUseCase: GetCountriesUseCase, private val searchCountriesUseCase: SearchCountriesUseCase, private val filteredSearchUseCase: FilteredSearchCountriesUseCase, private val suggestionsUseCase: GenerateSearchSuggestionsUseCase, private val searchPreferencesDataSource: SearchPreferencesPort, private val searchFiltersUseCase: SearchFiltersUseCase, private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase, private val observeFavoritesUseCase: ObserveFavoritesUseCase, private val toggleFavoriteUseCase: ToggleFavoriteUseCase, private val searchRanker: SearchRanker, private val clock: Clock, )</ID>
+    <ID>MaxLineLength:CountriesViewModel.kt$CountriesViewModel$private</ID>
+    <ID>TooManyFunctions:CountriesScreen.kt$com.vamsi.worldcountriesinformation.feature.countries.CountriesScreen.kt</ID>
+    <ID>TooManyFunctions:CountriesViewModel.kt$CountriesViewModel : MVIViewModel</ID>
+    <ID>UnusedParameter:CountriesScreen.kt$isSelecting: Boolean = false</ID>
+    <ID>UnusedPrivateMember:CountriesScreen.kt$@Preview(showBackground = true, name = "Countries • Search History") @Composable private fun CountriesScreenSearchHistoryPreview()</ID>
+    <ID>UnusedPrivateMember:CountriesScreen.kt$@PreviewLightDark @PreviewFontScale @PreviewScreenSizes @Preview(showBackground = true, name = "Countries • List") @Composable private fun CountriesScreenPreview()</ID>
+  </CurrentIssues>
+</SmellBaseline>

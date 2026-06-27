@@ -27,13 +27,14 @@ import kotlinx.coroutines.flow.flowOn
  * [Result<R>].
  * Handling an exception (emit [ApiResponse.Error] to the result) is the subclasses's responsibility.
  */
-abstract class FlowUseCase<in P, R>(private val coroutineDispatcher: CoroutineDispatcher) {
+abstract class FlowUseCase<in P, R>(
+    private val coroutineDispatcher: CoroutineDispatcher,
+) {
     operator fun invoke(parameters: P): Flow<ApiResponse<R>> = execute(parameters)
         .catch { e ->
             if (e is CancellationException) throw e
             emit(ApiResponse.Error(Exception(e)))
-        }
-        .flowOn(coroutineDispatcher)
+        }.flowOn(coroutineDispatcher)
 
     protected abstract fun execute(parameters: P): Flow<ApiResponse<R>>
 }

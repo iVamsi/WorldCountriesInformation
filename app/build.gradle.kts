@@ -5,10 +5,6 @@ plugins {
     id("kotlin-parcelize")
 }
 
-ksp {
-    arg("appfunctions:aggregateAppFunctions", "true")
-}
-
 android {
     namespace = "com.vamsi.worldcountriesinformation"
 
@@ -89,15 +85,18 @@ dependencies {
     // Logging (for Application class)
     implementation(libs.timber)
 
+    // Open source licenses
+    implementation(libs.play.services.oss.licenses)
+
     // WorkManager + Hilt workers
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.hilt.work)
     ksp(libs.hilt.compiler)
 
-    // AppFunctions (assistant integration)
+    // AppFunctions (assistant integration) — manual factory in WorldCountriesApplication;
+    // KSP compiler omitted: multi-module ':' paths break FunctionComponentRegistry generation.
     implementation(libs.androidx.appfunctions)
     implementation(libs.androidx.appfunctions.service)
-    ksp(libs.androidx.appfunctions.compiler)
 
     // Testing
     testImplementation(libs.junit)

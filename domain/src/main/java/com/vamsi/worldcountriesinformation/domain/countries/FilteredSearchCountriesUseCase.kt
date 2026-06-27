@@ -74,10 +74,11 @@ import javax.inject.Inject
  *
  * @property searchCountriesUseCase Base search use case
  */
-class FilteredSearchCountriesUseCase @Inject constructor(
-    private val searchCountriesUseCase: SearchCountriesUseCase
+class FilteredSearchCountriesUseCase
+@Inject
+constructor(
+    private val searchCountriesUseCase: SearchCountriesUseCase,
 ) {
-
     /**
      * Executes filtered search operation.
      *
@@ -92,35 +93,34 @@ class FilteredSearchCountriesUseCase @Inject constructor(
      */
     operator fun invoke(
         query: String,
-        filters: SearchFilters
-    ): Flow<List<CountrySummary>> {
-        return searchCountriesUseCase(query)
-            .map { countries ->
-                applyFiltersAndSort(countries, filters)
-            }
-    }
+        filters: SearchFilters,
+    ): Flow<List<CountrySummary>> = searchCountriesUseCase(query)
+        .map { countries ->
+            applyFiltersAndSort(countries, filters)
+        }
 
     /**
      * Applies filters and sorting to a list of countries.
-     * 
+     *
      * This is useful when you already have a list of countries
      * and just want to apply filters without querying the database.
-     * 
+     *
      * @param countries List of countries to filter
      * @param filters Search filters to apply
      * @return Filtered and sorted list of countries
      */
     fun applyFiltersAndSort(
         countries: List<CountrySummary>,
-        filters: SearchFilters
+        filters: SearchFilters,
     ): List<CountrySummary> {
         var filtered = countries
 
         // Apply region filter
         if (filters.selectedRegions.isNotEmpty()) {
-            filtered = filtered.filter { country ->
-                filters.selectedRegions.contains(country.region)
-            }
+            filtered =
+                filtered.filter { country ->
+                    filters.selectedRegions.contains(country.region)
+                }
         }
 
         // Note: Subregion filtering not implemented as Country model doesn't have subregion field
@@ -141,18 +141,16 @@ class FilteredSearchCountriesUseCase @Inject constructor(
      */
     private fun applySortOrder(
         countries: List<CountrySummary>,
-        sortOrder: SortOrder
-    ): List<CountrySummary> {
-        return when (sortOrder) {
-            SortOrder.NAME_ASC -> countries.sortedBy { it.name }
-            SortOrder.NAME_DESC -> countries.sortedByDescending { it.name }
-            SortOrder.POPULATION_DESC -> countries.sortedByDescending { it.population }
-            SortOrder.POPULATION_ASC -> countries.sortedBy { it.population }
-            // Area sorting not implemented as Country model doesn't have area field
-            // Fallback to name sorting
-            SortOrder.AREA_DESC -> countries.sortedBy { it.name }
-            SortOrder.AREA_ASC -> countries.sortedBy { it.name }
-        }
+        sortOrder: SortOrder,
+    ): List<CountrySummary> = when (sortOrder) {
+        SortOrder.NAME_ASC -> countries.sortedBy { it.name }
+        SortOrder.NAME_DESC -> countries.sortedByDescending { it.name }
+        SortOrder.POPULATION_DESC -> countries.sortedByDescending { it.population }
+        SortOrder.POPULATION_ASC -> countries.sortedBy { it.population }
+        // Area sorting not implemented as Country model doesn't have area field
+        // Fallback to name sorting
+        SortOrder.AREA_DESC -> countries.sortedBy { it.name }
+        SortOrder.AREA_ASC -> countries.sortedBy { it.name }
     }
 }
 
@@ -193,8 +191,9 @@ class FilteredSearchCountriesUseCase @Inject constructor(
  * // Result: ["United States", "United Kingdom", "United Arab Emirates"]
  * ```
  */
-class GenerateSearchSuggestionsUseCase @Inject constructor() {
-
+class GenerateSearchSuggestionsUseCase
+@Inject
+constructor() {
     /**
      * Generates search suggestions for the given query.
      *
@@ -222,11 +221,10 @@ class GenerateSearchSuggestionsUseCase @Inject constructor() {
         // If we need more, add capital city matches
         if (suggestions.size < maxSuggestions) {
             allCountries
-                .filter { 
+                .filter {
                     it.capital.lowercase().startsWith(normalizedQuery) &&
-                    !suggestions.contains(it.name)
-                }
-                .take(maxSuggestions - suggestions.size)
+                        !suggestions.contains(it.name)
+                }.take(maxSuggestions - suggestions.size)
                 .forEach { suggestions.add(it.capital) }
         }
 

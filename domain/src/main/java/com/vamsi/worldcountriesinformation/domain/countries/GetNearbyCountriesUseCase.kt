@@ -59,10 +59,11 @@ import javax.inject.Inject
  *
  * @since 2.5.0
  */
-class GetNearbyCountriesUseCase @Inject constructor(
+class GetNearbyCountriesUseCase
+@Inject
+constructor(
     private val countriesRepository: CountriesRepository,
 ) {
-
     /**
      * Gets countries in the same region, excluding the specified country.
      *
@@ -71,7 +72,10 @@ class GetNearbyCountriesUseCase @Inject constructor(
      * @return Flow emitting filtered list of nearby countries, sorted alphabetically
      * @throws IllegalArgumentException if region is blank
      */
-    operator fun invoke(region: String, excludeCountryCode: String): Flow<List<CountrySummary>> {
+    operator fun invoke(
+        region: String,
+        excludeCountryCode: String,
+    ): Flow<List<CountrySummary>> {
         require(region.isNotBlank()) {
             "Region cannot be empty. Provide a valid region to find nearby countries."
         }
@@ -79,7 +83,8 @@ class GetNearbyCountriesUseCase @Inject constructor(
         val normalizedRegion = region.trim()
         val normalizedCode = excludeCountryCode.uppercase().trim()
 
-        return countriesRepository.getCountriesByRegion(normalizedRegion)
+        return countriesRepository
+            .getCountriesByRegion(normalizedRegion)
             .map { countries ->
                 countries.filter { it.threeLetterCode != normalizedCode }
             }

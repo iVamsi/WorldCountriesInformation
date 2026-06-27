@@ -3,6 +3,7 @@ plugins {
     id("worldcountries.android.hilt")
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    id("worldcountries.kover")
 }
 
 android {
@@ -53,4 +54,11 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(project(":tests-shared"))
 }

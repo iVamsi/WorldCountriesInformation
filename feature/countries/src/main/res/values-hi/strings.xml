@@ -2,4 +2,25 @@
 <resources>
     <string name="search_countries_hint">देश खोजें…</string>
     <string name="voice_search">वॉइस खोज</string>
+    <string name="quiz_open">देश क्विज़</string>
+    <string name="countries_title">देश</string>
+    <string name="countries_compare_selection">%1$d चयनित</string>
+    <string name="countries_compare">तुलना करें</string>
+    <string name="countries_cancel_compare">चयन रद्द करें</string>
+    <string name="countries_settings">सेटिंग्स</string>
+    <string name="countries_clear_filters">फ़िल्टर साफ़ करें</string>
+    <string name="countries_scroll_to_top">ऊपर जाएँ</string>
+    <string name="countries_filter_by_region">क्षेत्र से फ़िल्टर</string>
+    <string name="countries_regions_selected">%1$d चयनित</string>
+    <string name="countries_sort">क्रमबद्ध करें</string>
+    <string name="countries_recently_viewed">हाल में देखे गए</string>
+    <string name="countries_recent_searches">हाल की खोजें</string>
+    <string name="countries_clear_all">सभी साफ़ करें</string>
+    <string name="countries_suggestions">सुझाव</string>
+    <string name="countries_loading">देश लोड हो रहे हैं…</string>
+    <string name="countries_retry">पुनः प्रयास</string>
+    <string name="countries_no_countries">कोई देश नहीं मिला</string>
+    <string name="countries_no_results">\"%1$s\" के लिए कोई परिणाम नहीं</string>
+    <string name="countries_clear_search">खोज साफ़ करें</string>
+    <string name="countries_select_hint">विवरण के लिए देश चुनें</string>
 </resources>

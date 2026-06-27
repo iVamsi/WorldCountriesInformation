@@ -37,7 +37,7 @@ import java.io.IOException
  *
  * ```
  * Request Flow:
- * 
+ *
  * API Call → Interceptor Chain → HttpsOnlyInterceptor → Network
  *                                          ↓
  *                                    Check Scheme
@@ -74,7 +74,7 @@ import java.io.IOException
  * GET http://restcountries.com/v3.1/all          // ❌ Blocked
  * GET http://example.com/api/data                // ❌ Blocked
  * GET http://localhost:8080/test                 // ❌ Blocked
- * 
+ *
  * // All throw: InsecureConnectionException
  * ```
  *
@@ -173,8 +173,8 @@ class HttpsOnlyInterceptor : Interceptor {
         if (url.scheme != "https") {
             throw IOException(
                 "Insecure HTTP connection blocked. " +
-                "Only HTTPS connections are allowed for security. " +
-                "Attempted URL: $url"
+                    "Only HTTPS connections are allowed for security. " +
+                    "Attempted URL: $url",
             )
         }
 
@@ -190,9 +190,10 @@ class HttpsOnlyInterceptor : Interceptor {
      *
      * @param url The insecure URL that was blocked
      */
-    class InsecureConnectionException(url: String) : IOException(
-        "Insecure HTTP connection blocked: $url. " +
-        "Only HTTPS connections are allowed. " +
-        "Update your URL to use https:// instead of http://"
-    )
+    class InsecureConnectionException(url: String) :
+        IOException(
+            "Insecure HTTP connection blocked: $url. " +
+                "Only HTTPS connections are allowed. " +
+                "Update your URL to use https:// instead of http://",
+        )
 }

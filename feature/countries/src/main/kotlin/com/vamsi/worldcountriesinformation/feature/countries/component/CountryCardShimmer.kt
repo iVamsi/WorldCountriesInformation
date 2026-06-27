@@ -37,19 +37,19 @@ fun CountryCardShimmer(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Flag placeholder
             ShimmerEffect(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.dp)),
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -57,14 +57,14 @@ fun CountryCardShimmer(
             // Text content placeholder
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 // Country name placeholder
                 ShimmerEffect(
                     modifier = Modifier
                         .fillMaxWidth(0.7f)
                         .height(20.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
 
                 // Capital and region placeholder
@@ -72,7 +72,7 @@ fun CountryCardShimmer(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .height(16.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
             }
         }
@@ -96,7 +96,7 @@ fun CountriesListShimmer(
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(itemCount) {
             CountryCardShimmer()
@@ -120,13 +120,13 @@ fun SearchResultShimmer(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Flag placeholder
         ShimmerEffect(
             modifier = Modifier
                 .size(32.dp)
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp)),
         )
 
         Spacer(modifier = Modifier.width(12.dp))
@@ -134,14 +134,14 @@ fun SearchResultShimmer(
         // Text content placeholder
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             // Country name placeholder
             ShimmerEffect(
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(16.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.dp)),
             )
 
             // Additional info placeholder
@@ -149,7 +149,7 @@ fun SearchResultShimmer(
                 modifier = Modifier
                     .fillMaxWidth(0.4f)
                     .height(12.dp)
-                    .clip(RoundedCornerShape(4.dp))
+                    .clip(RoundedCornerShape(4.dp)),
             )
         }
     }

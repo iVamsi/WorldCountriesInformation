@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Einstellungen</string>
+    <string name="settings_navigate_back">Zurück</string>
+    <string name="settings_section_cache_policy">Cache-Richtlinie</string>
+    <string name="settings_section_network">Netzwerk</string>
+    <string name="settings_section_appearance">Darstellung</string>
+    <string name="settings_section_features">Funktionen</string>
+    <string name="settings_section_cache_stats">Cache-Statistiken</string>
+    <string name="settings_section_about">Über</string>
+    <string name="cache_policy_cache_first">Cache zuerst</string>
+    <string name="cache_policy_cache_first_desc">Zwischengespeicherte Daten verwenden, bei Bedarf vom Netzwerk laden</string>
+    <string name="cache_policy_network_first">Netzwerk zuerst</string>
+    <string name="cache_policy_network_first_desc">Immer frische Daten vom Netzwerk, bei Fehler auf Cache zurückfallen</string>
+    <string name="cache_policy_cache_only">Nur Cache</string>
+    <string name="cache_policy_cache_only_desc">Nur zwischengespeicherte Daten, keine Netzwerkanfragen</string>
+    <string name="settings_dynamic_colors">Dynamische Farben</string>
+    <string name="settings_dynamic_colors_desc">Wallpaper-Akzente auf Android 12+ übernehmen. Aus für Explorer-Farben.</string>
+    <string name="settings_ai_summaries">KI-Zusammenfassungen auf dem Gerät</string>
+    <string name="settings_ai_summaries_desc">Kurze Länderübersicht auf unterstützten Geräten. Standard aus; keine Daten verlassen das Gerät.</string>
+    <string name="settings_daily_notification">Tägliche Länderbenachrichtigung</string>
+    <string name="settings_daily_notification_desc">Tägliche Länder-des-Tages-Benachrichtigung. Tippen für Details.</string>
+    <string name="settings_map_borders">Kartengrenzen</string>
+    <string name="settings_map_borders_desc">Ländergrenzen auf der Detailkarte anzeigen.</string>
+    <string name="settings_offline_mode">Offline-Modus</string>
+    <string name="settings_offline_mode_desc">Nur zwischengespeicherte Daten verwenden</string>
+    <string name="settings_cached_countries">Gecachte Länder</string>
+    <string name="settings_estimated_size">Geschätzte Größe</string>
+    <string name="settings_oldest_entry">Ältester Eintrag</string>
+    <string name="settings_clear_cache">Gesamten Cache löschen</string>
+    <string name="settings_no_data">Keine Daten</string>
+    <string name="settings_age_just_now">Gerade eben</string>
+    <string name="settings_app_name">World Countries Information</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_features_header">Funktionen:</string>
+    <string name="settings_clear_cache_title">Gesamten Cache löschen?</string>
+    <string name="settings_clear_cache_message">Alle gecachten Länderdaten werden gelöscht. Internetverbindung zum Neuladen erforderlich.</string>
+    <string name="settings_clear">Löschen</string>
+    <string name="settings_cancel">Abbrechen</string>
+    <string name="settings_oss_licenses">Open-Source-Lizenzen</string>
+</resources>

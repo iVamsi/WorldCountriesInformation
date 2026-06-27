@@ -254,6 +254,11 @@ object CountriesContract {
         data class NavigateToDetails(val countryCode: String) : Effect
 
         /**
+         * Show a localized toast/snackbar message.
+         */
+        data class ShowMessage(val messageRes: Int) : Effect
+
+        /**
          * Show a toast message.
          */
         data class ShowToast(val message: String) : Effect

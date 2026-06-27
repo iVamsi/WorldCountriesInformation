@@ -32,7 +32,6 @@ import org.junit.Test
  * - Result<T> conversion (toApiResponse, toResult, toResultOrNull)
  */
 class ApiResponseExtensionsTest {
-
     // ========================================================================
     // Extension Properties Tests
     // ========================================================================
@@ -130,10 +129,11 @@ class ApiResponseExtensionsTest {
     @Test
     fun `getOrElse returns fallback for Error`() {
         val response: ApiResponse<String> = ApiResponse.Error(Exception("test"))
-        val result = response.getOrElse { exception ->
-            assertThat(exception.message, equalTo("test"))
-            "fallback"
-        }
+        val result =
+            response.getOrElse { exception ->
+                assertThat(exception.message, equalTo("test"))
+                "fallback"
+            }
         assertThat(result, equalTo("fallback"))
     }
 
@@ -160,7 +160,7 @@ class ApiResponseExtensionsTest {
     fun `map transforms Success data`() {
         val response: ApiResponse<Int> = ApiResponse.Success(42)
         val mapped = response.map { it.toString() }
-        
+
         assertThat(mapped, instanceOf(ApiResponse.Success::class.java))
         assertThat((mapped as ApiResponse.Success).data, equalTo("42"))
     }
@@ -170,7 +170,7 @@ class ApiResponseExtensionsTest {
         val ex = Exception("test")
         val response: ApiResponse<Int> = ApiResponse.Error(ex)
         val mapped = response.map { it.toString() }
-        
+
         assertThat(mapped, instanceOf(ApiResponse.Error::class.java))
         assertThat((mapped as ApiResponse.Error).exception, equalTo(ex))
     }
@@ -179,17 +179,18 @@ class ApiResponseExtensionsTest {
     fun `map preserves Loading`() {
         val response: ApiResponse<Int> = ApiResponse.Loading
         val mapped = response.map { it.toString() }
-        
+
         assertThat(mapped, instanceOf(ApiResponse.Loading::class.java))
     }
 
     @Test
     fun `flatMap transforms Success to Success`() {
         val response: ApiResponse<Int> = ApiResponse.Success(42)
-        val transformed = response.flatMap { value ->
-            ApiResponse.Success(value * 2)
-        }
-        
+        val transformed =
+            response.flatMap { value ->
+                ApiResponse.Success(value * 2)
+            }
+
         assertThat(transformed, instanceOf(ApiResponse.Success::class.java))
         assertThat((transformed as ApiResponse.Success).data, equalTo(84))
     }
@@ -197,11 +198,15 @@ class ApiResponseExtensionsTest {
     @Test
     fun `flatMap transforms Success to Error`() {
         val response: ApiResponse<Int> = ApiResponse.Success(-1)
-        val transformed = response.flatMap { value ->
-            if (value > 0) ApiResponse.Success(value * 2)
-            else ApiResponse.Error(Exception("Negative value"))
-        }
-        
+        val transformed =
+            response.flatMap { value ->
+                if (value > 0) {
+                    ApiResponse.Success(value * 2)
+                } else {
+                    ApiResponse.Error(Exception("Negative value"))
+                }
+            }
+
         assertThat(transformed, instanceOf(ApiResponse.Error::class.java))
     }
 
@@ -210,7 +215,7 @@ class ApiResponseExtensionsTest {
         val ex = Exception("test")
         val response: ApiResponse<Int> = ApiResponse.Error(ex)
         val transformed = response.flatMap { ApiResponse.Success(it * 2) }
-        
+
         assertThat(transformed, instanceOf(ApiResponse.Error::class.java))
         assertThat((transformed as ApiResponse.Error).exception, equalTo(ex))
     }
@@ -219,12 +224,12 @@ class ApiResponseExtensionsTest {
     fun `onSuccess executes action for Success`() {
         var executed = false
         val response: ApiResponse<String> = ApiResponse.Success("data")
-        
+
         response.onSuccess { data ->
             executed = true
             assertThat(data, equalTo("data"))
         }
-        
+
         assertThat(executed, equalTo(true))
     }
 
@@ -232,9 +237,9 @@ class ApiResponseExtensionsTest {
     fun `onSuccess does not execute for Error`() {
         var executed = false
         val response: ApiResponse<String> = ApiResponse.Error(Exception())
-        
+
         response.onSuccess { executed = true }
-        
+
         assertThat(executed, equalTo(false))
     }
 
@@ -243,12 +248,12 @@ class ApiResponseExtensionsTest {
         var executed = false
         val ex = Exception("test")
         val response: ApiResponse<String> = ApiResponse.Error(ex)
-        
+
         response.onError { exception ->
             executed = true
             assertThat(exception, equalTo(ex))
         }
-        
+
         assertThat(executed, equalTo(true))
     }
 
@@ -256,9 +261,9 @@ class ApiResponseExtensionsTest {
     fun `onError does not execute for Success`() {
         var executed = false
         val response: ApiResponse<String> = ApiResponse.Success("data")
-        
+
         response.onError { executed = true }
-        
+
         assertThat(executed, equalTo(false))
     }
 
@@ -266,9 +271,9 @@ class ApiResponseExtensionsTest {
     fun `onLoading executes action for Loading`() {
         var executed = false
         val response: ApiResponse<String> = ApiResponse.Loading
-        
+
         response.onLoading { executed = true }
-        
+
         assertThat(executed, equalTo(true))
     }
 
@@ -276,21 +281,22 @@ class ApiResponseExtensionsTest {
     fun `onLoading does not execute for Success`() {
         var executed = false
         val response: ApiResponse<String> = ApiResponse.Success("data")
-        
+
         response.onLoading { executed = true }
-        
+
         assertThat(executed, equalTo(false))
     }
 
     @Test
     fun `chained callbacks execute in order`() {
         val log = mutableListOf<String>()
-        
-        ApiResponse.Success("data")
+
+        ApiResponse
+            .Success("data")
             .onLoading { log.add("loading") }
             .onSuccess { log.add("success: $it") }
             .onError { log.add("error") }
-        
+
         assertThat(log, equalTo(listOf("success: data")))
     }
 
@@ -302,7 +308,7 @@ class ApiResponseExtensionsTest {
     fun `Result success converts to ApiResponse Success`() {
         val result: Result<String> = Result.success("data")
         val response = result.toApiResponse()
-        
+
         assertThat(response, instanceOf(ApiResponse.Success::class.java))
         assertThat((response as ApiResponse.Success).data, equalTo("data"))
     }
@@ -312,7 +318,7 @@ class ApiResponseExtensionsTest {
         val ex = Exception("test")
         val result: Result<String> = Result.failure(ex)
         val response = result.toApiResponse()
-        
+
         assertThat(response, instanceOf(ApiResponse.Error::class.java))
         assertThat((response as ApiResponse.Error).exception, equalTo(ex))
     }
@@ -322,7 +328,7 @@ class ApiResponseExtensionsTest {
         val throwable = Throwable("test")
         val result: Result<String> = Result.failure(throwable)
         val response = result.toApiResponse()
-        
+
         assertThat(response, instanceOf(ApiResponse.Error::class.java))
         assertThat((response as ApiResponse.Error).exception, instanceOf(Exception::class.java))
     }
@@ -331,7 +337,7 @@ class ApiResponseExtensionsTest {
     fun `ApiResponse Success converts to Result success`() {
         val response: ApiResponse<String> = ApiResponse.Success("data")
         val result = response.toResult()
-        
+
         assertThat(result.isSuccess, equalTo(true))
         assertThat(result.getOrNull(), equalTo("data"))
     }
@@ -341,7 +347,7 @@ class ApiResponseExtensionsTest {
         val ex = Exception("test")
         val response: ApiResponse<String> = ApiResponse.Error(ex)
         val result = response.toResult()
-        
+
         assertThat(result.isFailure, equalTo(true))
         assertThat(result.exceptionOrNull(), equalTo(ex))
     }
@@ -350,7 +356,7 @@ class ApiResponseExtensionsTest {
     fun `ApiResponse Loading converts to Result failure with IllegalStateException`() {
         val response: ApiResponse<String> = ApiResponse.Loading
         val result = response.toResult()
-        
+
         assertThat(result.isFailure, equalTo(true))
         assertThat(result.exceptionOrNull(), instanceOf(IllegalStateException::class.java))
     }
@@ -359,7 +365,7 @@ class ApiResponseExtensionsTest {
     fun `toResultOrNull returns Result for Success`() {
         val response: ApiResponse<String> = ApiResponse.Success("data")
         val result = response.toResultOrNull()
-        
+
         assertThat(result, instanceOf(Result::class.java))
         assertThat(result?.getOrNull(), equalTo("data"))
     }
@@ -369,7 +375,7 @@ class ApiResponseExtensionsTest {
         val ex = Exception("test")
         val response: ApiResponse<String> = ApiResponse.Error(ex)
         val result = response.toResultOrNull()
-        
+
         assertThat(result, instanceOf(Result::class.java))
         assertThat(result?.exceptionOrNull(), equalTo(ex))
     }
@@ -378,7 +384,7 @@ class ApiResponseExtensionsTest {
     fun `toResultOrNull returns null for Loading`() {
         val response: ApiResponse<String> = ApiResponse.Loading
         val result = response.toResultOrNull()
-        
+
         assertThat(result, nullValue())
     }
 
@@ -389,18 +395,21 @@ class ApiResponseExtensionsTest {
     @Test
     fun `complex transformation chain with Result integration`() {
         val result: Result<Int> = Result.success(21)
-        
-        val finalResponse = result
-            .toApiResponse()
-            .map { it * 2 }
-            .flatMap { value ->
-                if (value == 42) ApiResponse.Success("The answer")
-                else ApiResponse.Error(Exception("Wrong answer"))
-            }
-            .onSuccess { data ->
-                assertThat(data, equalTo("The answer"))
-            }
-        
+
+        val finalResponse =
+            result
+                .toApiResponse()
+                .map { it * 2 }
+                .flatMap { value ->
+                    if (value == 42) {
+                        ApiResponse.Success("The answer")
+                    } else {
+                        ApiResponse.Error(Exception("Wrong answer"))
+                    }
+                }.onSuccess { data ->
+                    assertThat(data, equalTo("The answer"))
+                }
+
         assertThat(finalResponse.succeeded, equalTo(true))
         assertThat(finalResponse.data, equalTo("The answer"))
     }
@@ -408,25 +417,26 @@ class ApiResponseExtensionsTest {
     @Test
     fun `Result failure propagates through chain`() {
         val result: Result<Int> = Result.failure(Exception("Initial error"))
-        
-        val finalResponse = result
-            .toApiResponse()
-            .map { it * 2 }
-            .flatMap { ApiResponse.Success(it.toString()) }
-            .onError { exception ->
-                assertThat(exception.message, equalTo("Initial error"))
-            }
-        
+
+        val finalResponse =
+            result
+                .toApiResponse()
+                .map { it * 2 }
+                .flatMap { ApiResponse.Success(it.toString()) }
+                .onError { exception ->
+                    assertThat(exception.message, equalTo("Initial error"))
+                }
+
         assertThat(finalResponse.failed, equalTo(true))
     }
 
     @Test
     fun `round-trip conversion preserves data`() {
         val originalResponse: ApiResponse<String> = ApiResponse.Success("test")
-        
+
         val result = originalResponse.toResult()
         val finalResponse = result.toApiResponse()
-        
+
         assertThat(finalResponse, instanceOf(ApiResponse.Success::class.java))
         assertThat((finalResponse as ApiResponse.Success).data, equalTo("test"))
     }

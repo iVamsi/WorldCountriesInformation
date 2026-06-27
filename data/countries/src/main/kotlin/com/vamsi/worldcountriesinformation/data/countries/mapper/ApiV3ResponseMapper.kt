@@ -20,9 +20,7 @@ import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
 /**
  * Convert list of v3.1 API responses to domain Country list
  */
-fun List<CountriesV3ResponseItem>.toCountries(): List<Country> {
-    return this.map { it.toCountry() }
-}
+fun List<CountriesV3ResponseItem>.toCountries(): List<Country> = this.map { it.toCountry() }
 
 /**
  * Convert single v3.1 API response to domain Country
@@ -32,7 +30,7 @@ fun CountriesV3ResponseItem.toCountry(): Country {
     val languages = this.languages?.map { (code, name) ->
         Language(
             name = name,
-            nativeName = this.name?.nativeName?.get(code)?.common
+            nativeName = this.name?.nativeName?.get(code)?.common,
         )
     } ?: emptyList()
 
@@ -41,7 +39,7 @@ fun CountriesV3ResponseItem.toCountry(): Country {
         Currency(
             code = code,
             name = currency.name,
-            symbol = currency.symbol
+            symbol = currency.symbol,
         )
     } ?: emptyList()
 
@@ -67,7 +65,7 @@ fun CountriesV3ResponseItem.toCountry(): Country {
         currencies = currencies,
         callingCode = callingCode,
         latitude = latitude,
-        longitude = longitude
+        longitude = longitude,
     )
 }
 

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_navigate_back">Navigate back</string>
+
+    <string name="settings_section_cache_policy">Cache Policy</string>
+    <string name="settings_section_network">Network</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_features">Features</string>
+    <string name="settings_section_cache_stats">Cache Statistics</string>
+    <string name="settings_section_about">About</string>
+
+    <string name="cache_policy_cache_first">Cache First</string>
+    <string name="cache_policy_cache_first_desc">Use cached data when available, fetch from network if needed</string>
+    <string name="cache_policy_network_first">Network First</string>
+    <string name="cache_policy_network_first_desc">Always fetch fresh data from network, fall back to cache on error</string>
+    <string name="cache_policy_cache_only">Cache Only</string>
+    <string name="cache_policy_cache_only_desc">Only use cached data, never make network requests</string>
+    <string name="cache_policy_force_refresh">Force Refresh</string>
+    <string name="cache_policy_force_refresh_desc">Always fetch from network (used for pull-to-refresh)</string>
+
+    <string name="theme_mode_system">System default</string>
+    <string name="theme_mode_system_desc">Follow device light/dark setting</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_light_desc">Always use light theme</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_dark_desc">Always use dark theme</string>
+
+    <string name="settings_dynamic_colors">Dynamic colors</string>
+    <string name="settings_dynamic_colors_desc">Match wallpaper accents on Android 12+. Turn off to always use Explorer theme colors.</string>
+
+    <string name="settings_ai_summaries">On-device AI summaries</string>
+    <string name="settings_ai_summaries_desc">Generate a short country overview on supported devices. Off by default; no data leaves your device.</string>
+    <string name="settings_daily_notification">Daily country notification</string>
+    <string name="settings_daily_notification_desc">Get a daily country-of-the-day notification. Tap to open details.</string>
+    <string name="settings_map_borders">Map borders</string>
+    <string name="settings_map_borders_desc">Show country border overlays on the details map.</string>
+
+    <string name="settings_offline_mode">Offline Mode</string>
+    <string name="settings_offline_mode_desc">When enabled, the app will only use cached data</string>
+
+    <string name="settings_cached_countries">Cached Countries</string>
+    <string name="settings_estimated_size">Estimated Size</string>
+    <string name="settings_oldest_entry">Oldest Entry</string>
+    <string name="settings_clear_cache">Clear All Cache</string>
+    <string name="settings_no_data">No data</string>
+    <string name="settings_age_just_now">Just now</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+
+    <plurals name="settings_age_days">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+
+    <string name="settings_app_name">World Countries Information</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_features_header">Features:</string>
+    <string name="settings_feature_cache_policy">• Cache policy management</string>
+    <string name="settings_feature_offline">• Offline mode support</string>
+    <string name="settings_feature_refresh">• Pull-to-refresh functionality</string>
+    <string name="settings_feature_search">• Search with debouncing</string>
+    <string name="settings_feature_cache_age">• Cache age indicators</string>
+    <string name="settings_feature_errors">• Comprehensive error handling</string>
+
+    <string name="settings_clear_cache_title">Clear All Cache?</string>
+    <string name="settings_clear_cache_message">This will delete all cached country data. You\'ll need an internet connection to reload the data.</string>
+    <string name="settings_clear">Clear</string>
+    <string name="settings_cancel">Cancel</string>
+
+    <string name="settings_oss_licenses">Open source licenses</string>
+</resources>
