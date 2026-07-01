@@ -707,6 +707,20 @@ private fun AboutSection(onOpenLicenses: () -> Unit) {
                 )
             }
 
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            Text(
+                text = stringResource(R.string.settings_data_attribution_header),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                text = stringResource(R.string.settings_data_attribution_body),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
             TextButton(
                 onClick = onOpenLicenses,
                 modifier = Modifier.padding(top = 8.dp),

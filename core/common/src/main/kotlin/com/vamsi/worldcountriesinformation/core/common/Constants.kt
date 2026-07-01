@@ -1,12 +1,12 @@
 package com.vamsi.worldcountriesinformation.core.common
 
 object Constants {
-    // REST Countries API v3.1 (latest version)
-    // https://restcountries.com/v3.1/all
-    const val BASE_URL = "https://restcountries.com/v3.1/"
+    // v3.1-compatible country data (mledoze/countries).
+    // restcountries.com v3.1 now returns a deprecation envelope; this feed keeps the app working.
+    const val BASE_URL = "https://raw.githubusercontent.com/mledoze/countries/master/"
 
-    // API end points (v3.1)
-    const val ALL = "all"
+    // API end points
+    const val ALL = "countries.json"
     const val NAME = "name/{name}"
     const val FULL_NAME = "fullText"
     const val CODE = "alpha/{code}"

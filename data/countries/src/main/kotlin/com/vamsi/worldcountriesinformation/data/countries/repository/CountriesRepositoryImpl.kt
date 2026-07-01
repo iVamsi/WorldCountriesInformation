@@ -466,10 +466,16 @@ class CountriesRepositoryImpl @Inject constructor(
     private suspend fun fetchCountryFromNetwork(code: String): Country? {
         Timber.d("Fetching country from network: $code")
 
-        val networkCountries = countriesApi.fetchCountryByCode(code)
+        val normalizedCode = code.uppercase().trim()
+        val matchedItem = countriesApi.fetchWorldCountriesInformation()
+            .firstOrNull { item ->
+                item.cca2.equals(normalizedCode, ignoreCase = true) ||
+                    item.cca3.equals(normalizedCode, ignoreCase = true) ||
+                    item.ccn3 == normalizedCode
+            }
 
-        if (networkCountries.isNotEmpty()) {
-            val domainCountry = networkCountries.firstOrNull()?.toCountry()
+        if (matchedItem != null) {
+            val domainCountry = matchedItem.toCountry()
 
             if (domainCountry != null) {
                 // Cache the fetched country

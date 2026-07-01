@@ -9,10 +9,10 @@ import retrofit2.http.Query
 /**
  * Retrofit API interface for World Countries Information
  *
- * Using REST Countries API v3.1
- * Base URL: https://restcountries.com/v3.1/
+ * Loads v3.1-compatible country JSON from the mledoze/countries dataset.
+ * Base URL: https://raw.githubusercontent.com/mledoze/countries/master/
  *
- * API Documentation: https://restcountries.com
+ * restcountries.com v3.1 was deprecated; see https://restcountries.com/docs/legacy-api-deprecation
  */
 interface WorldCountriesApi {
 

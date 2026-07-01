@@ -77,4 +77,7 @@
     <string name="settings_cancel">Cancel</string>
 
     <string name="settings_oss_licenses">Open source licenses</string>
+
+    <string name="settings_data_attribution_header">Country data</string>
+    <string name="settings_data_attribution_body">Country facts are loaded from mledoze/countries (github.com/mledoze/countries), licensed under ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Flag emoji in that dataset are not covered by ODbL; see the source repository for details.</string>
 </resources>

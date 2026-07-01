@@ -1,6 +1,6 @@
 # World Countries Information
 
-Android app for browsing country data from the [REST Countries](https://restcountries.com/) API v3.1. Clean Architecture, multi-module Gradle project, Jetpack Compose UI, and offline-friendly caching.
+Android app for browsing country data. Country facts are loaded from the [mledoze/countries](https://github.com/mledoze/countries) dataset (v3.1-compatible JSON). Clean Architecture, multi-module Gradle project, Jetpack Compose UI, and offline-friendly caching.
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg)](https://kotlinlang.org)
 [![AGP](https://img.shields.io/badge/AGP-9.2.1-green.svg)](https://developer.android.com/studio/releases/gradle-plugin)
@@ -51,7 +51,7 @@ cd WorldCountriesInformation
 ./gradlew assembleDebug
 ```
 
-Maps use OpenStreetMap; no API keys are required. Add `sdk.dir` in `local.properties` if Android Studio has not created it.
+Maps use OpenStreetMap; no API keys are required for maps or country data. Add `sdk.dir` in `local.properties` if Android Studio has not created it.
 
 **Tests:** `./gradlew test` (and `connectedAndroidTest` for instrumentation on a device).
 
@@ -65,10 +65,12 @@ Maps use OpenStreetMap; no API keys are required. Add `sdk.dir` in `local.proper
 
 Apache 2.0 — see [LICENSE](LICENSE).
 
+**Country data:** [mledoze/countries](https://github.com/mledoze/countries), [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1.0/). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 OpenStreetMap data is [ODbL](https://www.openstreetmap.org/copyright); map tiles are credited in-app where required.
 
 ## Acknowledgments
 
-REST Countries, OpenStreetMap, osmdroid, Android Jetpack.
+[mledoze/countries](https://github.com/mledoze/countries), OpenStreetMap, osmdroid, Android Jetpack.
 
 **Contact / repo:** [github.com/iVamsi/WorldCountriesInformation](https://github.com/iVamsi/WorldCountriesInformation)

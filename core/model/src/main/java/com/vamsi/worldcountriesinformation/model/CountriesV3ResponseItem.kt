@@ -2,6 +2,7 @@ package com.vamsi.worldcountriesinformation.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 /**
  * REST Countries API v3.1 Response Model
@@ -127,7 +128,7 @@ data class NameV3(
     @SerialName("official")
     val official: String? = null,
 
-    @SerialName("nativeName")
+    @JsonNames("nativeName", "native")
     val nativeName: Map<String, NativeNameV3>? = null,
 )
 
