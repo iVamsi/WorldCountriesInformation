@@ -13,5 +13,5 @@ data class Country(
     val currencies: List<Currency>,
     val callingCode: String,
     val latitude: Double,
-    val longitude: Double
-): Serializable
+    val longitude: Double,
+) : Serializable

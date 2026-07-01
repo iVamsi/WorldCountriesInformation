@@ -35,7 +35,9 @@ sealed interface AppError {
         override val messageRes: Int = R.string.error_no_cached_data
     }
 
-    data class NotFound(val identifier: String) : AppError {
+    data class NotFound(
+        val identifier: String,
+    ) : AppError {
         override val messageRes: Int = R.string.error_not_found
         override val formatArgs: Array<Any> get() = arrayOf(identifier)
     }
@@ -45,7 +47,9 @@ sealed interface AppError {
      * pick a more specific message (e.g. "Failed to load countries" vs
      * "Failed to load country details") without inflating the AppError tree.
      */
-    data class Generic(@get:StringRes override val messageRes: Int) : AppError
+    data class Generic(
+        @get:StringRes override val messageRes: Int,
+    ) : AppError
 
     data object Unknown : AppError {
         override val messageRes: Int = R.string.error_unknown
@@ -74,12 +78,10 @@ fun Throwable.toAppError(fallback: AppError = AppError.Unknown): AppError {
 }
 
 /** Localize the given [AppError] using the application's resources. */
-fun Context.message(error: AppError): String =
-    getString(error.messageRes, *error.formatArgs)
+fun Context.message(error: AppError): String = getString(error.messageRes, *error.formatArgs)
 
 /**
  * Localize the given [AppError] from a [Resources] handle. Prefer this in Compose
  * via `LocalResources.current` so configuration changes invalidate properly.
  */
-fun Resources.message(error: AppError): String =
-    getString(error.messageRes, *error.formatArgs)
+fun Resources.message(error: AppError): String = getString(error.messageRes, *error.formatArgs)

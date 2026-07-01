@@ -15,10 +15,15 @@ import javax.inject.Inject
  * Application class for World Countries Information app.
  */
 @HiltAndroidApp
-class WorldCountriesApplication : Application(), Configuration.Provider, AppFunctionConfiguration.Provider {
+class WorldCountriesApplication :
+    Application(),
+    Configuration.Provider,
+    AppFunctionConfiguration.Provider {
 
     @Inject lateinit var cachePreloader: CachePreloader
+
     @Inject lateinit var workerFactory: HiltWorkerFactory
+
     @Inject lateinit var countryAppFunctions: CountryAppFunctions
 
     override val workManagerConfiguration: Configuration
@@ -52,7 +57,7 @@ class WorldCountriesApplication : Application(), Configuration.Provider, AppFunc
                 .detectDiskWrites()
                 .detectNetwork()
                 .penaltyLog()
-                .build()
+                .build(),
         )
     }
 }

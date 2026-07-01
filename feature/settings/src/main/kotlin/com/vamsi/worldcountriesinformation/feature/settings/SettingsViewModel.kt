@@ -4,10 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
-import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
-import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
-import com.vamsi.worldcountriesinformation.core.datastore.ThemeMode
-import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
+import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.countries.ClearCacheUseCase
+import com.vamsi.worldcountriesinformation.domain.countries.GetCacheStatsUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -17,8 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferencesDataSource: PreferencesDataSource,
-    private val countriesRepository: CountriesRepository,
+    private val userPreferencesPort: UserPreferencesPort,
+    private val getCacheStatsUseCase: GetCacheStatsUseCase,
+    private val clearCacheUseCase: ClearCacheUseCase,
     private val clock: Clock,
 ) : MVIViewModel<SettingsContract.Intent, SettingsContract.State, SettingsContract.Effect>(
     initialState = SettingsContract.State(),
@@ -47,7 +50,7 @@ class SettingsViewModel @Inject constructor(
 
     private fun observePreferences() {
         viewModelScope.launch {
-            preferencesDataSource.userPreferences
+            userPreferencesPort.userPreferences
                 .catch { /* defaults handled in data source */ }
                 .collect { prefs ->
                     setState { copy(userPreferences = prefs) }
@@ -58,7 +61,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateCachePolicy(policy: CachePolicy) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateCachePolicy(policy)
+                userPreferencesPort.updateCachePolicy(policy)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -68,7 +71,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateOfflineMode(enabled: Boolean) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateOfflineMode(enabled)
+                userPreferencesPort.updateOfflineMode(enabled)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -78,7 +81,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateThemeMode(mode)
+                userPreferencesPort.updateThemeMode(mode)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -88,7 +91,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateUseDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateUseDynamicColor(enabled)
+                userPreferencesPort.updateUseDynamicColor(enabled)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -98,7 +101,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateAiSummaryEnabled(enabled: Boolean) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateAiSummaryEnabled(enabled)
+                userPreferencesPort.updateAiSummaryEnabled(enabled)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -108,7 +111,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateDailyNotificationEnabled(enabled: Boolean) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateDailyNotificationEnabled(enabled)
+                userPreferencesPort.updateDailyNotificationEnabled(enabled)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -118,7 +121,7 @@ class SettingsViewModel @Inject constructor(
     private fun updateMapBordersEnabled(enabled: Boolean) {
         viewModelScope.launch {
             try {
-                preferencesDataSource.updateMapBordersEnabled(enabled)
+                userPreferencesPort.updateMapBordersEnabled(enabled)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }
@@ -129,9 +132,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isLoading = true, error = null) }
             try {
-                countriesRepository.clearCountryCache()
+                when (val result = clearCacheUseCase(Unit)) {
+                    is ApiResponse.Error -> throw result.exception
+                    is ApiResponse.Loading -> Unit
+                    is ApiResponse.Success -> Unit
+                }
                 try {
-                    preferencesDataSource.updateLastCacheClear(clock.millis())
+                    userPreferencesPort.updateLastCacheClear(clock.millis())
                 } catch (e: IOException) {
                     setState {
                         copy(
@@ -152,22 +159,24 @@ class SettingsViewModel @Inject constructor(
 
     private fun loadCacheStatistics() {
         viewModelScope.launch {
-            try {
-                val snapshot = countriesRepository.getCountryCacheSnapshot()
-                val countryCount = snapshot.entryCount
-                val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
-                val cacheAge = if (oldestTimestamp > 0) clock.millis() - oldestTimestamp else 0L
-                setState {
-                    copy(
-                        cacheStats = CacheStats(
-                            entryCount = countryCount,
-                            oldestEntryAgeMs = cacheAge,
-                            estimatedSizeKB = countryCount * 2,
-                        ),
-                    )
+            when (val result = getCacheStatsUseCase(Unit)) {
+                is ApiResponse.Success -> {
+                    val snapshot = result.data
+                    val countryCount = snapshot.entryCount
+                    val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
+                    val cacheAge = if (oldestTimestamp > 0) clock.millis() - oldestTimestamp else 0L
+                    setState {
+                        copy(
+                            cacheStats = CacheStats(
+                                entryCount = countryCount,
+                                oldestEntryAgeMs = cacheAge,
+                                estimatedSizeKB = countryCount * 2,
+                            ),
+                        )
+                    }
                 }
-            } catch (e: android.database.sqlite.SQLiteException) {
-                setState { copy(error = e.toAppError()) }
+                is ApiResponse.Error -> setState { copy(error = result.exception.toAppError()) }
+                is ApiResponse.Loading -> Unit
             }
         }
     }

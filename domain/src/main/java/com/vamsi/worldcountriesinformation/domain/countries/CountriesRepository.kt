@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.Flow
  * @since 1.0.0
  */
 interface CountriesRepository {
-    
     /**
      * Retrieves all countries from the repository with configurable cache strategy.
      *
@@ -106,7 +105,7 @@ interface CountriesRepository {
      * @since 2.4.0 (added cache policy support)
      */
     fun getCountries(policy: CachePolicy = CachePolicy.CACHE_FIRST): Flow<ApiResponse<List<CountrySummary>>>
-    
+
     /**
      * Retrieves a single country by its three-letter ISO code.
      *
@@ -149,9 +148,9 @@ interface CountriesRepository {
      */
     fun getCountryByCode(
         code: String,
-        policy: CachePolicy = CachePolicy.CACHE_FIRST
+        policy: CachePolicy = CachePolicy.CACHE_FIRST,
     ): Flow<ApiResponse<Country>>
-    
+
     /**
      * Observes all countries as a reactive Flow.
      *
@@ -192,7 +191,7 @@ interface CountriesRepository {
      * @since 2.0.0
      */
     fun getCountriesFlow(): Flow<List<CountrySummary>>
-    
+
     /**
      * Searches countries by name with reactive updates.
      *
@@ -251,7 +250,7 @@ interface CountriesRepository {
      * @see SearchCountriesUseCase for a more feature-rich search implementation
      */
     fun searchCountries(query: String): Flow<List<CountrySummary>>
-    
+
     /**
      * Retrieves countries filtered by region with reactive updates.
      *
@@ -318,7 +317,7 @@ interface CountriesRepository {
      * @see GetCountriesByRegionUseCase for a more feature-rich implementation
      */
     fun getCountriesByRegion(region: String): Flow<List<CountrySummary>>
-    
+
     /**
      * Forces a refresh of country data from the network.
      *

@@ -24,7 +24,6 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @RunWith(JUnit4::class)
 class GetCountriesUseCaseTest {
-
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var countriesRepository: CountriesRepository

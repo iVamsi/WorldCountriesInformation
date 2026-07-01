@@ -33,14 +33,14 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
  */
 @Composable
 fun rememberNavigationState(
-    startRoute: NavKey
+    startRoute: NavKey,
 ): NavigationState {
     val backStack = rememberNavBackStack(startRoute)
 
     return remember(startRoute) {
         NavigationState(
             startRoute = startRoute,
-            backStack = backStack
+            backStack = backStack,
         )
     }
 }
@@ -67,7 +67,7 @@ fun rememberNavigationState(
  */
 class NavigationState(
     val startRoute: NavKey,
-    val backStack: NavBackStack<NavKey>
+    val backStack: NavBackStack<NavKey>,
 )
 
 /**
@@ -98,7 +98,7 @@ class NavigationState(
  */
 @Composable
 fun NavigationState.toEntries(
-    entryProvider: (NavKey) -> NavEntry<NavKey>
+    entryProvider: (NavKey) -> NavEntry<NavKey>,
 ): SnapshotStateList<NavEntry<NavKey>> {
     val decorators = listOf(
         rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
@@ -107,7 +107,7 @@ fun NavigationState.toEntries(
     val decoratedEntries = rememberDecoratedNavEntries(
         backStack = backStack,
         entryDecorators = decorators,
-        entryProvider = entryProvider
+        entryProvider = entryProvider,
     )
 
     return decoratedEntries.toMutableStateList()

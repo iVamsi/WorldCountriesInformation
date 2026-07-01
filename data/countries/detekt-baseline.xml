@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$override fun getCountries(policy: CachePolicy): Flow&lt;ApiResponse&lt;List&lt;CountrySummary&gt;&gt;&gt;</ID>
+    <ID>CyclomaticComplexMethod:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$override fun getCountryByCode( code: String, policy: CachePolicy, ): Flow&lt;ApiResponse&lt;Country&gt;&gt;</ID>
+    <ID>LongMethod:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$override fun getCountries(policy: CachePolicy): Flow&lt;ApiResponse&lt;List&lt;CountrySummary&gt;&gt;&gt;</ID>
+    <ID>LongMethod:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$override fun getCountryByCode( code: String, policy: CachePolicy, ): Flow&lt;ApiResponse&lt;Country&gt;&gt;</ID>
+    <ID>MaxLineLength:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$override</ID>
+    <ID>ReturnCount:ApiV3ResponseMapper.kt$private fun buildCallingCode(root: String?, suffixes: List&lt;String&gt;?): String</ID>
+    <ID>ReturnCount:CountriesRepositoryImpl.kt$CountriesRepositoryImpl$private suspend fun FlowCollector&lt;ApiResponse&lt;List&lt;CountrySummary&gt;&gt;&gt;.handleCountriesListNetworkFailure( policy: CachePolicy, hasCache: Boolean, cachedCountries: List&lt;CountryEntity&gt;, exception: Exception, ): Boolean</ID>
+  </CurrentIssues>
+</SmellBaseline>

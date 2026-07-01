@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>PackageNaming:MainCoroutineRule.kt$package com.vamsi.worldcountriesinformation.tests_shared</ID>
+    <ID>PackageNaming:TestData.kt$package com.vamsi.worldcountriesinformation.tests_shared</ID>
+  </CurrentIssues>
+</SmellBaseline>

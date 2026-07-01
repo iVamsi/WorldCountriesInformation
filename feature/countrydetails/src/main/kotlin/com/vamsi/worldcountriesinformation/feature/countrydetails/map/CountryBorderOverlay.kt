@@ -28,13 +28,12 @@ object CountryBorderOverlay {
         drawPolygon(mapView, points)
     }
 
-    private fun approximatePoints(latitude: Double, longitude: Double): List<GeoPoint> =
-        listOf(
-            GeoPoint(latitude + DELTA, longitude - DELTA),
-            GeoPoint(latitude + DELTA, longitude + DELTA),
-            GeoPoint(latitude - DELTA, longitude + DELTA),
-            GeoPoint(latitude - DELTA, longitude - DELTA),
-        )
+    private fun approximatePoints(latitude: Double, longitude: Double): List<GeoPoint> = listOf(
+        GeoPoint(latitude + DELTA, longitude - DELTA),
+        GeoPoint(latitude + DELTA, longitude + DELTA),
+        GeoPoint(latitude - DELTA, longitude + DELTA),
+        GeoPoint(latitude - DELTA, longitude - DELTA),
+    )
 
     private fun drawPolygon(mapView: MapView, points: List<GeoPoint>) {
         mapView.overlays.removeAll { it is Polygon && it.title == BORDER_TAG }

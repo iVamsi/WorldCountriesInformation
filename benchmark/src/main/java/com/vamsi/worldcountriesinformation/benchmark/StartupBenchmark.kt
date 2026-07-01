@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 class StartupBenchmark {
-
     @get:Rule
     val benchmarkRule = MacrobenchmarkRule()
 
@@ -19,7 +18,8 @@ class StartupBenchmark {
     fun coldStartup() {
         benchmarkRule.measureRepeated(
             packageName = "com.vamsi.worldcountriesinformation",
-            metrics = listOf(
+            metrics =
+            listOf(
                 androidx.benchmark.macro.StartupTimingMetric(),
             ),
             iterations = 5,

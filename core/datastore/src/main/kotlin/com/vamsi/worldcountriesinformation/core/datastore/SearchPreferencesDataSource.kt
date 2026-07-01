@@ -24,7 +24,7 @@ import javax.inject.Singleton
  * DataStore instance for search preferences.
  */
 private val Context.searchDataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "search_preferences"
+    name = "search_preferences",
 )
 
 /**
@@ -313,11 +313,11 @@ class SearchPreferencesDataSource @Inject constructor(
             filters = SearchFilters(
                 selectedRegions = selectedRegions,
                 selectedSubregions = selectedSubregions,
-                sortOrder = sortOrder
+                sortOrder = sortOrder,
             ),
             searchHistory = searchHistory,
             enableSuggestions = enableSuggestions,
-            recentlyViewed = recentlyViewed
+            recentlyViewed = recentlyViewed,
         )
     }
 

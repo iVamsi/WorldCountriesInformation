@@ -21,8 +21,9 @@ import javax.inject.Inject
  *    - Check filter applicability
  *
  */
-class SearchFiltersUseCase @Inject constructor() {
-
+class SearchFiltersUseCase
+@Inject
+constructor() {
     /**
      * Checks if any filters are active.
      *
@@ -34,11 +35,9 @@ class SearchFiltersUseCase @Inject constructor() {
      * @param filters The filters to check
      * @return True if any filters are applied
      */
-    fun hasActiveFilters(filters: SearchFilters): Boolean {
-        return filters.selectedRegions.isNotEmpty() ||
-               filters.selectedSubregions.isNotEmpty() ||
-               filters.sortOrder != SortOrder.NAME_ASC
-    }
+    fun hasActiveFilters(filters: SearchFilters): Boolean = filters.selectedRegions.isNotEmpty() ||
+        filters.selectedSubregions.isNotEmpty() ||
+        filters.sortOrder != SortOrder.NAME_ASC
 
     /**
      * Gets the count of active filter categories.
@@ -69,12 +68,16 @@ class SearchFiltersUseCase @Inject constructor() {
      * @param region Region to toggle
      * @return New filters with region toggled
      */
-    fun toggleRegion(filters: SearchFilters, region: String): SearchFilters {
-        val newRegions = if (filters.selectedRegions.contains(region)) {
-            filters.selectedRegions - region
-        } else {
-            filters.selectedRegions + region
-        }
+    fun toggleRegion(
+        filters: SearchFilters,
+        region: String,
+    ): SearchFilters {
+        val newRegions =
+            if (filters.selectedRegions.contains(region)) {
+                filters.selectedRegions - region
+            } else {
+                filters.selectedRegions + region
+            }
         return filters.copy(selectedRegions = newRegions)
     }
 
@@ -83,7 +86,5 @@ class SearchFiltersUseCase @Inject constructor() {
      *
      * @return Default SearchFilters
      */
-    fun clearFilters(): SearchFilters {
-        return SearchFilters()
-    }
+    fun clearFilters(): SearchFilters = SearchFilters()
 }

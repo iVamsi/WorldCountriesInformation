@@ -11,7 +11,9 @@ import kotlin.random.Random
 /**
  * Builds a random multiple-choice question from cached countries.
  */
-class GenerateQuizQuestionUseCase @Inject constructor(
+class GenerateQuizQuestionUseCase
+@Inject
+constructor(
     private val getCountriesUseCase: GetCountriesUseCase,
 ) {
     private val random: Random = Random.Default
@@ -21,11 +23,12 @@ class GenerateQuizQuestionUseCase @Inject constructor(
         if (countries.size < QuizQuestion.OPTION_COUNT) return null
 
         val correctCountry = countries.random(random)
-        val wrongPool = countries
-            .filter { it.threeLetterCode != correctCountry.threeLetterCode }
-            .map { optionText(it, mode) }
-            .filter { it.isNotBlank() && it != optionText(correctCountry, mode) }
-            .distinct()
+        val wrongPool =
+            countries
+                .filter { it.threeLetterCode != correctCountry.threeLetterCode }
+                .map { optionText(it, mode) }
+                .filter { it.isNotBlank() && it != optionText(correctCountry, mode) }
+                .distinct()
 
         if (wrongPool.size < QuizQuestion.OPTION_COUNT - 1) return null
 
@@ -43,15 +46,19 @@ class GenerateQuizQuestionUseCase @Inject constructor(
     }
 
     private suspend fun loadCountries(): List<CountrySummary>? {
-        val response = getCountriesUseCase(CachePolicy.CACHE_ONLY)
-            .firstOrNull { it !is ApiResponse.Loading }
+        val response =
+            getCountriesUseCase(CachePolicy.CACHE_ONLY)
+                .firstOrNull { it !is ApiResponse.Loading }
         return when (response) {
             is ApiResponse.Success -> response.data
             else -> null
         }
     }
 
-    private fun optionText(country: CountrySummary, mode: GuessMode): String = when (mode) {
+    private fun optionText(
+        country: CountrySummary,
+        mode: GuessMode,
+    ): String = when (mode) {
         GuessMode.FLAG -> country.name
         GuessMode.CAPITAL -> country.capital
         GuessMode.REGION -> country.region

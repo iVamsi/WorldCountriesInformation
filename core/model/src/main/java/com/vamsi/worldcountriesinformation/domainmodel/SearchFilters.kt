@@ -12,7 +12,7 @@ package com.vamsi.worldcountriesinformation.domainmodel
 data class SearchFilters(
     val selectedRegions: Set<String> = emptySet(),
     val selectedSubregions: Set<String> = emptySet(),
-    val sortOrder: SortOrder = SortOrder.NAME_ASC
+    val sortOrder: SortOrder = SortOrder.NAME_ASC,
 )
 
 /**
@@ -47,7 +47,7 @@ enum class SortOrder {
     /**
      * Sort by area (smallest first)
      */
-    AREA_ASC
+    AREA_ASC,
 }
 
 /**
@@ -60,6 +60,6 @@ object Regions {
     const val EUROPE = "Europe"
     const val OCEANIA = "Oceania"
     const val ANTARCTIC = "Antarctic"
-    
+
     val ALL = setOf(AFRICA, AMERICAS, ASIA, EUROPE, OCEANIA, ANTARCTIC)
 }

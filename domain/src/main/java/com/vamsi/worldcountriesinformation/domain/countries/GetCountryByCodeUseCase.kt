@@ -109,11 +109,12 @@ data class CountryByCodeParams(
  * }
  * ```
  */
-open class GetCountryByCodeUseCase @Inject constructor(
+open class GetCountryByCodeUseCase
+@Inject
+constructor(
     private val repository: CountriesRepository,
     @IoDispatcher ioDispatcher: CoroutineDispatcher,
 ) : FlowUseCase<CountryByCodeParams, Country>(ioDispatcher) {
-
     /**
      * Executes the use case to retrieve a country by its three-letter code.
      *

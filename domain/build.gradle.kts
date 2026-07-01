@@ -14,6 +14,7 @@
  */
 plugins {
     id("worldcountries.jvm.library")
+    id("worldcountries.kover")
 }
 
 dependencies {
@@ -33,4 +34,5 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
 }

@@ -41,7 +41,7 @@ class FakeSearchPreferencesPort(
                     selectedRegions = emptySet(),
                     selectedSubregions = emptySet(),
                     sortOrder = SortOrder.NAME_ASC,
-                )
+                ),
             )
         }
     }
@@ -50,9 +50,11 @@ class FakeSearchPreferencesPort(
         if (query.isBlank()) return
         _prefs.update { current ->
             val entry = SearchHistoryEntry(query.trim())
-            current.copy(searchHistory = listOf(entry) + current.searchHistory.filterNot {
-                it.query.equals(query.trim(), ignoreCase = true)
-            })
+            current.copy(
+                searchHistory = listOf(entry) + current.searchHistory.filterNot {
+                    it.query.equals(query.trim(), ignoreCase = true)
+                },
+            )
         }
     }
 
@@ -62,7 +64,7 @@ class FakeSearchPreferencesPort(
             current.copy(
                 searchHistory = current.searchHistory.filterNot {
                     it.query.equals(query.trim(), ignoreCase = true)
-                }
+                },
             )
         }
     }
@@ -79,7 +81,7 @@ class FakeSearchPreferencesPort(
             current.copy(
                 recentlyViewed = listOf(entry) + current.recentlyViewed.filterNot {
                     it.countryCode.equals(code, ignoreCase = true)
-                }
+                },
             )
         }
     }

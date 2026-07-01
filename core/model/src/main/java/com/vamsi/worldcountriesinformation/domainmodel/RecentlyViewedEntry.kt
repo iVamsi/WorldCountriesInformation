@@ -10,5 +10,5 @@ package com.vamsi.worldcountriesinformation.domainmodel
  */
 data class RecentlyViewedEntry(
     val countryCode: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
 )

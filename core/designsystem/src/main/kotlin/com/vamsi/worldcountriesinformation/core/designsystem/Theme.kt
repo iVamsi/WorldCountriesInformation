@@ -31,7 +31,7 @@ private val AppShapes = Shapes(
     largeIncreased = RoundedCornerShape(20.dp),
     extraLarge = RoundedCornerShape(28.dp),
     extraLargeIncreased = RoundedCornerShape(32.dp),
-    extraExtraLarge = RoundedCornerShape(48.dp)
+    extraExtraLarge = RoundedCornerShape(48.dp),
 )
 
 private val LightColors = lightColorScheme(
@@ -97,10 +97,10 @@ private val DarkColors = darkColorScheme(
 @Composable
 fun WorldCountriesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    /// When true, uses system accent on Android 12+. When false, uses our
-    /// accessibility-tested palette (WCAG AA contrast, Explorer theme).
+    // / When true, uses system accent on Android 12+. When false, uses our
+    // / accessibility-tested palette (WCAG AA contrast, Explorer theme).
     dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
@@ -132,6 +132,6 @@ fun WorldCountriesTheme(
         motionScheme = MotionScheme.expressive(),
         typography = Typography,
         shapes = AppShapes,
-        content = content
+        content = content,
     )
 }

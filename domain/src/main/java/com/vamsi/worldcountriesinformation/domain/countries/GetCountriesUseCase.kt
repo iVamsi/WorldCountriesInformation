@@ -60,7 +60,7 @@ import javax.inject.Inject
  */
 open class GetCountriesUseCase @Inject constructor(
     private val repository: CountriesRepository,
-    @IoDispatcher ioDispatcher: CoroutineDispatcher
+    @IoDispatcher ioDispatcher: CoroutineDispatcher,
 ) : FlowUseCase<CachePolicy, List<CountrySummary>>(ioDispatcher) {
 
     /**
@@ -69,7 +69,5 @@ open class GetCountriesUseCase @Inject constructor(
      * @param parameters Cache policy to use (default: CACHE_FIRST)
      * @return Flow of [ApiResponse] containing list of countries
      */
-    override fun execute(parameters: CachePolicy): Flow<ApiResponse<List<CountrySummary>>> {
-        return repository.getCountries(policy = parameters)
-    }
+    override fun execute(parameters: CachePolicy): Flow<ApiResponse<List<CountrySummary>>> = repository.getCountries(policy = parameters)
 }

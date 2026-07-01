@@ -23,8 +23,9 @@ import javax.inject.Inject
  *    - Case-insensitive deduplication
  *
  */
-class ManageSearchHistoryUseCase @Inject constructor() {
-
+class ManageSearchHistoryUseCase
+@Inject
+constructor() {
     companion object {
         /**
          * Maximum number of search history entries to keep.
@@ -46,14 +47,15 @@ class ManageSearchHistoryUseCase @Inject constructor() {
      */
     fun addToHistory(
         query: String,
-        currentHistory: List<SearchHistoryEntry>
+        currentHistory: List<SearchHistoryEntry>,
     ): List<SearchHistoryEntry> {
         if (query.isBlank()) return currentHistory
 
         // Remove existing entry with same query (case-insensitive)
-        val filteredHistory = currentHistory.filterNot { 
-            it.query.equals(query.trim(), ignoreCase = true) 
-        }
+        val filteredHistory =
+            currentHistory.filterNot {
+                it.query.equals(query.trim(), ignoreCase = true)
+            }
 
         // Add new entry at the beginning
         val newHistory = listOf(SearchHistoryEntry(query.trim())) + filteredHistory
@@ -67,7 +69,5 @@ class ManageSearchHistoryUseCase @Inject constructor() {
      *
      * @return Empty list
      */
-    fun clearHistory(): List<SearchHistoryEntry> {
-        return emptyList()
-    }
+    fun clearHistory(): List<SearchHistoryEntry> = emptyList()
 }

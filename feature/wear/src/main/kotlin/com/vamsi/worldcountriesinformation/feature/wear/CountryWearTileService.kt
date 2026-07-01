@@ -3,7 +3,8 @@ package com.vamsi.worldcountriesinformation.feature.wear
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceComposable
@@ -26,7 +27,6 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.runBlocking
 import timber.log.Timber
 
 @EntryPoint
@@ -41,10 +41,8 @@ class CountryWearTileService : GlanceTileService() {
     @Composable
     override fun Content() {
         val context = LocalContext.current
-        val widgetData = remember {
-            runBlocking {
-                loadWidgetData(context)
-            }
+        val widgetData by produceState<WidgetData?>(initialValue = null, context) {
+            value = loadWidgetData(context)
         }
 
         GlanceTheme {
@@ -54,8 +52,8 @@ class CountryWearTileService : GlanceTileService() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 when {
-                    widgetData.featuredCountry != null -> {
-                        val country = widgetData.featuredCountry!!
+                    widgetData?.featuredCountry != null -> {
+                        val country = widgetData!!.featuredCountry!!
                         Text(
                             text = "Country of Day",
                             style = TextStyle(
@@ -92,12 +90,23 @@ class CountryWearTileService : GlanceTileService() {
                         )
                     }
 
-                    widgetData.error != null -> {
+                    widgetData?.error != null -> {
                         Text(
                             text = "Unable to load",
                             style = TextStyle(
                                 fontSize = 12.sp,
                                 color = GlanceTheme.colors.error,
+                            ),
+                        )
+                    }
+
+                    widgetData == null -> {
+                        Text(
+                            text = "Loading…",
+                            style = TextStyle(
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center,
+                                color = GlanceTheme.colors.onSurfaceVariant,
                             ),
                         )
                     }
@@ -117,44 +126,38 @@ class CountryWearTileService : GlanceTileService() {
         }
     }
 
-    private suspend fun loadWidgetData(context: android.content.Context): WidgetData {
-        return try {
-            val entryPoint = EntryPointAccessors.fromApplication(
-                context.applicationContext,
-                WearTileEntryPoint::class.java,
-            )
-            entryPoint.widgetDataSource().getWidgetData()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to load wear tile data")
-            WidgetData(
-                featuredCountry = null,
-                totalCountries = 0,
-                isLoading = false,
-                error = e.message,
-            )
-        }
+    private suspend fun loadWidgetData(context: android.content.Context): WidgetData = try {
+        val entryPoint = EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            WearTileEntryPoint::class.java,
+        )
+        entryPoint.widgetDataSource().getWidgetData()
+    } catch (e: Exception) {
+        Timber.e(e, "Failed to load wear tile data")
+        WidgetData(
+            featuredCountry = null,
+            totalCountries = 0,
+            isLoading = false,
+            error = e.message,
+        )
     }
 
-    private fun flagEmoji(countryCode: String): String {
-        return try {
-            val code = countryCode.uppercase()
-            val firstChar = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
-            val secondChar = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
-            String(Character.toChars(firstChar)) + String(Character.toChars(secondChar))
-        } catch (_: Exception) {
-            "🏳️"
-        }
+    private fun flagEmoji(countryCode: String): String = try {
+        val code = countryCode.uppercase()
+        val firstChar = Character.codePointAt(code, 0) - 0x41 + 0x1F1E6
+        val secondChar = Character.codePointAt(code, 1) - 0x41 + 0x1F1E6
+        String(Character.toChars(firstChar)) + String(Character.toChars(secondChar))
+    } catch (_: Exception) {
+        "🏳️"
     }
 
     companion object {
-        fun countryDeepLinkIntent(countryCode: String): Intent {
-            return Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("https://worldcountries.vamsi.dev/country/${countryCode.lowercase()}"),
-            ).apply {
-                putExtra("extra_country_code", countryCode)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
+        fun countryDeepLinkIntent(countryCode: String): Intent = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://worldcountries.vamsi.dev/country/${countryCode.lowercase()}"),
+        ).apply {
+            putExtra("extra_country_code", countryCode)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
     }
 }

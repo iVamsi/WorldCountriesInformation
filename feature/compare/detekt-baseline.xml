@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>LongMethod:CompareScreen.kt$@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class) @Composable private fun CompareScreen( state: CompareContract.State, onRetry: () -&gt; Unit, onNavigateBack: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
+    <ID>ReturnCount:CompareInsightGenerator.kt$CompareInsightGenerator$fun generate(countries: List&lt;Country&gt;): String?</ID>
+    <ID>TooGenericExceptionCaught:CompareViewModel.kt$CompareViewModel$e: Exception</ID>
+    <ID>UnusedPrivateMember:CompareScreen.kt$@Preview(name = "Compare screen", showBackground = true) @Composable private fun CompareScreenPreview()</ID>
+  </CurrentIssues>
+</SmellBaseline>

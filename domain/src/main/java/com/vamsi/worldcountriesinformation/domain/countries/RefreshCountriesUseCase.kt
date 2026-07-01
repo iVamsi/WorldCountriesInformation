@@ -262,11 +262,12 @@ import javax.inject.Inject
  *
  * @since 2.0.0
  */
-class RefreshCountriesUseCase @Inject constructor(
+class RefreshCountriesUseCase
+@Inject
+constructor(
     private val countriesRepository: CountriesRepository,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : UseCase<Unit, Unit>(ioDispatcher) {
-
     /**
      * Executes the refresh operation.
      *

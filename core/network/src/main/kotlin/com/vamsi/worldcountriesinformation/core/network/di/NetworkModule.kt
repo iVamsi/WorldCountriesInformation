@@ -155,111 +155,105 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(httpCache: Cache): OkHttpClient {
-        return OkHttpClient.Builder().apply {
-            cache(httpCache)
+    fun provideOkHttpClient(httpCache: Cache): OkHttpClient = OkHttpClient.Builder().apply {
+        cache(httpCache)
 
-            // Force a sane Cache-Control on responses from REST Countries.
-            // The upstream API does not always set caching headers, so we rewrite
-            // the response to allow OkHttp to serve from disk for an hour and
-            // fall back to stale data for up to a week when offline.
-            addNetworkInterceptor { chain ->
-                val response = chain.proceed(chain.request())
-                if (response.isSuccessful) {
-                    response.newBuilder()
-                        .removeHeader("Pragma")
-                        .header(
-                            "Cache-Control",
-                            CacheControl.Builder()
-                                .maxAge(HTTP_CACHE_MAX_AGE_SECONDS, TimeUnit.SECONDS)
-                                .build()
-                                .toString()
-                        )
-                        .build()
-                } else {
-                    response
-                }
-            }
-
-            // When offline, allow OkHttp to serve a stale cached response
-            // (up to one week old) instead of failing immediately.
-            addInterceptor { chain ->
-                val request = chain.request().newBuilder()
-                    .cacheControl(
+        // Force a sane Cache-Control on responses from REST Countries.
+        // The upstream API does not always set caching headers, so we rewrite
+        // the response to allow OkHttp to serve from disk for an hour and
+        // fall back to stale data for up to a week when offline.
+        addNetworkInterceptor { chain ->
+            val response = chain.proceed(chain.request())
+            if (response.isSuccessful) {
+                response.newBuilder()
+                    .removeHeader("Pragma")
+                    .header(
+                        "Cache-Control",
                         CacheControl.Builder()
-                            .maxStale(HTTP_CACHE_MAX_STALE_SECONDS, TimeUnit.SECONDS)
+                            .maxAge(HTTP_CACHE_MAX_AGE_SECONDS, TimeUnit.SECONDS)
                             .build()
+                            .toString(),
                     )
                     .build()
-                chain.proceed(request)
+            } else {
+                response
             }
+        }
 
-            // Security: HTTPS-only enforcement
-            // This interceptor blocks all non-HTTPS requests to prevent
-            // man-in-the-middle attacks and data interception
-            addInterceptor(HttpsOnlyInterceptor())
-
-            // Debug-only logging
-            // Logging is ONLY enabled in debug builds to prevent:
-            // - Sensitive data leaks in production logs
-            // - Performance overhead from logging
-            // - Privacy violations (user data, auth tokens, etc.)
-            if (BuildConfig.DEBUG) {
-                val loggingInterceptor = HttpLoggingInterceptor().apply {
-                    // BODY level logs:
-                    // - Request method, URL, headers, body
-                    // - Response status, headers, body
-                    // Only use in debug! Can leak sensitive data!
-                    level = HttpLoggingInterceptor.Level.BODY
-                }
-                addInterceptor(loggingInterceptor)
-            }
-
-            // TLS Configuration: Modern, secure connections only
-            // Supports TLS 1.2+ with modern cipher suites
-            connectionSpecs(
-                listOf(
-                    ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
-                        .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_3)
+        // When offline, allow OkHttp to serve a stale cached response
+        // (up to one week old) instead of failing immediately.
+        addInterceptor { chain ->
+            val request = chain.request().newBuilder()
+                .cacheControl(
+                    CacheControl.Builder()
+                        .maxStale(HTTP_CACHE_MAX_STALE_SECONDS, TimeUnit.SECONDS)
                         .build(),
-                    // Fallback for older servers (still secure)
-                    ConnectionSpec.COMPATIBLE_TLS
                 )
-            )
+                .build()
+            chain.proceed(request)
+        }
 
-            // Timeouts: Prevent hanging connections
-            // These values balance reliability and user experience:
-            // - Too short: Fails on slow networks
-            // - Too long: Poor UX, resource waste
-            connectTimeout(30, TimeUnit.SECONDS)  // TCP connection establishment
-            readTimeout(30, TimeUnit.SECONDS)     // Reading response data
-            writeTimeout(30, TimeUnit.SECONDS)    // Writing request data
+        // Security: HTTPS-only enforcement
+        // This interceptor blocks all non-HTTPS requests to prevent
+        // man-in-the-middle attacks and data interception
+        addInterceptor(HttpsOnlyInterceptor())
 
-            // Connection pooling (default settings are good)
-            // Reuses connections for better performance
-            // Max 5 idle connections, 5 minute keep-alive
-        }.build()
-    }
+        // Debug-only logging
+        // Logging is ONLY enabled in debug builds to prevent:
+        // - Sensitive data leaks in production logs
+        // - Performance overhead from logging
+        // - Privacy violations (user data, auth tokens, etc.)
+        if (BuildConfig.DEBUG) {
+            val loggingInterceptor = HttpLoggingInterceptor().apply {
+                // BODY level logs:
+                // - Request method, URL, headers, body
+                // - Response status, headers, body
+                // Only use in debug! Can leak sensitive data!
+                level = HttpLoggingInterceptor.Level.BODY
+            }
+            addInterceptor(loggingInterceptor)
+        }
+
+        // TLS Configuration: Modern, secure connections only
+        // Supports TLS 1.2+ with modern cipher suites
+        connectionSpecs(
+            listOf(
+                ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+                    .tlsVersions(TlsVersion.TLS_1_2, TlsVersion.TLS_1_3)
+                    .build(),
+                // Fallback for older servers (still secure)
+                ConnectionSpec.COMPATIBLE_TLS,
+            ),
+        )
+
+        // Timeouts: Prevent hanging connections
+        // These values balance reliability and user experience:
+        // - Too short: Fails on slow networks
+        // - Too long: Poor UX, resource waste
+        connectTimeout(30, TimeUnit.SECONDS) // TCP connection establishment
+        readTimeout(30, TimeUnit.SECONDS) // Reading response data
+        writeTimeout(30, TimeUnit.SECONDS) // Writing request data
+
+        // Connection pooling (default settings are good)
+        // Reuses connections for better performance
+        // Max 5 idle connections, 5 minute keep-alive
+    }.build()
 
     /**
      * Provides Retrofit instance
      */
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(Constants.BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-            .build()
-    }
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl(Constants.BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .build()
 
     /**
      * Provides WorldCountriesApi service
      */
     @Provides
     @Singleton
-    fun provideWorldCountriesApi(retrofit: Retrofit): WorldCountriesApi {
-        return retrofit.create(WorldCountriesApi::class.java)
-    }
+    fun provideWorldCountriesApi(retrofit: Retrofit): WorldCountriesApi = retrofit.create(WorldCountriesApi::class.java)
 }

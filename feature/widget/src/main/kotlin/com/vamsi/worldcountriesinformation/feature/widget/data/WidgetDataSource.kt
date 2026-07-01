@@ -1,12 +1,13 @@
 package com.vamsi.worldcountriesinformation.feature.widget.data
 
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
-import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.FeaturedCountrySelector
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.di.IoDispatcher
+import com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -17,6 +18,7 @@ import javax.inject.Inject
  */
 class WidgetDataSource @Inject constructor(
     private val getCountriesUseCase: GetCountriesUseCase,
+    private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase,
     private val featuredCountrySelector: FeaturedCountrySelector,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
@@ -27,7 +29,8 @@ class WidgetDataSource @Inject constructor(
         try {
             Timber.d("Widget: Fetching widget data")
 
-            val response = getCountriesUseCase.invoke(CachePolicy.CACHE_FIRST)
+            val policy = getUserDataPolicyUseCase().first()
+            val response = getCountriesUseCase.invoke(policy)
                 .firstOrNull { it !is ApiResponse.Loading }
 
             if (response == null) {
@@ -36,7 +39,7 @@ class WidgetDataSource @Inject constructor(
                     featuredCountry = null,
                     totalCountries = 0,
                     isLoading = false,
-                    error = null
+                    error = null,
                 )
             }
 
@@ -52,18 +55,18 @@ class WidgetDataSource @Inject constructor(
                             featuredCountry = null,
                             totalCountries = 0,
                             isLoading = false,
-                            error = null
+                            error = null,
                         )
                     } else {
                         val featured = featuredCountrySelector.select(countries)
                         Timber.d(
-                            "Widget: Selected country: ${featured?.name}, total=${countries.size}"
+                            "Widget: Selected country: ${featured?.name}, total=${countries.size}",
                         )
                         WidgetData(
                             featuredCountry = featured,
                             totalCountries = countries.size,
                             isLoading = false,
-                            error = null
+                            error = null,
                         )
                     }
                 }
@@ -74,7 +77,7 @@ class WidgetDataSource @Inject constructor(
                         featuredCountry = null,
                         totalCountries = 0,
                         isLoading = false,
-                        error = null
+                        error = null,
                     )
                 }
 
@@ -84,7 +87,7 @@ class WidgetDataSource @Inject constructor(
                         featuredCountry = null,
                         totalCountries = 0,
                         isLoading = false,
-                        error = null
+                        error = null,
                     )
                 }
             }
@@ -95,7 +98,7 @@ class WidgetDataSource @Inject constructor(
                 featuredCountry = null,
                 totalCountries = 0,
                 isLoading = false,
-                error = e.message ?: "Unknown error"
+                error = e.message ?: "Unknown error",
             )
         }
     }

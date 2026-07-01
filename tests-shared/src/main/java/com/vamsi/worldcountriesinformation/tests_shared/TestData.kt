@@ -11,26 +11,64 @@ object TestData {
         Language(name = "Hindi"),
         Language(name = "English"),
         Language(name = "French"),
-        Language(name = "Spanish")
+        Language(name = "Spanish"),
     )
     private val currencies = listOf(
         Currency(code = "INR"),
         Currency(code = "USD"),
         Currency(code = "EUR"),
-        Currency(code = "GBP")
+        Currency(code = "GBP"),
     )
 
-    fun getCountries(): List<Country> {
-        return listOf(
-            Country("India", "New Delhi", languages, "IN", "IND", 1295210000, "Asia", currencies, "91", 20.0, 77.0),
-            Country("United States of America", "Washington, D.C.", languages, "US", "USA", 323947000, "Americas", currencies, "1", 38.0, -97.0)
-        )
-    }
+    fun getCountries(): List<Country> = listOf(
+        Country(
+            name = "India",
+            capital = "New Delhi",
+            languages = languages,
+            twoLetterCode = "IN",
+            threeLetterCode = "IND",
+            population = 1_295_210_000,
+            region = "Asia",
+            currencies = currencies,
+            callingCode = "91",
+            latitude = 20.0,
+            longitude = 77.0,
+        ),
+        Country(
+            name = "United States of America",
+            capital = "Washington, D.C.",
+            languages = languages,
+            twoLetterCode = "US",
+            threeLetterCode = "USA",
+            population = 323_947_000,
+            region = "Americas",
+            currencies = currencies,
+            callingCode = "1",
+            latitude = 38.0,
+            longitude = -97.0,
+        ),
+    )
 
-    fun getCountrySummaries(): List<CountrySummary> {
-        return listOf(
-            CountrySummary("India", "New Delhi", "Asia", 1295210000, "IN", "IND", 20.0, 77.0),
-            CountrySummary("United States of America", "Washington, D.C.", "Americas", 323947000, "US", "USA", 38.0, -97.0),
-        )
-    }
+    fun getCountrySummaries(): List<CountrySummary> = listOf(
+        CountrySummary(
+            name = "India",
+            capital = "New Delhi",
+            region = "Asia",
+            population = 1_295_210_000,
+            twoLetterCode = "IN",
+            threeLetterCode = "IND",
+            latitude = 20.0,
+            longitude = 77.0,
+        ),
+        CountrySummary(
+            name = "United States of America",
+            capital = "Washington, D.C.",
+            region = "Americas",
+            population = 323_947_000,
+            twoLetterCode = "US",
+            threeLetterCode = "USA",
+            latitude = 38.0,
+            longitude = -97.0,
+        ),
+    )
 }

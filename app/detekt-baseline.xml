@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>MatchingDeclarationName:RepositoryModule.kt$Repository</ID>
+    <ID>ReturnCount:MainActivity.kt$MainActivity$private fun resolveCountryCode(intent: Intent): String?</ID>
+    <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
+    <ID>UnusedParameter:CountryAppFunctions.kt$CountryAppFunctions$appFunctionContext: AppFunctionContext</ID>
+  </CurrentIssues>
+</SmellBaseline>

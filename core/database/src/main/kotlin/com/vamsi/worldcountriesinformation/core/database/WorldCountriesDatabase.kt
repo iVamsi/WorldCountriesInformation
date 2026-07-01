@@ -12,8 +12,8 @@ import com.vamsi.worldcountriesinformation.core.database.entity.CountryEntity
  */
 @Database(
     entities = [CountryEntity::class],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class WorldCountriesDatabase : RoomDatabase() {

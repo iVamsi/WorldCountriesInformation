@@ -6,32 +6,33 @@ import org.junit.Before
 import org.junit.Test
 
 class GenerateSearchSuggestionsUseCaseTest {
-
     private lateinit var useCase: GenerateSearchSuggestionsUseCase
 
-    private val testCountries = listOf(
-        createCountry("United States", "Washington D.C."),
-        createCountry("United Kingdom", "London"),
-        createCountry("Canada", "Ottawa"),
-        createCountry("United Arab Emirates", "Abu Dhabi"),
-        createCountry("Australia", "Canberra"),
-        createCountry("Austria", "Vienna"),
-        createCountry("Japan", "Tokyo"),
-        createCountry("Uruguay", "Montevideo")
-    )
-
-    private fun createCountry(name: String, capital: String): CountrySummary {
-        return CountrySummary(
-            name = name,
-            capital = capital,
-            twoLetterCode = name.take(2).uppercase(),
-            threeLetterCode = name.take(3).uppercase(),
-            population = 1000000,
-            region = "TestRegion",
-            latitude = 0.0,
-            longitude = 0.0,
+    private val testCountries =
+        listOf(
+            createCountry("United States", "Washington D.C."),
+            createCountry("United Kingdom", "London"),
+            createCountry("Canada", "Ottawa"),
+            createCountry("United Arab Emirates", "Abu Dhabi"),
+            createCountry("Australia", "Canberra"),
+            createCountry("Austria", "Vienna"),
+            createCountry("Japan", "Tokyo"),
+            createCountry("Uruguay", "Montevideo"),
         )
-    }
+
+    private fun createCountry(
+        name: String,
+        capital: String,
+    ): CountrySummary = CountrySummary(
+        name = name,
+        capital = capital,
+        twoLetterCode = name.take(2).uppercase(),
+        threeLetterCode = name.take(3).uppercase(),
+        population = 1000000,
+        region = "TestRegion",
+        latitude = 0.0,
+        longitude = 0.0,
+    )
 
     @Before
     fun setup() {
@@ -50,7 +51,7 @@ class GenerateSearchSuggestionsUseCaseTest {
 
         assertEquals(
             listOf("United States", "United Kingdom", "United Arab Emirates"),
-            result
+            result,
         )
     }
 
@@ -61,7 +62,7 @@ class GenerateSearchSuggestionsUseCaseTest {
 
         assertEquals(
             listOf("Canada", "Canberra"),
-            result
+            result,
         )
     }
 
@@ -73,7 +74,7 @@ class GenerateSearchSuggestionsUseCaseTest {
 
         assertEquals(
             listOf("Australia", "Austria"),
-            result
+            result,
         )
     }
 
@@ -84,7 +85,7 @@ class GenerateSearchSuggestionsUseCaseTest {
 
         assertEquals(
             listOf("United States", "United Kingdom"),
-            result
+            result,
         )
     }
 }

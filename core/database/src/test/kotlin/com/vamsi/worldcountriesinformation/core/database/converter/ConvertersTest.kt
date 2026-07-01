@@ -53,7 +53,7 @@ class ConvertersTest {
     @Test
     fun `fromLanguageList with single language serializes correctly`() {
         val languages = listOf(
-            LanguageEntity(name = "English", nativeName = "English")
+            LanguageEntity(name = "English", nativeName = "English"),
         )
 
         val result = converters.fromLanguageList(languages)
@@ -70,7 +70,7 @@ class ConvertersTest {
         val languages = listOf(
             LanguageEntity(name = "English", nativeName = "English"),
             LanguageEntity(name = "Spanish", nativeName = "Español"),
-            LanguageEntity(name = "French", nativeName = "Français")
+            LanguageEntity(name = "French", nativeName = "Français"),
         )
 
         val result = converters.fromLanguageList(languages)
@@ -89,7 +89,7 @@ class ConvertersTest {
     fun `fromLanguageList with null fields serializes with defaults`() {
         val languages = listOf(
             LanguageEntity(name = null, nativeName = null),
-            LanguageEntity(name = "English", nativeName = null)
+            LanguageEntity(name = "English", nativeName = null),
         )
 
         val result = converters.fromLanguageList(languages)
@@ -195,7 +195,7 @@ class ConvertersTest {
     fun `language round-trip preserves data`() {
         val original = listOf(
             LanguageEntity(name = "English", nativeName = "English"),
-            LanguageEntity(name = "Spanish", nativeName = "Español")
+            LanguageEntity(name = "Spanish", nativeName = "Español"),
         )
 
         val json = converters.fromLanguageList(original)
@@ -227,7 +227,7 @@ class ConvertersTest {
     @Test
     fun `fromCurrencyList with single currency serializes correctly`() {
         val currencies = listOf(
-            CurrencyEntity(code = "USD", name = "United States Dollar", symbol = "$")
+            CurrencyEntity(code = "USD", name = "United States Dollar", symbol = "$"),
         )
 
         val result = converters.fromCurrencyList(currencies)
@@ -245,7 +245,7 @@ class ConvertersTest {
         val currencies = listOf(
             CurrencyEntity(code = "USD", name = "United States Dollar", symbol = "$"),
             CurrencyEntity(code = "EUR", name = "Euro", symbol = "€"),
-            CurrencyEntity(code = "GBP", name = "British Pound", symbol = "£")
+            CurrencyEntity(code = "GBP", name = "British Pound", symbol = "£"),
         )
 
         val result = converters.fromCurrencyList(currencies)
@@ -264,7 +264,7 @@ class ConvertersTest {
     fun `fromCurrencyList with null fields serializes with defaults`() {
         val currencies = listOf(
             CurrencyEntity(code = null, name = null, symbol = null),
-            CurrencyEntity(code = "USD", name = null, symbol = "$")
+            CurrencyEntity(code = "USD", name = null, symbol = "$"),
         )
 
         val result = converters.fromCurrencyList(currencies)
@@ -372,7 +372,7 @@ class ConvertersTest {
     fun `currency round-trip preserves data`() {
         val original = listOf(
             CurrencyEntity(code = "USD", name = "United States Dollar", symbol = "$"),
-            CurrencyEntity(code = "EUR", name = "Euro", symbol = "€")
+            CurrencyEntity(code = "EUR", name = "Euro", symbol = "€"),
         )
 
         val json = converters.fromCurrencyList(original)
@@ -424,7 +424,7 @@ class ConvertersTest {
         val languages = listOf(
             LanguageEntity(name = "中文", nativeName = "中文"),
             LanguageEntity(name = "العربية", nativeName = "العربية"),
-            LanguageEntity(name = "Emoji 😀", nativeName = "😀")
+            LanguageEntity(name = "Emoji 😀", nativeName = "😀"),
         )
 
         val json = converters.fromLanguageList(languages)
@@ -442,7 +442,7 @@ class ConvertersTest {
             CurrencyEntity(code = "USD", name = "Dollar", symbol = "$"),
             CurrencyEntity(code = "EUR", name = "Euro", symbol = "€"),
             CurrencyEntity(code = "JPY", name = "Yen", symbol = "¥"),
-            CurrencyEntity(code = "GBP", name = "Pound", symbol = "£")
+            CurrencyEntity(code = "GBP", name = "Pound", symbol = "£"),
         )
 
         val json = converters.fromCurrencyList(currencies)

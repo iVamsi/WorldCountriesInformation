@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>CyclomaticComplexMethod:QuizScreen.kt$@Composable private fun ColumnScope.QuestionContent( question: QuizQuestion, selectedIndex: Int?, lastAnswerCorrect: Boolean?, onAnswer: (Int) -&gt; Unit, onNext: () -&gt; Unit, onChangeMode: () -&gt; Unit, )</ID>
+    <ID>LongMethod:QuizScreen.kt$@Composable private fun ColumnScope.QuestionContent( question: QuizQuestion, selectedIndex: Int?, lastAnswerCorrect: Boolean?, onAnswer: (Int) -&gt; Unit, onNext: () -&gt; Unit, onChangeMode: () -&gt; Unit, )</ID>
+    <ID>LongMethod:QuizScreen.kt$@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class) @Composable private fun QuizScreen( state: QuizContract.State, onIntent: (QuizContract.Intent) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
+    <ID>TooGenericExceptionCaught:QuizViewModel.kt$QuizViewModel$e: Exception</ID>
+    <ID>UnusedPrivateMember:QuizScreen.kt$@androidx.compose.ui.tooling.preview.Preview(showBackground = true) @Composable private fun QuizModePickerPreview()</ID>
+  </CurrentIssues>
+</SmellBaseline>

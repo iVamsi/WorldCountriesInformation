@@ -41,5 +41,5 @@ enum class RegionalBLoc {
     CAIS, // Central American Integration System
     CEFTA, // Central European Free Trade Agreement
     NAFTA, // North American Free Trade Agreement
-    SAARC // South Asian Association for Regional Cooperation
+    SAARC, // South Asian Association for Regional Cooperation
 }

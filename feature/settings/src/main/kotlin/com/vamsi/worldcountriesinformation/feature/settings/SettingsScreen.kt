@@ -44,17 +44,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
-import com.vamsi.worldcountriesinformation.core.datastore.CachePolicy
-import java.util.concurrent.TimeUnit
+import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
+import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import kotlinx.coroutines.flow.collectLatest
+import java.util.concurrent.TimeUnit
 
 /**
  * Settings screen for configuring app preferences.
@@ -74,6 +79,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onDailyNotificationChanged: (Boolean) -> Unit = {},
+    onOpenLicenses: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -106,17 +112,17 @@ fun SettingsScreen(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
+                            contentDescription = stringResource(R.string.settings_navigate_back),
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -124,10 +130,10 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Cache Policy Section
-            SettingsSection(title = "Cache Policy") {
+            SettingsSection(title = stringResource(R.string.settings_section_cache_policy)) {
                 CachePolicySelector(
                     selectedPolicy = userPreferences.cachePolicy,
                     onPolicySelected = {
@@ -136,7 +142,7 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "Network") {
+            SettingsSection(title = stringResource(R.string.settings_section_network)) {
                 OfflineModeSwitch(
                     enabled = userPreferences.offlineMode,
                     onToggle = {
@@ -145,7 +151,14 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "Appearance") {
+            SettingsSection(title = stringResource(R.string.settings_section_appearance)) {
+                ThemeModeSelector(
+                    selectedMode = userPreferences.themeMode,
+                    onModeSelected = {
+                        viewModel.processIntent(SettingsContract.Intent.UpdateThemeMode(it))
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 DynamicColorSwitch(
                     enabled = userPreferences.useDynamicColor,
                     onToggle = {
@@ -154,10 +167,10 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "Features") {
+            SettingsSection(title = stringResource(R.string.settings_section_features)) {
                 FeatureToggleSwitch(
-                    title = "On-device AI summaries",
-                    description = "Generate a short country overview on supported devices. Off by default; no data leaves your device.",
+                    title = stringResource(R.string.settings_ai_summaries),
+                    description = stringResource(R.string.settings_ai_summaries_desc),
                     enabled = userPreferences.aiSummaryEnabled,
                     onToggle = {
                         viewModel.processIntent(SettingsContract.Intent.UpdateAiSummaryEnabled(it))
@@ -165,8 +178,8 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 FeatureToggleSwitch(
-                    title = "Daily country notification",
-                    description = "Get a daily country-of-the-day notification. Tap to open details.",
+                    title = stringResource(R.string.settings_daily_notification),
+                    description = stringResource(R.string.settings_daily_notification_desc),
                     enabled = userPreferences.dailyNotificationEnabled,
                     onToggle = {
                         viewModel.processIntent(SettingsContract.Intent.UpdateDailyNotificationEnabled(it))
@@ -175,8 +188,8 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 FeatureToggleSwitch(
-                    title = "Map borders",
-                    description = "Show country border overlays on the details map.",
+                    title = stringResource(R.string.settings_map_borders),
+                    description = stringResource(R.string.settings_map_borders_desc),
                     enabled = userPreferences.showMapBorders,
                     onToggle = {
                         viewModel.processIntent(SettingsContract.Intent.UpdateMapBordersEnabled(it))
@@ -184,7 +197,7 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "Cache Statistics") {
+            SettingsSection(title = stringResource(R.string.settings_section_cache_stats)) {
                 CacheStatisticsCard(
                     stats = cacheStats,
                     isLoading = isLoading,
@@ -194,8 +207,8 @@ fun SettingsScreen(
             }
 
             // About Section
-            SettingsSection(title = "About") {
-                AboutSection()
+            SettingsSection(title = stringResource(R.string.settings_section_about)) {
+                AboutSection(onOpenLicenses = onOpenLicenses)
             }
         }
     }
@@ -207,7 +220,7 @@ fun SettingsScreen(
                 showClearCacheDialog = false
                 viewModel.processIntent(SettingsContract.Intent.ClearCache)
             },
-            onDismiss = { showClearCacheDialog = false }
+            onDismiss = { showClearCacheDialog = false },
         )
     }
 }
@@ -225,7 +238,9 @@ private fun SettingsSection(
             text = title,
             style = MaterialTheme.typography.titleMediumEmphasized,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .semantics { heading() },
         )
         content()
     }
@@ -243,21 +258,21 @@ private fun CachePolicySelector(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .selectableGroup()
+                .selectableGroup(),
         ) {
-            CachePolicy.entries.forEachIndexed { index, policy ->
+            CachePolicy.entries.filter { it != CachePolicy.FORCE_REFRESH }.forEachIndexed { index, policy ->
                 CachePolicyOption(
                     policy = policy,
                     isSelected = policy == selectedPolicy,
-                    onSelect = { onPolicySelected(policy) }
+                    onSelect = { onPolicySelected(policy) },
                 )
-                if (index < CachePolicy.entries.size - 1) {
+                if (index < CachePolicy.entries.filter { it != CachePolicy.FORCE_REFRESH }.size - 1) {
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 }
             }
@@ -280,52 +295,115 @@ private fun CachePolicyOption(
             .selectable(
                 selected = isSelected,
                 onClick = onSelect,
-                role = Role.RadioButton
+                role = Role.RadioButton,
             )
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
             selected = isSelected,
-            onClick = null // Handled by Row's selectable
+            onClick = null, // Handled by Row's selectable
         )
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = policy.displayName,
+                text = policy.displayName(),
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
             )
             Text(
-                text = policy.description,
+                text = policy.description(),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
 }
 
 /**
- * Extension property for user-friendly cache policy display names.
+ * User-friendly cache policy display names.
  */
-private val CachePolicy.displayName: String
-    get() = when (this) {
-        CachePolicy.CACHE_FIRST -> "Cache First"
-        CachePolicy.NETWORK_FIRST -> "Network First"
-        CachePolicy.CACHE_ONLY -> "Cache Only"
-        CachePolicy.NETWORK_ONLY -> "Network Only"
-    }
+@Composable
+private fun CachePolicy.displayName(): String = when (this) {
+    CachePolicy.CACHE_FIRST -> stringResource(R.string.cache_policy_cache_first)
+    CachePolicy.NETWORK_FIRST -> stringResource(R.string.cache_policy_network_first)
+    CachePolicy.CACHE_ONLY -> stringResource(R.string.cache_policy_cache_only)
+    CachePolicy.FORCE_REFRESH -> stringResource(R.string.cache_policy_force_refresh)
+}
 
-/**
- * Extension property for cache policy descriptions.
- */
-private val CachePolicy.description: String
-    get() = when (this) {
-        CachePolicy.CACHE_FIRST -> "Use cached data when available, fetch from network if needed"
-        CachePolicy.NETWORK_FIRST -> "Always fetch fresh data from network, fall back to cache on error"
-        CachePolicy.CACHE_ONLY -> "Only use cached data, never make network requests"
-        CachePolicy.NETWORK_ONLY -> "Always fetch from network, ignore cache completely"
+@Composable
+private fun CachePolicy.description(): String = when (this) {
+    CachePolicy.CACHE_FIRST -> stringResource(R.string.cache_policy_cache_first_desc)
+    CachePolicy.NETWORK_FIRST -> stringResource(R.string.cache_policy_network_first_desc)
+    CachePolicy.CACHE_ONLY -> stringResource(R.string.cache_policy_cache_only_desc)
+    CachePolicy.FORCE_REFRESH -> stringResource(R.string.cache_policy_force_refresh_desc)
+}
+
+@Composable
+private fun ThemeModeSelector(
+    selectedMode: ThemeMode,
+    onModeSelected: (ThemeMode) -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .selectableGroup(),
+        ) {
+            ThemeMode.entries.forEachIndexed { index, mode ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = mode == selectedMode,
+                            onClick = { onModeSelected(mode) },
+                            role = Role.RadioButton,
+                        )
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(selected = mode == selectedMode, onClick = null)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = mode.displayName(),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            text = mode.description(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (index < ThemeMode.entries.size - 1) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
+        }
     }
+}
+
+@Composable
+private fun ThemeMode.displayName(): String = when (this) {
+    ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system)
+    ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light)
+    ThemeMode.DARK -> stringResource(R.string.theme_mode_dark)
+}
+
+@Composable
+private fun ThemeMode.description(): String = when (this) {
+    ThemeMode.SYSTEM -> stringResource(R.string.theme_mode_system_desc)
+    ThemeMode.LIGHT -> stringResource(R.string.theme_mode_light_desc)
+    ThemeMode.DARK -> stringResource(R.string.theme_mode_dark_desc)
+}
 
 /**
  * Material You dynamic colors (Android 12+). When off, uses the app Refined Explorer palette.
@@ -339,31 +417,31 @@ private fun DynamicColorSwitch(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Dynamic colors",
+                    text = stringResource(R.string.settings_dynamic_colors),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
                 Text(
-                    text = "Match wallpaper accents on Android 12+. Turn off to always use Explorer theme colors.",
+                    text = stringResource(R.string.settings_dynamic_colors_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Switch(
                 checked = enabled,
-                onCheckedChange = onToggle
+                onCheckedChange = onToggle,
             )
         }
     }
@@ -416,31 +494,31 @@ private fun OfflineModeSwitch(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Offline Mode",
+                    text = stringResource(R.string.settings_offline_mode),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
                 Text(
-                    text = "When enabled, the app will only use cached data",
+                    text = stringResource(R.string.settings_offline_mode_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Switch(
                 checked = enabled,
-                onCheckedChange = onToggle
+                onCheckedChange = onToggle,
             )
         }
     }
@@ -460,54 +538,52 @@ private fun CacheStatisticsCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
             if (isLoading) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     CircularWavyProgressIndicator()
                 }
             } else {
                 // Entry Count
                 StatisticRow(
-                    label = "Cached Countries",
-                    value = "${stats.entryCount}"
+                    label = stringResource(R.string.settings_cached_countries),
+                    value = "${stats.entryCount}",
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Cache Size
                 StatisticRow(
-                    label = "Estimated Size",
-                    value = formatSize(stats.estimatedSizeKB)
+                    label = stringResource(R.string.settings_estimated_size),
+                    value = formatSize(stats.estimatedSizeKB),
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Cache Age
                 StatisticRow(
-                    label = "Oldest Entry",
-                    value = formatAge(stats.oldestEntryAgeMs)
+                    label = stringResource(R.string.settings_oldest_entry),
+                    value = formatAge(stats.oldestEntryAgeMs),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Clear Cache Button
                 TextButton(
                     onClick = onClearCache,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     )
-                    Text("Clear All Cache")
+                    Text(stringResource(R.string.settings_clear_cache))
                 }
             }
         }
@@ -524,17 +600,17 @@ private fun StatisticRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }
@@ -542,31 +618,25 @@ private fun StatisticRow(
 /**
  * Formats cache size from KB to human-readable format.
  */
-private fun formatSize(sizeKB: Int): String {
-    return when {
-        sizeKB < 1024 -> "$sizeKB KB"
-        else -> {
-            val sizeMB = sizeKB / 1024.0
-            "%.2f MB".format(sizeMB)
-        }
-    }
+@Composable
+private fun formatSize(sizeKB: Int): String = when {
+    sizeKB < 1024 -> stringResource(R.string.settings_size_kb, sizeKB)
+    else -> stringResource(R.string.settings_size_mb, sizeKB / 1024.0)
 }
 
-/**
- * Formats age in milliseconds to human-readable format.
- */
+@Composable
 private fun formatAge(ageMs: Long): String {
-    if (ageMs == 0L) return "No data"
+    if (ageMs == 0L) return stringResource(R.string.settings_no_data)
 
     val minutes = TimeUnit.MILLISECONDS.toMinutes(ageMs)
     val hours = TimeUnit.MILLISECONDS.toHours(ageMs)
     val days = TimeUnit.MILLISECONDS.toDays(ageMs)
 
     return when {
-        days > 0 -> "$days ${if (days == 1L) "day" else "days"} ago"
-        hours > 0 -> "$hours ${if (hours == 1L) "hour" else "hours"} ago"
-        minutes > 0 -> "$minutes ${if (minutes == 1L) "minute" else "minutes"} ago"
-        else -> "Just now"
+        days > 0 -> pluralStringResource(R.plurals.settings_age_days, days.toInt(), days)
+        hours > 0 -> pluralStringResource(R.plurals.settings_age_hours, hours.toInt(), hours)
+        minutes > 0 -> pluralStringResource(R.plurals.settings_age_minutes, minutes.toInt(), minutes)
+        else -> stringResource(R.string.settings_age_just_now)
     }
 }
 
@@ -574,67 +644,74 @@ private fun formatAge(ageMs: Long): String {
  * About section with app information.
  */
 @Composable
-private fun AboutSection() {
+private fun AboutSection(onOpenLicenses: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 8.dp),
                 )
                 Text(
-                    text = "World Countries Information",
+                    text = stringResource(R.string.settings_app_name),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
             Text(
-                text = "Version 1.0.0",
+                text = stringResource(R.string.settings_version, "1.0.0"),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
             Text(
-                text = "Features:",
+                text = stringResource(R.string.settings_features_header),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
             )
 
             val features = listOf(
-                "• Cache policy management",
-                "• Offline mode support",
-                "• Pull-to-refresh functionality",
-                "• Search with debouncing",
-                "• Cache age indicators",
-                "• Comprehensive error handling"
+                stringResource(R.string.settings_feature_cache_policy),
+                stringResource(R.string.settings_feature_offline),
+                stringResource(R.string.settings_feature_refresh),
+                stringResource(R.string.settings_feature_search),
+                stringResource(R.string.settings_feature_cache_age),
+                stringResource(R.string.settings_feature_errors),
             )
 
             features.forEach { feature ->
                 Text(
                     text = feature,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+
+            TextButton(
+                onClick = onOpenLicenses,
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                Text(stringResource(R.string.settings_oss_licenses))
             }
         }
     }
@@ -653,27 +730,24 @@ private fun ClearCacheDialog(
         icon = {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = null
+                contentDescription = null,
             )
         },
         title = {
-            Text("Clear All Cache?")
+            Text(stringResource(R.string.settings_clear_cache_title))
         },
         text = {
-            Text(
-                "This will delete all cached country data. " +
-                    "You'll need an internet connection to reload the data."
-            )
+            Text(stringResource(R.string.settings_clear_cache_message))
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Clear")
+                Text(stringResource(R.string.settings_clear))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.settings_cancel))
             }
-        }
+        },
     )
 }

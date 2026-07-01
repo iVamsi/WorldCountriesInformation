@@ -1,5 +1,7 @@
 package com.vamsi.worldcountriesinformation.core.network.interceptor
 
+import io.mockk.every
+import io.mockk.mockk
 import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Request
@@ -84,15 +86,15 @@ class HttpsOnlyInterceptorTest {
         // Verify error message is clear and helpful
         assertTrue(
             "Error message should mention the URL",
-            exception.message?.contains("http://restcountries.com/v3.1/all") == true
+            exception.message?.contains("http://restcountries.com/v3.1/all") == true,
         )
         assertTrue(
             "Error message should mention HTTPS",
-            exception.message?.contains("HTTPS") == true
+            exception.message?.contains("HTTPS") == true,
         )
         assertTrue(
             "Error message should mention insecure/blocked",
-            exception.message?.contains("blocked", ignoreCase = true) == true
+            exception.message?.contains("blocked", ignoreCase = true) == true,
         )
     }
 
@@ -346,7 +348,7 @@ class HttpsOnlyInterceptorTest {
         // Then
         assertTrue(
             "Error message should contain the blocked URL",
-            exception.message?.contains(url) == true
+            exception.message?.contains(url) == true,
         )
     }
 
@@ -374,7 +376,7 @@ class HttpsOnlyInterceptorTest {
         val message = exception.message?.lowercase() ?: ""
         assertTrue(
             "Error message should mention 'https'",
-            message.contains("https")
+            message.contains("https"),
         )
     }
 
@@ -388,11 +390,9 @@ class HttpsOnlyInterceptorTest {
      * @param url The URL string for the request
      * @return A Request object for testing
      */
-    private fun createRequest(url: String): Request {
-        return Request.Builder()
-            .url(url)
-            .build()
-    }
+    private fun createRequest(url: String): Request = Request.Builder()
+        .url(url)
+        .build()
 
     /**
      * Creates a mock interceptor chain for testing.
@@ -403,29 +403,16 @@ class HttpsOnlyInterceptorTest {
      * @param request The request to process
      * @return A mock Interceptor.Chain implementation
      */
-    private fun createMockChain(request: Request): Interceptor.Chain {
-        return object : Interceptor.Chain {
-            override fun request(): Request = request
-
-            override fun proceed(request: Request): Response {
-                // Return a mock successful response
-                return Response.Builder()
-                    .request(request)
-                    .protocol(Protocol.HTTP_2)
-                    .code(200)
-                    .message("OK")
-                    .build()
-            }
-
-            // These methods are not used in tests
-            override fun connection() = null
-            override fun call() = throw NotImplementedError()
-            override fun connectTimeoutMillis() = 30000
-            override fun withConnectTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
-            override fun readTimeoutMillis() = 30000
-            override fun withReadTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
-            override fun writeTimeoutMillis() = 30000
-            override fun withWriteTimeout(timeout: Int, unit: java.util.concurrent.TimeUnit) = this
+    private fun createMockChain(request: Request): Interceptor.Chain = mockk {
+        every { request() } returns request
+        every { proceed(any()) } answers {
+            val req = firstArg<Request>()
+            Response.Builder()
+                .request(req)
+                .protocol(Protocol.HTTP_2)
+                .code(200)
+                .message("OK")
+                .build()
         }
     }
 }

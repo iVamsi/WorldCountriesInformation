@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ReturnCount:Converters.kt$Converters$@TypeConverter fun fromCurrencyList(value: List&lt;CurrencyEntity&gt;?): String</ID>
+    <ID>ReturnCount:Converters.kt$Converters$@TypeConverter fun fromLanguageList(value: List&lt;LanguageEntity&gt;?): String</ID>
+    <ID>SwallowedException:Converters.kt$Converters.Companion$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Converters.kt$Converters$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:Converters.kt$Converters.Companion$e: Exception</ID>
+    <ID>TooManyFunctions:CountryDao.kt$CountryDao</ID>
+  </CurrentIssues>
+</SmellBaseline>

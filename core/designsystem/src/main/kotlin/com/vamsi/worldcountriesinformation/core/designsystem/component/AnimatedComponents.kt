@@ -18,21 +18,20 @@ import androidx.compose.ui.graphics.graphicsLayer
  * Use with Modifier.clickable(interactionSource = interactionSource) for press scale effect.
  */
 @Composable
-fun rememberPressScaleInteractionSource(): MutableInteractionSource =
-    remember { MutableInteractionSource() }
+fun rememberPressScaleInteractionSource(): MutableInteractionSource = remember { MutableInteractionSource() }
 
 /**
  * Scale modifier that animates on press. Pass the same interactionSource to clickable.
  */
 fun Modifier.pressScaleEffect(
     interactionSource: MutableInteractionSource,
-    scaleDown: Float = 0.97f
+    scaleDown: Float = 0.97f,
 ): Modifier = composed {
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
         targetValue = if (isPressed) scaleDown else 1f,
         animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
-        label = "pressScale"
+        label = "pressScale",
     )
     scale(scale)
 }
@@ -43,18 +42,18 @@ fun Modifier.pressScaleEffect(
 fun Modifier.fadeInScaleUp(
     visible: Boolean,
     initialAlpha: Float = 0f,
-    initialScale: Float = 0.9f
+    initialScale: Float = 0.9f,
 ): Modifier = composed {
     val spatial = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     val alpha by animateFloatAsState(
         targetValue = if (visible) 1f else initialAlpha,
         animationSpec = spatial,
-        label = "fadeInAlpha"
+        label = "fadeInAlpha",
     )
     val scale by animateFloatAsState(
         targetValue = if (visible) 1f else initialScale,
         animationSpec = spatial,
-        label = "fadeInScale"
+        label = "fadeInScale",
     )
     graphicsLayer {
         this.alpha = alpha

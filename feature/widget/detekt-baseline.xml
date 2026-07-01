@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>InstanceOfCheckForException:CountryOfDayNotificationWorker.kt$CountryOfDayNotificationWorker$e is CancellationException</ID>
+    <ID>InstanceOfCheckForException:CountryWidget.kt$CountryWidget$e is CancellationException</ID>
+    <ID>InstanceOfCheckForException:WidgetDataSource.kt$WidgetDataSource$e is CancellationException</ID>
+    <ID>InstanceOfCheckForException:WidgetUpdateWorker.kt$WidgetUpdateWorker$e is CancellationException</ID>
+    <ID>InstanceOfCheckForException:WidgetUpdateWorker.kt$WidgetUpdateWorker.Companion$e is CancellationException</ID>
+    <ID>LongMethod:WidgetDataSource.kt$WidgetDataSource$suspend fun getWidgetData(): WidgetData</ID>
+    <ID>SwallowedException:CountryWidget.kt$e: Exception</ID>
+    <ID>SwallowedException:WidgetDataSourceTest.kt$WidgetDataSourceTest$e: CancellationException</ID>
+    <ID>TooGenericExceptionCaught:CountryOfDayNotificationWorker.kt$CountryOfDayNotificationWorker$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CountryWidget.kt$CountryWidget$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:CountryWidget.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WidgetDataSource.kt$WidgetDataSource$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WidgetUpdateWorker.kt$WidgetUpdateWorker$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:WidgetUpdateWorker.kt$WidgetUpdateWorker.Companion$e: Exception</ID>
+    <ID>UnusedParameter:CountryWidget.kt$widgetData: WidgetData</ID>
+  </CurrentIssues>
+</SmellBaseline>

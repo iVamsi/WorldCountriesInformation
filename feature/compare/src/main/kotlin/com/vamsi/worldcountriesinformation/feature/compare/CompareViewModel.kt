@@ -5,14 +5,16 @@ import com.vamsi.worldcountriesinformation.core.common.error.AppError
 import com.vamsi.worldcountriesinformation.core.common.error.toAppError
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIViewModel
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
-import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountryByCodeParams
 import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -21,6 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CompareViewModel @Inject constructor(
     private val getCountryByCodeUseCase: GetCountryByCodeUseCase,
+    private val getUserDataPolicyUseCase: GetUserDataPolicyUseCase,
+    private val userPreferencesPort: UserPreferencesPort,
 ) : MVIViewModel<CompareContract.Intent, CompareContract.State, CompareContract.Effect>(
     initialState = CompareContract.State(),
 ) {
@@ -56,11 +60,14 @@ class CompareViewModel @Inject constructor(
                     setState { copy(isLoading = false, error = error) }
                     setEffect { CompareContract.Effect.ShowError(error) }
                 } else {
+                    val aiEnabled = userPreferencesPort.userPreferences.first().aiSummaryEnabled
+                    val insight = if (aiEnabled) CompareInsightGenerator.generate(countries) else null
                     setState {
                         copy(
                             isLoading = false,
                             countries = countries,
                             error = null,
+                            insight = insight,
                         )
                     }
                 }
@@ -78,8 +85,9 @@ class CompareViewModel @Inject constructor(
     }
 
     private suspend fun fetchCountry(code: String): Country? {
+        val policy = getUserDataPolicyUseCase().first()
         val response = getCountryByCodeUseCase(
-            CountryByCodeParams(code, CachePolicy.CACHE_FIRST),
+            CountryByCodeParams(code, policy),
         ).firstOrNull { it !is ApiResponse.Loading }
         return when (response) {
             is ApiResponse.Success -> response.data

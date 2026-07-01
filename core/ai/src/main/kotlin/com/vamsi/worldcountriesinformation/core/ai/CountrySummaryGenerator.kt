@@ -32,10 +32,6 @@ class CountrySummaryGeneratorImpl @Inject constructor(
     }
 
     override suspend fun generateSummary(details: List<CountryDetailsModel>): String? {
-        if (!capabilityChecker.isOnDeviceGenerationAvailable()) {
-            return null
-        }
-
         val fields = details.associateBy({ it.key.lowercase(Locale.US) }, { it.value })
         val name = fields["name"].orEmpty()
         if (name.isBlank()) {
@@ -46,6 +42,18 @@ class CountrySummaryGeneratorImpl @Inject constructor(
         val region = fields["region"].orEmpty()
         val population = fields["population"]?.toIntOrNull() ?: 0
         val languages = fields["languages"].orEmpty()
+
+        val templateSummary = buildTemplateSummary(
+            name = name,
+            capital = capital,
+            region = region,
+            population = population,
+            languages = languages,
+        )
+
+        if (!capabilityChecker.isOnDeviceGenerationAvailable()) {
+            return templateSummary
+        }
 
         val prompt = buildPrompt(
             name = name,
@@ -61,13 +69,7 @@ class CountrySummaryGeneratorImpl @Inject constructor(
                 ?.takeIf { it.isNotEmpty() }
         }.onFailure { error ->
             Timber.w(error, "On-device summary generation failed; using template fallback")
-        }.getOrNull() ?: buildTemplateSummary(
-            name = name,
-            capital = capital,
-            region = region,
-            population = population,
-            languages = languages,
-        )
+        }.getOrNull() ?: templateSummary
     }
 
     private fun buildPrompt(
@@ -117,12 +119,10 @@ class CountrySummaryGeneratorImpl @Inject constructor(
         }
     }
 
-    private fun formatPopulation(population: Int): String {
-        return if (population > 0) {
-            NumberFormat.getNumberInstance(Locale.US).format(population)
-        } else {
-            "N/A"
-        }
+    private fun formatPopulation(population: Int): String = if (population > 0) {
+        NumberFormat.getNumberInstance(Locale.US).format(population)
+    } else {
+        "N/A"
     }
 }
 
