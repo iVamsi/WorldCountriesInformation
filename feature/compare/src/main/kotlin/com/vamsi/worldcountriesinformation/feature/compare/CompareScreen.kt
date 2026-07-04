@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +55,6 @@ import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import kotlinx.coroutines.flow.collectLatest
 import java.text.NumberFormat
-import java.util.Locale
 
 @Composable
 fun CompareRoute(
@@ -70,6 +70,7 @@ fun CompareRoute(
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is CompareContract.Effect.NavigateBack -> onNavigateBack()
+
                 is CompareContract.Effect.ShowError -> {
                     SnapNotify.showError(context.message(effect.error))
                 }
@@ -120,6 +121,7 @@ private fun CompareScreen(
         ) {
             when {
                 state.showLoading -> LoadingState()
+
                 state.showError -> ErrorState(
                     message = state.error?.let { LocalContextMessage(it) }
                         ?: stringResource(R.string.compare_error_load_failed),
@@ -284,7 +286,7 @@ private fun BodyCell(text: String, width: androidx.compose.ui.unit.Dp, emphasize
 
 @Composable
 private fun buildRows(countries: List<Country>): List<CompareRow> {
-    val nf = NumberFormat.getNumberInstance(Locale.getDefault())
+    val nf = NumberFormat.getNumberInstance(LocalLocale.current.platformLocale)
     return listOf(
         CompareRow(
             label = stringResource(R.string.compare_label_capital),

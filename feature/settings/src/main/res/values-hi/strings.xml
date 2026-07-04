@@ -14,6 +14,16 @@
     <string name="cache_policy_network_first_desc">हमेशा नेटवर्क से ताज़ा डेटा, त्रुटि पर कैश</string>
     <string name="cache_policy_cache_only">केवल कैश</string>
     <string name="cache_policy_cache_only_desc">केवल कैश डेटा, कोई नेटवर्क अनुरोध नहीं</string>
+    <string name="cache_policy_force_refresh">फ़ोर्स रिफ़्रेश</string>
+    <string name="cache_policy_force_refresh_desc">हमेशा नेटवर्क से लाएँ (pull-to-refresh के लिए)</string>
+
+    <string name="theme_mode_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="theme_mode_system_desc">डिवाइस की लाइट/डार्क सेटिंग अपनाएँ</string>
+    <string name="theme_mode_light">लाइट</string>
+    <string name="theme_mode_light_desc">हमेशा लाइट थीम</string>
+    <string name="theme_mode_dark">डार्क</string>
+    <string name="theme_mode_dark_desc">हमेशा डार्क थीम</string>
+
     <string name="settings_dynamic_colors">डायनामिक रंग</string>
     <string name="settings_dynamic_colors_desc">Android 12+ पर वॉलपेपर एक्सेंट। Explorer रंगों के लिए बंद करें।</string>
     <string name="settings_ai_summaries">डिवाइस पर AI सारांश</string>
@@ -30,12 +40,37 @@
     <string name="settings_clear_cache">सारा कैश साफ़ करें</string>
     <string name="settings_no_data">कोई डेटा नहीं</string>
     <string name="settings_age_just_now">अभी</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+
+    <plurals name="settings_age_days">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">%1$d घंटे पहले</item>
+        <item quantity="other">%1$d घंटे पहले</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">%1$d मिनट पहले</item>
+        <item quantity="other">%1$d मिनट पहले</item>
+    </plurals>
+
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">संस्करण %1$s</string>
     <string name="settings_features_header">सुविधाएँ:</string>
+    <string name="settings_feature_cache_policy">• कैश नीति प्रबंधन</string>
+    <string name="settings_feature_offline">• ऑफ़लाइन मोड समर्थन</string>
+    <string name="settings_feature_refresh">• Pull-to-refresh</string>
+    <string name="settings_feature_search">• डिबाउंस वाली खोज</string>
+    <string name="settings_feature_cache_age">• कैश आयु संकेतक</string>
+    <string name="settings_feature_errors">• व्यापक त्रुटि हैंडलिंग</string>
+
     <string name="settings_clear_cache_title">सारा कैश साफ़ करें?</string>
     <string name="settings_clear_cache_message">सभी कैश देश डेटा हट जाएगा। पुनः लोड के लिए इंटरनेट चाहिए।</string>
     <string name="settings_clear">साफ़ करें</string>
     <string name="settings_cancel">रद्द करें</string>
     <string name="settings_oss_licenses">ओपन सोर्स लाइसेंस</string>
+    <string name="settings_data_attribution_header">देश डेटा</string>
+    <string name="settings_data_attribution_body">देश तथ्य mledoze/countries (github.com/mledoze/countries) से लोड होते हैं, ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/) के तहत। उस डेटासेट में ध्वज इमोजी ODbL के अंतर्गत नहीं हैं; स्रोत रिपॉज़िटरी देखें।</string>
 </resources>

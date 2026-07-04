@@ -10,10 +10,23 @@
     <string name="countries_settings">सेटिंग्स</string>
     <string name="countries_clear_filters">फ़िल्टर साफ़ करें</string>
     <string name="countries_scroll_to_top">ऊपर जाएँ</string>
+    <string name="countries_search">खोजें</string>
+    <string name="countries_back">वापस</string>
+    <string name="countries_clear">साफ़ करें</string>
     <string name="countries_filter_by_region">क्षेत्र से फ़िल्टर</string>
     <string name="countries_regions_selected">%1$d चयनित</string>
     <string name="countries_sort">क्रमबद्ध करें</string>
+    <string name="countries_sort_name_asc">नाम · A से Z</string>
+    <string name="countries_sort_name_desc">नाम · Z से A</string>
+    <string name="countries_sort_population_asc">जनसंख्या · कम से अधिक</string>
+    <string name="countries_sort_population_desc">जनसंख्या · अधिक से कम</string>
+    <string name="countries_sort_area_asc">क्षेत्रफल · छोटे से बड़े</string>
+    <string name="countries_sort_area_desc">क्षेत्रफल · बड़े से छोटे</string>
+    <string name="countries_change_sort">क्रम बदलें</string>
     <string name="countries_recently_viewed">हाल में देखे गए</string>
+    <string name="countries_flag_desc">%1$s का झंडा</string>
+    <string name="countries_favorite_add">पसंदीदा में जोड़ें</string>
+    <string name="countries_favorite_remove">पसंदीदा से हटाएँ</string>
     <string name="countries_recent_searches">हाल की खोजें</string>
     <string name="countries_clear_all">सभी साफ़ करें</string>
     <string name="countries_suggestions">सुझाव</string>
@@ -22,5 +35,6 @@
     <string name="countries_no_countries">कोई देश नहीं मिला</string>
     <string name="countries_no_results">\"%1$s\" के लिए कोई परिणाम नहीं</string>
     <string name="countries_clear_search">खोज साफ़ करें</string>
+    <string name="countries_alphabet_jump">%1$s से शुरू होने वाले देशों पर जाएँ</string>
     <string name="countries_select_hint">विवरण के लिए देश चुनें</string>
 </resources>

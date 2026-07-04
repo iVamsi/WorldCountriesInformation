@@ -10,10 +10,23 @@
     <string name="countries_settings">Einstellungen</string>
     <string name="countries_clear_filters">Filter löschen</string>
     <string name="countries_scroll_to_top">Nach oben</string>
+    <string name="countries_search">Suchen</string>
+    <string name="countries_back">Zurück</string>
+    <string name="countries_clear">Löschen</string>
     <string name="countries_filter_by_region">Nach Region filtern</string>
     <string name="countries_regions_selected">%1$d ausgewählt</string>
     <string name="countries_sort">Sortieren</string>
+    <string name="countries_sort_name_asc">Name · A bis Z</string>
+    <string name="countries_sort_name_desc">Name · Z bis A</string>
+    <string name="countries_sort_population_asc">Bevölkerung · Aufsteigend</string>
+    <string name="countries_sort_population_desc">Bevölkerung · Absteigend</string>
+    <string name="countries_sort_area_asc">Fläche · Klein bis Groß</string>
+    <string name="countries_sort_area_desc">Fläche · Groß bis Klein</string>
+    <string name="countries_change_sort">Sortierung ändern</string>
     <string name="countries_recently_viewed">Zuletzt angesehen</string>
+    <string name="countries_flag_desc">Flagge von %1$s</string>
+    <string name="countries_favorite_add">Zu Favoriten hinzufügen</string>
+    <string name="countries_favorite_remove">Aus Favoriten entfernen</string>
     <string name="countries_recent_searches">Letzte Suchen</string>
     <string name="countries_clear_all">Alle löschen</string>
     <string name="countries_suggestions">Vorschläge</string>
@@ -22,5 +35,6 @@
     <string name="countries_no_countries">Keine Länder gefunden</string>
     <string name="countries_no_results">Keine Ergebnisse für „%1$s“</string>
     <string name="countries_clear_search">Suche löschen</string>
+    <string name="countries_alphabet_jump">Zu Ländern mit %1$s springen</string>
     <string name="countries_select_hint">Land auswählen für Details</string>
 </resources>

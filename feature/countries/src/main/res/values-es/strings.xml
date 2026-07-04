@@ -10,10 +10,23 @@
     <string name="countries_settings">Ajustes</string>
     <string name="countries_clear_filters">Borrar filtros</string>
     <string name="countries_scroll_to_top">Ir arriba</string>
+    <string name="countries_search">Buscar</string>
+    <string name="countries_back">Atrás</string>
+    <string name="countries_clear">Borrar</string>
     <string name="countries_filter_by_region">Filtrar por región</string>
     <string name="countries_regions_selected">%1$d seleccionados</string>
     <string name="countries_sort">Ordenar</string>
+    <string name="countries_sort_name_asc">Nombre · A a Z</string>
+    <string name="countries_sort_name_desc">Nombre · Z a A</string>
+    <string name="countries_sort_population_asc">Población · Menor a mayor</string>
+    <string name="countries_sort_population_desc">Población · Mayor a menor</string>
+    <string name="countries_sort_area_asc">Área · Pequeña a grande</string>
+    <string name="countries_sort_area_desc">Área · Grande a pequeña</string>
+    <string name="countries_change_sort">Cambiar orden</string>
     <string name="countries_recently_viewed">Vistos recientemente</string>
+    <string name="countries_flag_desc">Bandera de %1$s</string>
+    <string name="countries_favorite_add">Añadir a favoritos</string>
+    <string name="countries_favorite_remove">Quitar de favoritos</string>
     <string name="countries_recent_searches">Búsquedas recientes</string>
     <string name="countries_clear_all">Borrar todo</string>
     <string name="countries_suggestions">Sugerencias</string>
@@ -22,5 +35,6 @@
     <string name="countries_no_countries">No se encontraron países</string>
     <string name="countries_no_results">Sin resultados para \"%1$s\"</string>
     <string name="countries_clear_search">Borrar búsqueda</string>
+    <string name="countries_alphabet_jump">Ir a países que empiezan por %1$s</string>
     <string name="countries_select_hint">Selecciona un país para ver detalles</string>
 </resources>

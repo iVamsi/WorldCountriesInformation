@@ -56,12 +56,19 @@ constructor() {
         var score =
             when {
                 name == query -> EXACT_MATCH
+
                 code2 == query || code3 == query -> EXACT_MATCH - 1.0
+
                 name.startsWith(query) -> PREFIX_NAME
+
                 capital.startsWith(query) -> PREFIX_CAPITAL
+
                 name.contains(query) -> SUBSTRING_NAME
+
                 capital.contains(query) -> SUBSTRING_CAPITAL
+
                 code3.contains(query) -> SUBSTRING_CODE
+
                 else -> {
                     val jw = max(jaroWinkler(name, query), jaroWinkler(capital, query))
                     if (jw >= FUZZY_THRESHOLD) FUZZY_BASE * jw else 0.0

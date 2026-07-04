@@ -56,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -875,8 +876,9 @@ private data class CountryDetail(
 
 @Composable
 private fun getCountryDetailsList(country: Country): List<CountryDetail> {
-    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
-    return remember(country) {
+    val locale = LocalLocale.current.platformLocale
+    val numberFormat = NumberFormat.getNumberInstance(locale)
+    return remember(country, locale) {
         listOf(
             CountryDetail("Country Name", country.name),
             CountryDetail("Capital City", country.capital),

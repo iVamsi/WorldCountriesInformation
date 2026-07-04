@@ -14,6 +14,16 @@
     <string name="cache_policy_network_first_desc">Immer frische Daten vom Netzwerk, bei Fehler auf Cache zurückfallen</string>
     <string name="cache_policy_cache_only">Nur Cache</string>
     <string name="cache_policy_cache_only_desc">Nur zwischengespeicherte Daten, keine Netzwerkanfragen</string>
+    <string name="cache_policy_force_refresh">Aktualisierung erzwingen</string>
+    <string name="cache_policy_force_refresh_desc">Immer vom Netzwerk laden (für Pull-to-Refresh)</string>
+
+    <string name="theme_mode_system">Systemstandard</string>
+    <string name="theme_mode_system_desc">Hell/Dunkel-Einstellung des Geräts folgen</string>
+    <string name="theme_mode_light">Hell</string>
+    <string name="theme_mode_light_desc">Immer helles Design verwenden</string>
+    <string name="theme_mode_dark">Dunkel</string>
+    <string name="theme_mode_dark_desc">Immer dunkles Design verwenden</string>
+
     <string name="settings_dynamic_colors">Dynamische Farben</string>
     <string name="settings_dynamic_colors_desc">Wallpaper-Akzente auf Android 12+ übernehmen. Aus für Explorer-Farben.</string>
     <string name="settings_ai_summaries">KI-Zusammenfassungen auf dem Gerät</string>
@@ -30,12 +40,37 @@
     <string name="settings_clear_cache">Gesamten Cache löschen</string>
     <string name="settings_no_data">Keine Daten</string>
     <string name="settings_age_just_now">Gerade eben</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+
+    <plurals name="settings_age_days">
+        <item quantity="one">vor %1$d Tag</item>
+        <item quantity="other">vor %1$d Tagen</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">vor %1$d Stunde</item>
+        <item quantity="other">vor %1$d Stunden</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">vor %1$d Minute</item>
+        <item quantity="other">vor %1$d Minuten</item>
+    </plurals>
+
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_features_header">Funktionen:</string>
+    <string name="settings_feature_cache_policy">• Cache-Richtlinien-Verwaltung</string>
+    <string name="settings_feature_offline">• Offline-Modus</string>
+    <string name="settings_feature_refresh">• Pull-to-Refresh</string>
+    <string name="settings_feature_search">• Suche mit Entprellung</string>
+    <string name="settings_feature_cache_age">• Cache-Alter-Anzeigen</string>
+    <string name="settings_feature_errors">• Umfassende Fehlerbehandlung</string>
+
     <string name="settings_clear_cache_title">Gesamten Cache löschen?</string>
     <string name="settings_clear_cache_message">Alle gecachten Länderdaten werden gelöscht. Internetverbindung zum Neuladen erforderlich.</string>
     <string name="settings_clear">Löschen</string>
     <string name="settings_cancel">Abbrechen</string>
     <string name="settings_oss_licenses">Open-Source-Lizenzen</string>
+    <string name="settings_data_attribution_header">Länderdaten</string>
+    <string name="settings_data_attribution_body">Länderfakten stammen aus mledoze/countries (github.com/mledoze/countries), lizenziert unter ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Flaggen-Emoji in diesem Datensatz fallen nicht unter ODbL; siehe Quellrepository.</string>
 </resources>
