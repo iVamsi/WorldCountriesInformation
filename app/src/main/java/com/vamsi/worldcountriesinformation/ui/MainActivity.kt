@@ -170,8 +170,10 @@ class MainActivity : ComponentActivity() {
         val data = intent.data ?: return null
         val raw = when (data.scheme?.lowercase()) {
             "https", "http" -> data.lastPathSegment
+
             "wci" -> data.host?.takeIf { it.equals("country", ignoreCase = true) }
                 ?.let { data.lastPathSegment ?: data.pathSegments.firstOrNull() }
+
             else -> null
         }
         return raw?.takeIf { it.length == 3 && it.all { ch -> ch.isLetter() } }?.uppercase()

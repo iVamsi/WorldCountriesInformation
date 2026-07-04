@@ -316,9 +316,13 @@ enum class CachePolicy {
      * @return true if network fetch is required, false if cache-only
      */
     fun shouldFetchFromNetwork(): Boolean = when (this) {
-        CACHE_FIRST -> false // Only if cache is stale/missing
+        CACHE_FIRST -> false
+
+        // Only if cache is stale/missing
         NETWORK_FIRST -> true
+
         FORCE_REFRESH -> true
+
         CACHE_ONLY -> false
     }
 
@@ -329,8 +333,12 @@ enum class CachePolicy {
      */
     fun allowsCacheFallback(): Boolean = when (this) {
         CACHE_FIRST -> true
+
         NETWORK_FIRST -> true
-        FORCE_REFRESH -> false // Fail on network error
+
+        FORCE_REFRESH -> false
+
+        // Fail on network error
         CACHE_ONLY -> true
     }
 
@@ -340,9 +348,15 @@ enum class CachePolicy {
      * @return true if staleness should be checked, false if age doesn't matter
      */
     fun requiresStalenessCheck(): Boolean = when (this) {
-        CACHE_FIRST -> true // Check if cache is fresh
-        NETWORK_FIRST -> false // Always fetch network anyway
-        FORCE_REFRESH -> false // Always fetch network
+        CACHE_FIRST -> true
+
+        // Check if cache is fresh
+        NETWORK_FIRST -> false
+
+        // Always fetch network anyway
+        FORCE_REFRESH -> false
+
+        // Always fetch network
         CACHE_ONLY -> false // Return any cached data
     }
 

@@ -8,6 +8,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.vamsi.worldcountriesinformation.feature.widget.R
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetDataSource
+import com.vamsi.worldcountriesinformation.feature.widget.notification.notifyIfAllowed
 import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -51,13 +52,15 @@ class LiveUpdateManagerImpl @Inject constructor(
             }
             .build()
 
-        if (Build.VERSION.SDK_INT >= 35 &&
+        if (Build.VERSION.SDK_INT >= 36 &&
             !notification.hasPromotableCharacteristics()
         ) {
             Timber.d("Live update notification missing promotable characteristics")
         }
 
-        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
+        if (!context.notifyIfAllowed(NOTIFICATION_ID, notification)) {
+            Timber.w("Skipping live update notification; permission not granted")
+        }
     }
 
     override fun cancelUpdate() {

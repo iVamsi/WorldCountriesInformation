@@ -7,4 +7,7 @@
     <string name="error_load_countries_failed">Länder konnten nicht geladen werden. Versuche es erneut.</string>
     <string name="error_load_country_details_failed">Länderdetails konnten nicht geladen werden. Versuche es erneut.</string>
     <string name="error_unknown">Etwas ist schiefgelaufen. Versuche es erneut.</string>
+    <string name="added_to_favorites">Zu Favoriten hinzugefügt</string>
+    <string name="removed_from_favorites">Aus Favoriten entfernt</string>
+    <string name="filters_cleared">Filter gelöscht</string>
 </resources>

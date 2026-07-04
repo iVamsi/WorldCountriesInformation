@@ -8,7 +8,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -68,8 +67,11 @@ class CountryOfDayNotificationWorker @AssistedInject constructor(
                 .setAutoCancel(true)
                 .build()
 
-            NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification)
-            Timber.d("Posted country-of-day notification for ${country.name}")
+            if (context.notifyIfAllowed(NOTIFICATION_ID, notification)) {
+                Timber.d("Posted country-of-day notification for ${country.name}")
+            } else {
+                Timber.w("Skipping country-of-day notification; permission not granted")
+            }
             Result.success()
         } catch (e: Exception) {
             if (e is CancellationException) throw e

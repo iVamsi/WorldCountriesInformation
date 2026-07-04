@@ -139,13 +139,16 @@ private fun QuizScreen(
 
             when {
                 state.isLoading -> LoadingContent()
+
                 state.showModePicker -> ModePicker(onSelectMode = { onIntent(QuizContract.Intent.SelectMode(it)) })
+
                 state.showError -> QuizErrorContent(
                     message = state.error?.let { LocalQuizErrorMessage(it) }
                         ?: stringResource(R.string.quiz_error_load),
                     onRetry = { onIntent(QuizContract.Intent.LoadQuestion) },
                     onChangeMode = { onIntent(QuizContract.Intent.ClearMode) },
                 )
+
                 state.showQuestion -> QuestionContent(
                     question = state.question!!,
                     selectedIndex = state.selectedIndex,

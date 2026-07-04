@@ -35,15 +35,24 @@ class SettingsViewModel @Inject constructor(
     override fun handleIntent(intent: SettingsContract.Intent) {
         when (intent) {
             SettingsContract.Intent.LoadCacheStats -> loadCacheStatistics()
+
             is SettingsContract.Intent.UpdateCachePolicy -> updateCachePolicy(intent.policy)
+
             is SettingsContract.Intent.UpdateOfflineMode -> updateOfflineMode(intent.enabled)
+
             is SettingsContract.Intent.UpdateThemeMode -> updateThemeMode(intent.mode)
+
             is SettingsContract.Intent.UpdateUseDynamicColor -> updateUseDynamicColor(intent.enabled)
+
             is SettingsContract.Intent.UpdateAiSummaryEnabled -> updateAiSummaryEnabled(intent.enabled)
+
             is SettingsContract.Intent.UpdateDailyNotificationEnabled ->
                 updateDailyNotificationEnabled(intent.enabled)
+
             is SettingsContract.Intent.UpdateMapBordersEnabled -> updateMapBordersEnabled(intent.enabled)
+
             SettingsContract.Intent.ClearCache -> clearCache()
+
             SettingsContract.Intent.ClearError -> setState { copy(error = null) }
         }
     }
@@ -175,7 +184,9 @@ class SettingsViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is ApiResponse.Error -> setState { copy(error = result.exception.toAppError()) }
+
                 is ApiResponse.Loading -> Unit
             }
         }

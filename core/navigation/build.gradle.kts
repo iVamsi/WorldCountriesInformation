@@ -1,4 +1,4 @@
-/**
+/*
  * Core Navigation module build configuration.
  *
  * This module provides:

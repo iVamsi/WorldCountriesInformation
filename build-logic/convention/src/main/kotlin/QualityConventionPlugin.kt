@@ -41,12 +41,17 @@ class QualityConventionPlugin : Plugin<Project> {
                             "ktlint_standard_filename" to "disabled",
                             "ktlint_standard_package-name" to "disabled",
                             "ktlint_standard_backing-property-naming" to "disabled",
+                            "ktlint_standard_kdoc" to "disabled",
                         ),
                     )
                 }
                 kotlinGradle {
                     target("*.gradle.kts")
-                    ktlint()
+                    ktlint().editorConfigOverride(
+                        mapOf(
+                            "ktlint_standard_kdoc" to "disabled",
+                        ),
+                    )
                 }
             }
 

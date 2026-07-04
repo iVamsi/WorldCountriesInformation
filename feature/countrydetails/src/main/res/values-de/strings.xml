@@ -3,4 +3,10 @@
     <string name="details_location_unavailable">Standortdaten für %1$s nicht verfügbar.</string>
     <string name="details_added_to_favorites">Zu Favoriten hinzugefügt</string>
     <string name="details_removed_from_favorites">Aus Favoriten entfernt</string>
+    <string name="details_ai_summary_title">KI-Zusammenfassung</string>
+    <string name="details_ai_summary_on_device">Nur auf dem Gerät</string>
+    <string name="details_ai_summary_loading">Zusammenfassung wird erstellt…</string>
+    <string name="details_ai_summary_unavailable">KI-Zusammenfassung auf diesem Gerät nicht verfügbar.</string>
+    <string name="details_ai_summary_expand">KI-Zusammenfassung erweitern</string>
+    <string name="details_ai_summary_collapse">KI-Zusammenfassung einklappen</string>
 </resources>

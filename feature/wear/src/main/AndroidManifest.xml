@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-feature
-        android:name="android.hardware.type.watch"
-        android:required="false" />
-
     <application>
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="false" />
+
         <service
             android:name=".CountryWearTileService"
             android:exported="true"

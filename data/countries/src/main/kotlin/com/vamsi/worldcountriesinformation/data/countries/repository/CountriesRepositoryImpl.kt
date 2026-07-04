@@ -206,9 +206,15 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Step 3: Emit cached data if appropriate
             val shouldEmitCache = when (policy) {
-                CachePolicy.CACHE_FIRST -> hasCache // Emit cache immediately if exists
-                CachePolicy.NETWORK_FIRST -> false // Wait for network first
-                CachePolicy.FORCE_REFRESH -> false // Ignore cache completely
+                CachePolicy.CACHE_FIRST -> hasCache
+
+                // Emit cache immediately if exists
+                CachePolicy.NETWORK_FIRST -> false
+
+                // Wait for network first
+                CachePolicy.FORCE_REFRESH -> false
+
+                // Ignore cache completely
                 CachePolicy.CACHE_ONLY -> hasCache // Already handled above
             }
 
@@ -220,9 +226,15 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Step 4: Determine if network fetch is needed
             val shouldFetchNetwork = when (policy) {
-                CachePolicy.CACHE_FIRST -> !isCacheFresh // Refresh stale caches or ones missing calling codes
-                CachePolicy.NETWORK_FIRST -> true // Always try network
-                CachePolicy.FORCE_REFRESH -> true // Always fetch
+                CachePolicy.CACHE_FIRST -> !isCacheFresh
+
+                // Refresh stale caches or ones missing calling codes
+                CachePolicy.NETWORK_FIRST -> true
+
+                // Always try network
+                CachePolicy.FORCE_REFRESH -> true
+
+                // Always fetch
                 CachePolicy.CACHE_ONLY -> false // Never fetch
             }
 
@@ -555,6 +567,7 @@ class CountriesRepositoryImpl @Inject constructor(
                 emit(ApiResponse.Error(exception))
                 return true
             }
+
             CachePolicy.NETWORK_FIRST -> {
                 if (hasCache) {
                     Timber.d("NETWORK_FIRST: Network failed, falling back to cached data")
@@ -565,6 +578,7 @@ class CountriesRepositoryImpl @Inject constructor(
                     return true
                 }
             }
+
             CachePolicy.CACHE_FIRST -> {
                 if (!hasCache) {
                     emit(ApiResponse.Error(exception))
@@ -573,6 +587,7 @@ class CountriesRepositoryImpl @Inject constructor(
                     Timber.d("CACHE_FIRST: Network error, continuing with cached data")
                 }
             }
+
             CachePolicy.CACHE_ONLY -> Unit
         }
         return false

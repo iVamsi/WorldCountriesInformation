@@ -14,6 +14,16 @@
     <string name="cache_policy_network_first_desc">Datos frescos de la red; caché si hay error</string>
     <string name="cache_policy_cache_only">Solo caché</string>
     <string name="cache_policy_cache_only_desc">Solo datos en caché, sin peticiones de red</string>
+    <string name="cache_policy_force_refresh">Forzar actualización</string>
+    <string name="cache_policy_force_refresh_desc">Siempre obtener de la red (para pull-to-refresh)</string>
+
+    <string name="theme_mode_system">Predeterminado del sistema</string>
+    <string name="theme_mode_system_desc">Seguir el modo claro/oscuro del dispositivo</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_light_desc">Usar siempre tema claro</string>
+    <string name="theme_mode_dark">Oscuro</string>
+    <string name="theme_mode_dark_desc">Usar siempre tema oscuro</string>
+
     <string name="settings_dynamic_colors">Colores dinámicos</string>
     <string name="settings_dynamic_colors_desc">Acentos del fondo en Android 12+. Desactivar para colores Explorer.</string>
     <string name="settings_ai_summaries">Resúmenes IA en el dispositivo</string>
@@ -30,12 +40,37 @@
     <string name="settings_clear_cache">Borrar toda la caché</string>
     <string name="settings_no_data">Sin datos</string>
     <string name="settings_age_just_now">Ahora mismo</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+
+    <plurals name="settings_age_days">
+        <item quantity="one">hace %1$d día</item>
+        <item quantity="other">hace %1$d días</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">hace %1$d hora</item>
+        <item quantity="other">hace %1$d horas</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">hace %1$d minuto</item>
+        <item quantity="other">hace %1$d minutos</item>
+    </plurals>
+
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">Versión %1$s</string>
     <string name="settings_features_header">Funciones:</string>
+    <string name="settings_feature_cache_policy">• Gestión de política de caché</string>
+    <string name="settings_feature_offline">• Modo sin conexión</string>
+    <string name="settings_feature_refresh">• Pull-to-refresh</string>
+    <string name="settings_feature_search">• Búsqueda con debounce</string>
+    <string name="settings_feature_cache_age">• Indicadores de antigüedad de caché</string>
+    <string name="settings_feature_errors">• Manejo integral de errores</string>
+
     <string name="settings_clear_cache_title">¿Borrar toda la caché?</string>
     <string name="settings_clear_cache_message">Se eliminarán todos los datos de países en caché. Necesitarás internet para recargar.</string>
     <string name="settings_clear">Borrar</string>
     <string name="settings_cancel">Cancelar</string>
     <string name="settings_oss_licenses">Licencias de código abierto</string>
+    <string name="settings_data_attribution_header">Datos de países</string>
+    <string name="settings_data_attribution_body">Los datos provienen de mledoze/countries (github.com/mledoze/countries), bajo licencia ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Los emojis de banderas no están cubiertos por ODbL; consulta el repositorio fuente.</string>
 </resources>

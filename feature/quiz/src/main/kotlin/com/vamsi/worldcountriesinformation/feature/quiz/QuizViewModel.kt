@@ -38,9 +38,13 @@ class QuizViewModel @Inject constructor(
     override fun handleIntent(intent: QuizContract.Intent) {
         when (intent) {
             is QuizContract.Intent.SelectMode -> selectMode(intent.mode)
+
             is QuizContract.Intent.LoadQuestion -> loadQuestion()
+
             is QuizContract.Intent.AnswerSelected -> submitAnswer(intent.index)
+
             is QuizContract.Intent.NextQuestion -> loadQuestion()
+
             is QuizContract.Intent.ClearMode -> setState {
                 copy(
                     mode = null,
@@ -51,6 +55,7 @@ class QuizViewModel @Inject constructor(
                     error = null,
                 )
             }
+
             is QuizContract.Intent.NavigateBack -> setEffect { QuizContract.Effect.NavigateBack }
         }
     }
