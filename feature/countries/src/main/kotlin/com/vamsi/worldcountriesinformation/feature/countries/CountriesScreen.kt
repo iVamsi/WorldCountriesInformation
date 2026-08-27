@@ -21,6 +21,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,9 +30,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -67,6 +69,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -88,17 +91,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewFontScale
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -251,7 +258,7 @@ private fun CountriesScreenContent(
     val scrolledPastTop by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0 ||
-                listState.firstVisibleItemScrollOffset > 0
+                listState.firstVisibleItemScrollOffset > 80
         }
     }
     Scaffold(
@@ -359,6 +366,7 @@ private fun CountriesScreenContent(
                     message = state.error?.let { errorContext.message(it) }
                         ?: stringResource(CommonR.string.error_unknown),
                     onRetry = { onIntent(CountriesContract.Intent.RetryLoading) },
+                    retryLabel = stringResource(R.string.countries_retry),
                     modifier = Modifier.padding(paddingValues),
                 )
             }
@@ -432,9 +440,18 @@ private fun CountriesScreenContent(
                                     state = state,
                                     listState = listState,
                                     onIntent = onIntent,
+                                    listEndPadding = if (
+                                        scrolledPastTop && state.filteredCountries.size >= 15
+                                    ) {
+                                        56.dp
+                                    } else {
+                                        16.dp
+                                    },
                                 )
                                 Box(
-                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    modifier = Modifier
+                                        .align(Alignment.CenterEnd)
+                                        .fillMaxHeight(),
                                     contentAlignment = Alignment.CenterEnd,
                                 ) {
                                     AlphabetJumpIndexWithVisibility(
@@ -442,7 +459,9 @@ private fun CountriesScreenContent(
                                         countries = state.filteredCountries,
                                         listState = listState,
                                         headerItemCount = getHeaderItemCount(state),
-                                        modifier = Modifier.padding(end = 8.dp),
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .padding(top = 12.dp, bottom = 88.dp, end = 4.dp),
                                     )
                                 }
                             }
@@ -566,11 +585,12 @@ private fun ScrollableCountriesContent(
     state: CountriesContract.State,
     listState: LazyListState,
     onIntent: (CountriesContract.Intent) -> Unit,
+    listEndPadding: Dp = 16.dp,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         state = listState,
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = listEndPadding, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (
@@ -677,9 +697,7 @@ private fun RegionFilters(
 ) {
     Column(modifier = modifier) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
@@ -698,7 +716,7 @@ private fun RegionFilters(
 
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            contentPadding = PaddingValues(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(items = Regions.ALL.toList(), key = { it }) { region ->
@@ -722,9 +740,7 @@ private fun SortSelector(
     var isMenuOpen by remember { mutableStateOf(false) }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -787,11 +803,11 @@ private fun RecentlyViewedSection(
             text = stringResource(R.string.countries_recently_viewed),
             style = MaterialTheme.typography.titleMediumEmphasized,
             modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(bottom = 8.dp)
                 .semantics { heading() },
         )
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            contentPadding = PaddingValues(vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(items = countries, key = { it.threeLetterCode }) { country ->
@@ -826,7 +842,7 @@ private fun RecentlyViewedCard(
             .size(width = 140.dp, height = 110.dp)
             .clickable(
                 interactionSource = interactionSource,
-                indication = null,
+                indication = ripple(),
                 onClick = onClick,
             )
             .pressScaleEffect(interactionSource),
@@ -878,8 +894,8 @@ private fun AlphabetJumpIndexWithVisibility(
 ) {
     AnimatedVisibility(
         visible = visible,
-        enter = fadeIn(),
-        exit = fadeOut(),
+        enter = fadeIn(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
+        exit = fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
     ) {
         AlphabetJumpIndex(
             countries = countries,
@@ -902,30 +918,64 @@ private fun AlphabetJumpIndex(
     val indexMap = remember(countries) { buildAlphabetIndexMap(countries) }
     if (indexMap.isEmpty()) return
 
+    val letters = remember(indexMap) { indexMap.keys.toList() }
     val coroutineScope = rememberCoroutineScope()
 
+    fun jumpTo(letter: String) {
+        val countryIndex = indexMap[letter] ?: return
+        coroutineScope.launch {
+            listState.animateScrollToItem(headerItemCount + countryIndex)
+        }
+    }
+
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .width(48.dp)
+            .fillMaxHeight()
+            .pointerInput(letters, headerItemCount) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    fun letterAt(y: Float): String? {
+                        if (size.height == 0 || letters.isEmpty()) return null
+                        val idx = ((y / size.height) * letters.size)
+                            .toInt()
+                            .coerceIn(0, letters.lastIndex)
+                        return letters[idx]
+                    }
+                    var last = letterAt(down.position.y)
+                    last?.let(::jumpTo)
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull() ?: break
+                        if (!change.pressed) break
+                        val current = letterAt(change.position.y)
+                        if (current != null && current != last) {
+                            last = current
+                            jumpTo(current)
+                        }
+                        change.consume()
+                    }
+                }
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        indexMap.keys.forEach { letter ->
+        letters.forEach { letter ->
             val jumpDescription = stringResource(R.string.countries_alphabet_jump, letter)
             Text(
                 text = letter,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-                    .clickable {
-                        val countryIndex = indexMap[letter] ?: return@clickable
-                        val targetIndex = headerItemCount + countryIndex
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(targetIndex)
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .semantics {
+                        contentDescription = jumpDescription
+                        onClick {
+                            jumpTo(letter)
+                            true
                         }
-                    }
-                    .semantics { contentDescription = jumpDescription }
-                    .padding(horizontal = 6.dp),
+                    },
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -978,7 +1028,7 @@ private fun CountryCard(
             .fillMaxWidth()
             .combinedClickable(
                 interactionSource = interactionSource,
-                indication = null,
+                indication = ripple(),
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
@@ -1209,8 +1259,9 @@ private fun SearchSuggestionItemRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 48.dp)
             .clickable(onClick = onClick)
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

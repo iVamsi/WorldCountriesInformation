@@ -4,6 +4,7 @@ package com.vamsi.worldcountriesinformation.feature.countrydetails
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -147,10 +149,10 @@ fun CountryDetailsRoute(
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, effect.shareText)
-                        putExtra(Intent.EXTRA_SUBJECT, "Country Information")
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.details_share_subject))
                     }
                     context.startActivity(
-                        Intent.createChooser(shareIntent, "Share country info"),
+                        Intent.createChooser(shareIntent, context.getString(R.string.details_share_chooser)),
                     )
                 }
 
@@ -208,7 +210,7 @@ private fun CountryDetailsScreenContent(
     state: CountryDetailsContract.State,
     countryCode: String,
     onIntent: (CountryDetailsContract.Intent) -> Unit,
-    cacheAge: String,
+    cacheAge: String?,
     isCacheFresh: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -251,12 +253,7 @@ private fun CountryDetailsScreenContent(
         }
 
         else -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text("Initializing...")
-            }
+            CountryDetailsShimmer()
         }
     }
 }
@@ -277,7 +274,7 @@ private fun CountryDetailsScreen(
     onShareClick: () -> Unit = {},
     onOpenInMapsClick: () -> Unit = {},
     onNearbyCountryClick: (String) -> Unit = {},
-    cacheAge: String = "Never",
+    cacheAge: String? = null,
     isCacheFresh: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
@@ -290,9 +287,9 @@ private fun CountryDetailsScreen(
                     Column {
                         Text(country.name)
                         // Cache age indicator
-                        if (cacheAge != "Never") {
+                        if (cacheAge != null) {
                             Text(
-                                text = "Updated $cacheAge",
+                                text = stringResource(R.string.details_updated, cacheAge),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = if (isCacheFresh) {
                                     MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
@@ -307,7 +304,7 @@ private fun CountryDetailsScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.details_navigate_back),
                         )
                     }
                 },
@@ -316,7 +313,7 @@ private fun CountryDetailsScreen(
                     IconButton(onClick = onShareClick) {
                         Icon(
                             imageVector = Icons.Default.Share,
-                            contentDescription = "Share country information",
+                            contentDescription = stringResource(R.string.details_share),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
@@ -324,7 +321,11 @@ private fun CountryDetailsScreen(
                     IconButton(onClick = onFavoriteClick) {
                         Icon(
                             imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                            contentDescription = if (isFavorite) {
+                                stringResource(R.string.details_favorite_remove)
+                            } else {
+                                stringResource(R.string.details_favorite_add)
+                            },
                             tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
@@ -335,7 +336,7 @@ private fun CountryDetailsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Refresh country details",
+                            contentDescription = stringResource(R.string.details_refresh),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
@@ -393,7 +394,7 @@ private fun CountryDetailsScreen(
 
                     item(key = "details-header", contentType = "section-header") {
                         Text(
-                            text = "Country Information",
+                            text = stringResource(R.string.details_section_information),
                             style = MaterialTheme.typography.titleLargeEmphasized,
                             modifier = Modifier.padding(vertical = 8.dp),
                         )
@@ -549,7 +550,7 @@ private fun CountryFlagCard(country: Country) {
                         .data(flagResourceId)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Flag of ${country.name}",
+                    contentDescription = stringResource(R.string.details_flag_desc, country.name),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(MaterialTheme.shapes.extraExtraLarge),
@@ -640,7 +641,7 @@ private fun CountryMapCard(country: Country, showBorders: Boolean = true) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Location data not available",
+                    text = stringResource(R.string.details_location_unavailable, country.name),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -669,7 +670,7 @@ private fun OpenInMapsButton(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Open in Maps",
+            text = stringResource(R.string.details_open_in_maps),
             style = MaterialTheme.typography.labelLargeEmphasized,
         )
     }
@@ -689,7 +690,7 @@ private fun NearbyCountriesSection(
     Column(modifier = modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Nearby Countries ($region)",
+            text = stringResource(R.string.details_nearby_title, region),
             style = MaterialTheme.typography.titleLargeEmphasized,
             modifier = Modifier.padding(bottom = 12.dp),
         )
@@ -708,7 +709,7 @@ private fun NearbyCountriesSection(
 
             nearbyCountries.isEmpty() -> {
                 EmptyState(
-                    message = "No nearby countries found",
+                    message = stringResource(R.string.details_nearby_empty),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp),
@@ -762,7 +763,7 @@ private fun NearbyCountryCard(
             .width(120.dp)
             .clickable(
                 interactionSource = interactionSource,
-                indication = null,
+                indication = ripple(),
                 onClick = onClick,
             )
             .pressScaleEffect(interactionSource),
@@ -777,11 +778,13 @@ private fun NearbyCountryCard(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Flag
-            Card(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    .height(60.dp)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center,
             ) {
                 if (flagResourceId != 0) {
                     AsyncImage(
@@ -789,20 +792,15 @@ private fun NearbyCountryCard(
                             .data(flagResourceId)
                             .crossfade(true)
                             .build(),
-                        contentDescription = "Flag of ${country.name}",
+                        contentDescription = stringResource(R.string.details_flag_desc, country.name),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,
                     )
                 } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = CountryDetailsViewModel.countryCodeToFlagEmoji(country.twoLetterCode),
-                            style = MaterialTheme.typography.headlineMediumEmphasized,
-                        )
-                    }
+                    Text(
+                        text = CountryDetailsViewModel.countryCodeToFlagEmoji(country.twoLetterCode),
+                        style = MaterialTheme.typography.headlineMediumEmphasized,
+                    )
                 }
             }
 
@@ -876,19 +874,23 @@ private data class CountryDetail(
 @Composable
 private fun getCountryDetailsList(country: Country): List<CountryDetail> {
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
-    return remember(country) {
-        listOf(
-            CountryDetail("Country Name", country.name),
-            CountryDetail("Capital City", country.capital),
-            CountryDetail("Population", numberFormat.format(country.population)),
-            CountryDetail("Calling Code", country.callingCode),
-            CountryDetail("Languages", country.languages.joinToString(", ") { it.name ?: "" }),
-            CountryDetail("Currencies", country.currencies.joinToString(", ") { it.name ?: "" }),
-            CountryDetail("Region", country.region),
-            CountryDetail("Two Letter Code", country.twoLetterCode),
-            CountryDetail("Three Letter Code", country.threeLetterCode),
-        )
-    }
+    return listOf(
+        CountryDetail(stringResource(R.string.details_label_name), country.name),
+        CountryDetail(stringResource(R.string.details_label_capital), country.capital),
+        CountryDetail(stringResource(R.string.details_label_population), numberFormat.format(country.population)),
+        CountryDetail(stringResource(R.string.details_label_calling_code), country.callingCode),
+        CountryDetail(
+            stringResource(R.string.details_label_languages),
+            country.languages.joinToString(", ") { it.name ?: "" },
+        ),
+        CountryDetail(
+            stringResource(R.string.details_label_currencies),
+            country.currencies.joinToString(", ") { it.name ?: "" },
+        ),
+        CountryDetail(stringResource(R.string.details_label_region), country.region),
+        CountryDetail(stringResource(R.string.details_label_two_letter), country.twoLetterCode),
+        CountryDetail(stringResource(R.string.details_label_three_letter), country.threeLetterCode),
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -903,12 +905,12 @@ private fun CountryDetailsErrorContent(
         containerColor = androidx.compose.ui.graphics.Color.Transparent,
         topBar = {
             TopAppBar(
-                title = { Text("Error") },
+                title = { Text(stringResource(R.string.details_error_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back",
+                            contentDescription = stringResource(R.string.details_navigate_back),
                         )
                     }
                 },
@@ -923,6 +925,7 @@ private fun CountryDetailsErrorContent(
         ErrorState(
             message = message,
             onRetry = onRetry,
+            retryLabel = stringResource(R.string.details_retry),
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues),

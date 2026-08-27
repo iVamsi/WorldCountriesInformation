@@ -33,6 +33,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -165,9 +166,9 @@ class CountryDetailsViewModelTest {
     }
 
     @Test
-    fun `getCacheAge returns Never when not loaded`() = runTest {
+    fun `getCacheAge returns null when not loaded`() = runTest {
         viewModel = createViewModel()
-        assertEquals("Never", viewModel.getCacheAge())
+        assertNull(viewModel.getCacheAge())
         assertFalse(viewModel.isCacheFresh())
     }
 }
