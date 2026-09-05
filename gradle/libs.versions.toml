@@ -112,7 +112,7 @@ turbine = "1.2.1"
 benchmarkMacro = "1.4.1"
 uiautomator = "2.4.0"
 detekt = "1.23.8"
-spotless = "8.10.0"
+spotless = "8.10.1"
 kover = "0.9.9"
 
 [libraries]
