@@ -90,7 +90,7 @@ generativeai = "0.9.0"
 appfunctions = "1.0.0-alpha09"
 
 # OSS licenses
-playServicesOssLicenses = "17.5.1"
+playServicesOssLicenses = "17.5.2"
 ossLicensesPlugin = "0.13.0"
 glanceWearTiles = "1.0.0-alpha07"
 wearCompose = "1.6.2"
