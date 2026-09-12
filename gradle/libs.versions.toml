@@ -2,7 +2,7 @@
 # Gradle and Android
 agp = "9.4.0"
 kotlin = "2.4.10"
-ksp = "2.3.11"
+ksp = "2.3.12"
 compileSdk = "37"
 minSdk = "26"
 targetSdk = "37"
