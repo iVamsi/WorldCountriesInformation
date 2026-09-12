@@ -49,7 +49,7 @@ hilt = "2.60.1"
 javax-inject = "1"
 
 # Database
-room = "2.8.4"
+room = "2.8.5"
 
 # Networking
 retrofit = "3.0.0"
