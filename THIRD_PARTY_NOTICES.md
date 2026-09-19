@@ -20,6 +20,15 @@ subject to the ODbL terms for the underlying database contents.
 **Flag emoji / flag assets in the mledoze dataset are not licensed under ODbL.**
 See the mledoze/countries repository for flag licensing details.
 
+## Population — World Bank (CC BY 4.0)
+
+Population figures are fetched at runtime from the World Bank Indicators API,
+indicator `SP.POP.TOTL` ("Population, total"), most recent value per economy:
+
+- Endpoint: `https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&mrv=1`
+- License: [Creative Commons Attribution 4.0](https://datacatalog.worldbank.org/public-licenses#cc-by)
+- Attribution: World Bank, World Development Indicators
+
 ## Map data — OpenStreetMap (ODbL 1.0)
 
 Map tiles and geodata on the country details screen use OpenStreetMap. See

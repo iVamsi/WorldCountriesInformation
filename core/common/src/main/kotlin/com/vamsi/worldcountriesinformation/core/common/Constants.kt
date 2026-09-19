@@ -7,6 +7,11 @@ object Constants {
 
     // API end points
     const val ALL = "countries.json"
+
+    // World Bank "Population, total" (SP.POP.TOTL), most recent value per economy, CC BY 4.0.
+    // The mledoze dataset has no population, so this is merged in by ISO-3 code.
+    const val WORLD_BANK_POPULATION_URL =
+        "https://api.worldbank.org/v2/country/all/indicator/SP.POP.TOTL?format=json&mrv=1&per_page=400"
     const val NAME = "name/{name}"
     const val FULL_NAME = "fullText"
     const val CODE = "alpha/{code}"

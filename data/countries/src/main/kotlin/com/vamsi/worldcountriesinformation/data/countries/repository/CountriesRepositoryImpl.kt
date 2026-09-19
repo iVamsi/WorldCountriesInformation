@@ -8,7 +8,9 @@ import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountries // 
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountry // v3.1 API mapper (Single)
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toDomain
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
+import com.vamsi.worldcountriesinformation.data.countries.mapper.toPopulationByIso3
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toSummaryList
+import com.vamsi.worldcountriesinformation.data.countries.mapper.withPopulation
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
@@ -206,10 +208,17 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Step 3: Emit cached data if appropriate
             val shouldEmitCache = when (policy) {
-                CachePolicy.CACHE_FIRST -> hasCache // Emit cache immediately if exists
-                CachePolicy.NETWORK_FIRST -> false // Wait for network first
-                CachePolicy.FORCE_REFRESH -> false // Ignore cache completely
-                CachePolicy.CACHE_ONLY -> hasCache // Already handled above
+                // Emit the cache immediately if it exists
+                CachePolicy.CACHE_FIRST -> hasCache
+
+                // Wait for the network first
+                CachePolicy.NETWORK_FIRST -> false
+
+                // Ignore the cache completely
+                CachePolicy.FORCE_REFRESH -> false
+
+                // Already handled above
+                CachePolicy.CACHE_ONLY -> hasCache
             }
 
             if (shouldEmitCache && hasCache) {
@@ -220,18 +229,24 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Step 4: Determine if network fetch is needed
             val shouldFetchNetwork = when (policy) {
-                CachePolicy.CACHE_FIRST -> !isCacheFresh // Refresh stale caches or ones missing calling codes
-                CachePolicy.NETWORK_FIRST -> true // Always try network
-                CachePolicy.FORCE_REFRESH -> true // Always fetch
-                CachePolicy.CACHE_ONLY -> false // Never fetch
+                // Refresh stale caches
+                CachePolicy.CACHE_FIRST -> !isCacheFresh
+
+                // Always try the network
+                CachePolicy.NETWORK_FIRST -> true
+
+                // Always fetch
+                CachePolicy.FORCE_REFRESH -> true
+
+                // Never fetch
+                CachePolicy.CACHE_ONLY -> false
             }
 
             // Step 5: Fetch from network if needed
             if (shouldFetchNetwork) {
                 try {
                     Timber.d("${policy.name}: Fetching fresh countries from network")
-                    val networkCountries = countriesApi.fetchWorldCountriesInformation()
-                    val domainCountries = networkCountries.toCountries()
+                    val domainCountries = fetchCountriesWithPopulation()
 
                     // Update database - this will trigger reactive Flow emission below
                     // Database update will set current timestamp for lastUpdated
@@ -476,6 +491,7 @@ class CountriesRepositoryImpl @Inject constructor(
 
         if (matchedItem != null) {
             val domainCountry = matchedItem.toCountry()
+                ?.let { listOf(it).withPopulation(fetchPopulationOrEmpty()).single() }
 
             if (domainCountry != null) {
                 // Cache the fetched country
@@ -492,6 +508,27 @@ class CountriesRepositoryImpl @Inject constructor(
         return null
     }
 
+    private suspend fun fetchCountriesWithPopulation(): List<Country> {
+        val countries = countriesApi.fetchWorldCountriesInformation().toCountries()
+        return countries.withPopulation(fetchPopulationOrEmpty())
+    }
+
+    /** Population is a secondary source: if the World Bank call fails, countries still load. */
+    private suspend fun fetchPopulationOrEmpty(): Map<String, Int> = try {
+        countriesApi.fetchPopulation().toPopulationByIso3()
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: IOException) {
+        Timber.w(e, "Population fetch failed; keeping cached values")
+        emptyMap()
+    } catch (e: HttpException) {
+        Timber.w(e, "Population fetch failed; keeping cached values")
+        emptyMap()
+    } catch (e: SerializationException) {
+        Timber.w(e, "Population response could not be parsed")
+        emptyMap()
+    }
+
     override fun getCountriesFlow(): Flow<List<CountrySummary>> = countryDao.getAllCountries().map { entities ->
         entities.toSummaryList()
     }
@@ -506,8 +543,7 @@ class CountriesRepositoryImpl @Inject constructor(
 
     override suspend fun forceRefresh(): Result<Unit> = try {
         Timber.d("Force refresh: Fetching fresh data from network")
-        val networkCountries = countriesApi.fetchWorldCountriesInformation()
-        val domainCountries = networkCountries.toCountries()
+        val domainCountries = fetchCountriesWithPopulation()
 
         Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
         countryDao.refreshCountries(domainCountries.toEntityList())
@@ -555,6 +591,7 @@ class CountriesRepositoryImpl @Inject constructor(
                 emit(ApiResponse.Error(exception))
                 return true
             }
+
             CachePolicy.NETWORK_FIRST -> {
                 if (hasCache) {
                     Timber.d("NETWORK_FIRST: Network failed, falling back to cached data")
@@ -565,6 +602,7 @@ class CountriesRepositoryImpl @Inject constructor(
                     return true
                 }
             }
+
             CachePolicy.CACHE_FIRST -> {
                 if (!hasCache) {
                     emit(ApiResponse.Error(exception))
@@ -573,6 +611,7 @@ class CountriesRepositoryImpl @Inject constructor(
                     Timber.d("CACHE_FIRST: Network error, continuing with cached data")
                 }
             }
+
             CachePolicy.CACHE_ONLY -> Unit
         }
         return false

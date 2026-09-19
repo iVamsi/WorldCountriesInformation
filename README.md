@@ -67,7 +67,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 **Typeface:** Fraunces, SIL Open Font License 1.1. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-**Country data:** [mledoze/countries](https://github.com/mledoze/countries), [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1.0/). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+**Country data:** [mledoze/countries](https://github.com/mledoze/countries), [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1.0/). **Population:** [World Bank](https://data.worldbank.org/indicator/SP.POP.TOTL) (`SP.POP.TOTL`), CC BY 4.0. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 OpenStreetMap data is [ODbL](https://www.openstreetmap.org/copyright); map tiles are credited in-app where required.
 

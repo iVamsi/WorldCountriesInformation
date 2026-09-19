@@ -6,7 +6,7 @@ import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
 
-/**
+/*
  * Mapper functions to convert REST Countries API v3.1 response models to domain models
  *
  * Key changes from v2 to v3.1:

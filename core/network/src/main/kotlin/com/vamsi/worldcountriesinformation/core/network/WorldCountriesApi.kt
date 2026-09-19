@@ -1,10 +1,13 @@
 package com.vamsi.worldcountriesinformation.core.network
 
+import com.vamsi.worldcountriesinformation.core.common.Constants
 import com.vamsi.worldcountriesinformation.core.common.Constants.ALL
 import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
+import kotlinx.serialization.json.JsonArray
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 
 /**
  * Retrofit API interface for World Countries Information
@@ -45,6 +48,13 @@ interface WorldCountriesApi {
     suspend fun fetchWorldCountriesInformation(
         @Query("fields") fields: String = COUNTRY_LIST_FIELDS,
     ): List<CountriesV3ResponseItem>
+
+    /**
+     * Latest population per economy from the World Bank. The body is a two-element array:
+     * `[metadata, rows]`, so it is returned raw and parsed by the data layer.
+     */
+    @GET
+    suspend fun fetchPopulation(@Url url: String = Constants.WORLD_BANK_POPULATION_URL): JsonArray
 
     /**
      * Fetch countries by name from REST Countries API v3.1

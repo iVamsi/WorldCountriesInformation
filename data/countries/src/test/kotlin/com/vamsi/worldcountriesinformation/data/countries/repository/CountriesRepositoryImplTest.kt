@@ -13,8 +13,12 @@ import com.vamsi.worldcountriesinformation.model.NameV3
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.jsonArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -141,6 +145,7 @@ class CountriesRepositoryImplTest {
 
         coEvery { dao.getCountryCount() } returns 0
         coEvery { api.fetchWorldCountriesInformation() } returns listOf(apiItem)
+        coEvery { api.fetchPopulation() } returns JsonArray(emptyList())
         coEvery { dao.refreshCountries(any()) } returns Unit
         coEvery { dao.getAllCountries() } returns flowOf(entities)
 
@@ -154,6 +159,43 @@ class CountriesRepositoryImplTest {
         coVerify(exactly = 1) { api.fetchWorldCountriesInformation() }
         coVerify(exactly = 1) { dao.refreshCountries(any()) }
         coVerify(exactly = 0) { dao.getAllCountriesOnce() }
+    }
+
+    @Test
+    fun `network fetch merges World Bank population by ISO-3 code`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val apiItem = minimalApiItem()
+        val saved = slot<List<CountryEntity>>()
+
+        coEvery { dao.getCountryCount() } returns 0
+        coEvery { api.fetchWorldCountriesInformation() } returns listOf(apiItem)
+        coEvery { api.fetchPopulation() } returns Json.parseToJsonElement(
+            """[{"page":1},[{"countryiso3code":"${apiItem.cca3}","value":27614411},{"countryiso3code":"WLD","value":8200000000}]]""",
+        ).jsonArray
+        coEvery { dao.refreshCountries(capture(saved)) } returns Unit
+        coEvery { dao.getAllCountries() } returns flowOf(emptyList())
+
+        CountriesRepositoryImpl(api, dao, clock).forceRefresh()
+
+        assertEquals(27_614_411, saved.captured.single().population)
+    }
+
+    @Test
+    fun `network fetch keeps countries when population call fails`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val saved = slot<List<CountryEntity>>()
+
+        coEvery { api.fetchWorldCountriesInformation() } returns listOf(minimalApiItem())
+        coEvery { api.fetchPopulation() } throws IOException("world bank down")
+        coEvery { dao.refreshCountries(capture(saved)) } returns Unit
+
+        val result = CountriesRepositoryImpl(api, dao, clock).forceRefresh()
+
+        assertTrue(result.isSuccess)
+        // Falls back to whatever the feed carried (the fixture's 1; the real feed has none).
+        assertEquals(1, saved.captured.single().population)
     }
 
     @Test
