@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":feature:widget"))
 
+    implementation(project(":core:designsystem"))
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.wear.tiles)
     implementation(libs.androidx.glance.material3)

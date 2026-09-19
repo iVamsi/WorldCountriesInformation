@@ -35,6 +35,11 @@ private fun Screenshot(
 private fun Details() = Screenshot()
 
 @PreviewTest
+@Preview(name = "RTL", locale = "ar", heightDp = 1200)
+@Composable
+private fun DetailsRtl() = Screenshot()
+
+@PreviewTest
 @Preview(heightDp = 1000)
 @Composable
 private fun DetailsWithAiSummary() = Screenshot(

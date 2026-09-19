@@ -15,10 +15,10 @@ import kotlin.math.min
 class ThemeContrastTest {
 
     @Test
-    fun `light scheme meets WCAG AA`() = assertScheme("light", LightColors)
+    fun `light scheme meets WCAG AA`() = assertScheme("light", ExplorerLightColorScheme)
 
     @Test
-    fun `dark scheme meets WCAG AA`() = assertScheme("dark", DarkColors)
+    fun `dark scheme meets WCAG AA`() = assertScheme("dark", ExplorerDarkColorScheme)
 
     private fun assertScheme(name: String, scheme: ColorScheme) {
         val textPairs = listOf(

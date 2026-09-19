@@ -1,4 +1,4 @@
-/**
+/*
  * Domain module build configuration.
  *
  * This is a pure JVM/Kotlin module (not Android-specific) containing:

@@ -21,6 +21,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.wear.tiles.GlanceTileService
+import com.vamsi.worldcountriesinformation.core.designsystem.explorerGlanceColors
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetData
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetDataSource
 import dagger.hilt.EntryPoint
@@ -45,7 +46,7 @@ class CountryWearTileService : GlanceTileService() {
             value = loadWidgetData(context)
         }
 
-        GlanceTheme {
+        GlanceTheme(colors = explorerGlanceColors()) {
             Column(
                 modifier = GlanceModifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,

@@ -33,6 +33,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import com.vamsi.worldcountriesinformation.core.designsystem.explorerGlanceColors
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetData
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetDataSource
 import dagger.hilt.EntryPoint
@@ -70,7 +71,7 @@ class CountryWidget : GlanceAppWidget() {
         val widgetData = getWidgetData(context)
 
         provideContent {
-            GlanceTheme {
+            GlanceTheme(colors = explorerGlanceColors()) {
                 CountryWidgetContent(
                     widgetData = widgetData,
                     context = context,

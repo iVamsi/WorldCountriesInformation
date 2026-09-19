@@ -101,6 +101,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
@@ -832,7 +833,7 @@ private fun RecentlyViewedPlate(
     Surface(
         onClick = onClick,
         modifier = modifier
-            .width(112.dp)
+            .width(RECENT_PLATE_WIDTH * LocalDensity.current.fontScale)
             .pressScaleEffect(interactionSource),
         interactionSource = interactionSource,
         shape = MaterialTheme.shapes.medium,
@@ -956,7 +957,7 @@ private fun AlphabetJumpIndex(
 }
 
 private fun buildAlphabetIndexMap(countries: List<CountrySummary>): Map<String, Int> {
-    val letterToIndex = LinkedHashMap<String, Int>()
+    val letterToIndex = linkedMapOf<String, Int>()
     countries.forEachIndexed { index, country ->
         val letter = country.name.trim().firstOrNull()?.uppercaseChar()
         if (letter != null && letter.isLetter()) {
@@ -1230,6 +1231,7 @@ private const val ALPHABET_INDEX_MIN_ITEMS = 15
 private const val ALPHABET_INDEX_MIN_HEIGHT_DP = 480
 private const val SELECTED_ROW_ALPHA = 0.35f
 private const val FAVORITE_SCALE = 1.1f
+private val RECENT_PLATE_WIDTH = 112.dp
 
 // -----------------------------------------------------------------------------
 // Previews

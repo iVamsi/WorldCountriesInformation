@@ -35,7 +35,8 @@ private val AppShapes = Shapes(
     extraExtraLarge = RoundedCornerShape(32.dp),
 )
 
-internal val LightColors = lightColorScheme(
+/** Static Explorer light scheme; also used by the Glance widget and Wear tile below Android 12. */
+val ExplorerLightColorScheme = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
     primaryContainer = md_theme_light_primaryContainer,
@@ -74,7 +75,8 @@ internal val LightColors = lightColorScheme(
     scrim = md_theme_light_scrim,
 )
 
-internal val DarkColors = darkColorScheme(
+/** Static Explorer dark scheme. */
+val ExplorerDarkColorScheme = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
     primaryContainer = md_theme_dark_primaryContainer,
@@ -129,9 +131,9 @@ fun WorldCountriesTheme(
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
-        darkTheme -> DarkColors
+        darkTheme -> ExplorerDarkColorScheme
 
-        else -> LightColors
+        else -> ExplorerLightColorScheme
     }
 
     val view = LocalView.current

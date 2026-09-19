@@ -6,11 +6,11 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -49,7 +49,7 @@ fun ShimmerEffect(
     val transition = rememberInfiniteTransition(label = "shimmer")
     val translateAnim = transition.animateFloat(
         initialValue = 0f,
-        targetValue = 1000f,
+        targetValue = SHIMMER_TRAVEL,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = 1500,
@@ -60,14 +60,19 @@ fun ShimmerEffect(
         label = "shimmer_translate",
     )
 
-    val brush = Brush.linearGradient(
-        colors = colors,
-        start = Offset(translateAnim.value - 1000f, translateAnim.value - 1000f),
-        end = Offset(translateAnim.value, translateAnim.value),
-    )
-
+    // Read the animated value in the draw phase only, so shimmer rows redraw without recomposing.
     Box(
-        modifier = modifier
-            .background(brush),
+        modifier = modifier.drawBehind {
+            val offset = translateAnim.value
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = colors,
+                    start = Offset(offset - SHIMMER_TRAVEL, offset - SHIMMER_TRAVEL),
+                    end = Offset(offset, offset),
+                ),
+            )
+        },
     )
 }
+
+private const val SHIMMER_TRAVEL = 1000f

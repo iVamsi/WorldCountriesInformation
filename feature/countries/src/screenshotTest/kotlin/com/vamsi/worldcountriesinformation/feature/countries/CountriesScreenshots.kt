@@ -32,6 +32,12 @@ private fun Screenshot(state: CountriesContract.State, cacheAge: String? = null)
 private fun CountriesList() = Screenshot(previewListState(), cacheAge = "2 hours ago")
 
 @PreviewTest
+@Preview(name = "RTL", locale = "ar")
+@Preview(name = "German 130%", locale = "de", fontScale = 1.3f)
+@Composable
+private fun CountriesLocales() = Screenshot(previewListState(), cacheAge = "vor 2 Stunden")
+
+@PreviewTest
 @PreviewLightDark
 @Composable
 private fun CountriesSelection() = Screenshot(previewSelectionState())

@@ -19,7 +19,7 @@ Android app for browsing country data. Country facts are loaded from the [mledoz
 - **Adaptive UI** — Two-pane list + detail on expanded width; list pane kept for Settings, Quiz, and Compare.
 - **Localization** — Static strings in English plus de/es/fr/hi for key screens.
 - **Offline** — Room cache; behavior depends on policy + offline switch.
-- **UI** — Material 3 Expressive, Navigation 3.
+- **UI** — Material 3 Expressive, Navigation 3. The static "Explorer" look is a warm paper palette in light, ink navy in dark, with Fraunces for headings; colors, type, shapes and the shared `FlagImage`, `FactTile` and `SectionHeader` components live in `core/designsystem`. Design plan: [docs/plans/2026-09-19-ui-redesign.md](docs/plans/2026-09-19-ui-redesign.md).
 
 ## Tech stack
 
@@ -64,6 +64,8 @@ Maps use OpenStreetMap; no API keys are required for maps or country data. Add `
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+**Typeface:** Fraunces, SIL Open Font License 1.1. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 **Country data:** [mledoze/countries](https://github.com/mledoze/countries), [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1.0/). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

@@ -33,6 +33,11 @@ private fun QuizQuestion() = Screenshot(previewQuestionState())
 private fun QuizAnsweredWrong() = Screenshot(previewQuestionState(selectedIndex = 0))
 
 @PreviewTest
+@Preview(name = "RTL", locale = "ar")
+@Composable
+private fun QuizQuestionRtl() = Screenshot(previewQuestionState())
+
+@PreviewTest
 @Preview
 @Composable
 private fun QuizAnsweredCorrect() = Screenshot(previewQuestionState(selectedIndex = 1))

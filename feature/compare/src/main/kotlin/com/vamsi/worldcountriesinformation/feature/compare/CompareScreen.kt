@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -234,8 +234,7 @@ private fun CompareGridLayout(rows: List<CompareRow>, countries: List<Country>) 
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(countries, key = { it.threeLetterCode }) { country ->
-            val index = countries.indexOf(country)
+        itemsIndexed(countries, key = { _, country -> country.threeLetterCode }) { index, country ->
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 CountryHeader(country = country, modifier = Modifier.padding(bottom = 4.dp))
                 rows.forEach { row ->

@@ -62,6 +62,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -280,7 +281,13 @@ internal fun CountryDetailsScreen(
     isCacheFresh: Boolean = false,
 ) {
     val widthDp = LocalConfiguration.current.screenWidthDp
-    val factColumns = if (widthDp >= EXPANDED_WIDTH_DP) 3 else 2
+    val fontScale = LocalDensity.current.fontScale
+    // Large text breaks tracked labels mid-word in narrow tiles, so fall back to one column.
+    val factColumns = when {
+        fontScale >= LARGE_FONT_SCALE -> 1
+        widthDp >= EXPANDED_WIDTH_DP -> 3
+        else -> 2
+    }
     val sideBySide = widthDp >= LARGE_WIDTH_DP
     val hasLocation = country.latitude != 0.0 || country.longitude != 0.0
 
@@ -374,7 +381,7 @@ internal fun CountryDetailsScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     SectionHeader(text = stringResource(R.string.details_section_information))
-                                    FactGrid(facts = facts, columns = 2)
+                                    FactGrid(facts = facts, columns = factColumns.coerceAtMost(2))
                                 }
                                 CountryMapCard(
                                     country = country,
@@ -774,7 +781,7 @@ private fun NearbyCountryPlate(
     Surface(
         onClick = onClick,
         modifier = modifier
-            .width(NEARBY_PLATE_WIDTH)
+            .width(NEARBY_PLATE_WIDTH * LocalDensity.current.fontScale)
             .pressScaleEffect(interactionSource),
         interactionSource = interactionSource,
         shape = MaterialTheme.shapes.medium,
@@ -843,6 +850,7 @@ private fun CountryDetailsErrorContent(
 
 private const val EXPANDED_WIDTH_DP = 600
 private const val LARGE_WIDTH_DP = 840
+private const val LARGE_FONT_SCALE = 1.5f
 private const val MAP_ZOOM = 5.0
 private val MAP_HEIGHT = 220.dp
 private val HERO_FLAG_MAX_WIDTH = 480.dp
