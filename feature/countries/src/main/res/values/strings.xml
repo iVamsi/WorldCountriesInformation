@@ -5,6 +5,11 @@
     <string name="quiz_open">Country quiz</string>
 
     <string name="countries_title">Countries</string>
+    <plurals name="countries_count">
+        <item quantity="one">%1$d country</item>
+        <item quantity="other">%1$d countries</item>
+    </plurals>
+    <string name="countries_subtitle_updated">%1$s · Updated %2$s</string>
     <string name="countries_compare_selection">%1$d selected</string>
     <string name="countries_compare">Compare</string>
     <string name="countries_cancel_compare">Cancel compare selection</string>
@@ -14,10 +19,6 @@
     <string name="countries_search">Search</string>
     <string name="countries_back">Back</string>
     <string name="countries_clear">Clear</string>
-
-    <string name="countries_filter_by_region">Filter by Region</string>
-    <string name="countries_regions_selected">%1$d selected</string>
-    <string name="countries_sort">Sort</string>
     <string name="countries_sort_name_asc">Name · A to Z</string>
     <string name="countries_sort_name_desc">Name · Z to A</string>
     <string name="countries_sort_population_asc">Population · Low to High</string>
@@ -38,7 +39,9 @@
     <string name="countries_loading">Loading countries\u2026</string>
     <string name="countries_retry">Retry</string>
     <string name="countries_no_countries">No countries found</string>
+    <string name="countries_no_countries_hint">Pull down to load the list.</string>
     <string name="countries_no_results">No results for \"%1$s\"</string>
+    <string name="countries_no_results_hint">Check the spelling or try a region filter.</string>
     <string name="countries_clear_search">Clear search</string>
 
     <string name="countries_alphabet_jump">Jump to countries starting with %1$s</string>

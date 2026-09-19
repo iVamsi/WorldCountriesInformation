@@ -4,15 +4,17 @@
     <string name="voice_search">Recherche vocale</string>
     <string name="quiz_open">Quiz des pays</string>
     <string name="countries_title">Pays</string>
+    <plurals name="countries_count">
+        <item quantity="one">%1$d pays</item>
+        <item quantity="other">%1$d pays</item>
+    </plurals>
+    <string name="countries_subtitle_updated">%1$s · Mis à jour %2$s</string>
     <string name="countries_compare_selection">%1$d sélectionnés</string>
     <string name="countries_compare">Comparer</string>
     <string name="countries_cancel_compare">Annuler la sélection</string>
     <string name="countries_settings">Paramètres</string>
     <string name="countries_clear_filters">Effacer les filtres</string>
     <string name="countries_scroll_to_top">Haut de page</string>
-    <string name="countries_filter_by_region">Filtrer par région</string>
-    <string name="countries_regions_selected">%1$d sélectionnés</string>
-    <string name="countries_sort">Trier</string>
     <string name="countries_recently_viewed">Consultés récemment</string>
     <string name="countries_recent_searches">Recherches récentes</string>
     <string name="countries_clear_all">Tout effacer</string>
@@ -20,7 +22,9 @@
     <string name="countries_loading">Chargement des pays…</string>
     <string name="countries_retry">Réessayer</string>
     <string name="countries_no_countries">Aucun pays trouvé</string>
+    <string name="countries_no_countries_hint">Tirez vers le bas pour charger la liste.</string>
     <string name="countries_no_results">Aucun résultat pour « %1$s »</string>
+    <string name="countries_no_results_hint">Vérifiez l’orthographe ou essayez un filtre de région.</string>
     <string name="countries_clear_search">Effacer la recherche</string>
     <string name="countries_select_hint">Sélectionnez un pays pour les détails</string>
 </resources>
