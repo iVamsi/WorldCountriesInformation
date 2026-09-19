@@ -41,9 +41,9 @@ fun ShimmerEffect(
     shimmerColors: List<Color>? = null,
 ) {
     val colors = shimmerColors ?: listOf(
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+        MaterialTheme.colorScheme.surfaceContainerHigh,
+        MaterialTheme.colorScheme.surfaceContainerHighest,
+        MaterialTheme.colorScheme.surfaceContainerHigh,
     )
 
     val transition = rememberInfiniteTransition(label = "shimmer")

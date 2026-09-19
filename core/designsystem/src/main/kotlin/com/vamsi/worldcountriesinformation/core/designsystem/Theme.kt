@@ -23,15 +23,16 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
+// Paper stays crisp: nothing rounder than 32 dp.
 private val AppShapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp),
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(12.dp),
     large = RoundedCornerShape(16.dp),
     largeIncreased = RoundedCornerShape(20.dp),
-    extraLarge = RoundedCornerShape(28.dp),
-    extraLargeIncreased = RoundedCornerShape(32.dp),
-    extraExtraLarge = RoundedCornerShape(48.dp),
+    extraLarge = RoundedCornerShape(24.dp),
+    extraLargeIncreased = RoundedCornerShape(28.dp),
+    extraExtraLarge = RoundedCornerShape(32.dp),
 )
 
 internal val LightColors = lightColorScheme(
@@ -48,8 +49,8 @@ internal val LightColors = lightColorScheme(
     tertiaryContainer = md_theme_light_tertiaryContainer,
     onTertiaryContainer = md_theme_light_onTertiaryContainer,
     error = md_theme_light_error,
-    errorContainer = md_theme_light_errorContainer,
     onError = md_theme_light_onError,
+    errorContainer = md_theme_light_errorContainer,
     onErrorContainer = md_theme_light_onErrorContainer,
     background = md_theme_light_background,
     onBackground = md_theme_light_onBackground,
@@ -57,11 +58,20 @@ internal val LightColors = lightColorScheme(
     onSurface = md_theme_light_onSurface,
     surfaceVariant = md_theme_light_surfaceVariant,
     onSurfaceVariant = md_theme_light_onSurfaceVariant,
+    surfaceContainerLowest = md_theme_light_surfaceContainerLowest,
+    surfaceContainerLow = md_theme_light_surfaceContainerLow,
+    surfaceContainer = md_theme_light_surfaceContainer,
+    surfaceContainerHigh = md_theme_light_surfaceContainerHigh,
+    surfaceContainerHighest = md_theme_light_surfaceContainerHighest,
+    surfaceDim = md_theme_light_surfaceDim,
+    surfaceBright = md_theme_light_surfaceBright,
     outline = md_theme_light_outline,
-    inverseOnSurface = md_theme_light_inverseOnSurface,
+    outlineVariant = md_theme_light_outlineVariant,
     inverseSurface = md_theme_light_inverseSurface,
+    inverseOnSurface = md_theme_light_inverseOnSurface,
     inversePrimary = md_theme_light_inversePrimary,
     surfaceTint = md_theme_light_surfaceTint,
+    scrim = md_theme_light_scrim,
 )
 
 internal val DarkColors = darkColorScheme(
@@ -78,8 +88,8 @@ internal val DarkColors = darkColorScheme(
     tertiaryContainer = md_theme_dark_tertiaryContainer,
     onTertiaryContainer = md_theme_dark_onTertiaryContainer,
     error = md_theme_dark_error,
-    errorContainer = md_theme_dark_errorContainer,
     onError = md_theme_dark_onError,
+    errorContainer = md_theme_dark_errorContainer,
     onErrorContainer = md_theme_dark_onErrorContainer,
     background = md_theme_dark_background,
     onBackground = md_theme_dark_onBackground,
@@ -87,18 +97,29 @@ internal val DarkColors = darkColorScheme(
     onSurface = md_theme_dark_onSurface,
     surfaceVariant = md_theme_dark_surfaceVariant,
     onSurfaceVariant = md_theme_dark_onSurfaceVariant,
+    surfaceContainerLowest = md_theme_dark_surfaceContainerLowest,
+    surfaceContainerLow = md_theme_dark_surfaceContainerLow,
+    surfaceContainer = md_theme_dark_surfaceContainer,
+    surfaceContainerHigh = md_theme_dark_surfaceContainerHigh,
+    surfaceContainerHighest = md_theme_dark_surfaceContainerHighest,
+    surfaceDim = md_theme_dark_surfaceDim,
+    surfaceBright = md_theme_dark_surfaceBright,
     outline = md_theme_dark_outline,
-    inverseOnSurface = md_theme_dark_inverseOnSurface,
+    outlineVariant = md_theme_dark_outlineVariant,
     inverseSurface = md_theme_dark_inverseSurface,
+    inverseOnSurface = md_theme_dark_inverseOnSurface,
     inversePrimary = md_theme_dark_inversePrimary,
     surfaceTint = md_theme_dark_surfaceTint,
+    scrim = md_theme_dark_scrim,
 )
 
+/**
+ * App theme. [dynamicColor] follows the wallpaper on Android 12+; otherwise the static
+ * Explorer palette in [Color.kt] applies.
+ */
 @Composable
 fun WorldCountriesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // / When true, uses system accent on Android 12+. When false, uses our
-    // / accessibility-tested palette (WCAG AA contrast, Explorer theme).
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit,
 ) {
@@ -117,14 +138,11 @@ fun WorldCountriesTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            val surfaceArgb = colorScheme.surface.toArgb()
-            window.statusBarColor = surfaceArgb
-            window.navigationBarColor = surfaceArgb
             val insetsController = WindowCompat.getInsetsController(window, view)
-            // Follow wallpaper / dynamic schemes: use surface luminance, not only light/dark mode.
-            val useLightStatusBarIcons = ColorUtils.calculateLuminance(surfaceArgb) > 0.5
-            insetsController.isAppearanceLightStatusBars = useLightStatusBarIcons
-            insetsController.isAppearanceLightNavigationBars = useLightStatusBarIcons
+            // Follow the resolved surface, not just light/dark mode, so dynamic schemes stay readable.
+            val lightIcons = ColorUtils.calculateLuminance(colorScheme.surface.toArgb()) > 0.5
+            insetsController.isAppearanceLightStatusBars = lightIcons
+            insetsController.isAppearanceLightNavigationBars = lightIcons
         }
     }
 

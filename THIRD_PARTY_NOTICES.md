@@ -25,3 +25,16 @@ See the mledoze/countries repository for flag licensing details.
 Map tiles and geodata on the country details screen use OpenStreetMap. See
 [OpenStreetMap copyright](https://www.openstreetmap.org/copyright). Map
 attribution is shown in-app where required.
+
+## Typeface — Fraunces (SIL Open Font License 1.1)
+
+Headings use Fraunces, bundled as
+`core/designsystem/src/main/res/font/fraunces_semibold.ttf`
+(`Fraunces72pt-SemiBold.ttf` from the upstream repository).
+
+- Copyright 2018 The Fraunces Project Authors
+  (`https://github.com/undercasetype/Fraunces`)
+- License: [SIL Open Font License, Version 1.1](https://openfontlicense.org)
+
+The font is used unmodified. Under the OFL it may be bundled with this software
+but may not be sold on its own.

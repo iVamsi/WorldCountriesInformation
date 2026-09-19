@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="ds_error_title">Un problème est survenu</string>
     <string name="ds_retry">Réessayer</string>
 </resources>

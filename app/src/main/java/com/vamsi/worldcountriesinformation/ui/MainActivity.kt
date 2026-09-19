@@ -23,7 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.vamsi.snapnotify.SnapNotifyProvider
 import com.vamsi.worldcountriesinformation.R
-import com.vamsi.worldcountriesinformation.core.designsystem.GradientBackground
+import com.vamsi.worldcountriesinformation.core.designsystem.AppBackground
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.navigation.CompareRoute
 import com.vamsi.worldcountriesinformation.core.navigation.CountriesRoute
@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = userPrefs.useDynamicColor,
             ) {
                 SnapNotifyProvider {
-                    GradientBackground(modifier = Modifier.fillMaxSize()) {
+                    AppBackground(modifier = Modifier.fillMaxSize()) {
                         // Create navigation state and navigator
                         val navigationState = rememberNavigationState(startRoute = CountriesRoute)
                         val navigator = remember { Navigator(navigationState) }
@@ -170,8 +170,10 @@ class MainActivity : ComponentActivity() {
         val data = intent.data ?: return null
         val raw = when (data.scheme?.lowercase()) {
             "https", "http" -> data.lastPathSegment
+
             "wci" -> data.host?.takeIf { it.equals("country", ignoreCase = true) }
                 ?.let { data.lastPathSegment ?: data.pathSegments.firstOrNull() }
+
             else -> null
         }
         return raw?.takeIf { it.length == 3 && it.all { ch -> ch.isLetter() } }?.uppercase()
