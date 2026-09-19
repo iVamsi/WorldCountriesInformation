@@ -17,7 +17,7 @@ private fun Settings() {
         AppBackground {
             SettingsScreenContent(
                 state = SettingsContract.State(
-                    cacheStats = CacheStats(entryCount = 250, estimatedSizeKB = 512, oldestEntryAgeMs = 7_200_000),
+                    cacheStats = CacheStats(entryCount = 250, estimatedSizeKB = 512, lastCheckedAgeMs = 7_200_000, lastChangedAgeMs = 260_000_000),
                 ),
                 onIntent = {},
                 onNavigateBack = {},

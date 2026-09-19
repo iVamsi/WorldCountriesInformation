@@ -8,6 +8,8 @@ import com.vamsi.worldcountriesinformation.data.countries.mapper.toCountries
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.countries.SyncOutcome
+import com.vamsi.worldcountriesinformation.domain.countries.SyncState
 import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
 import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
@@ -42,7 +44,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getCountryCount() } returns 0
         coEvery { api.fetchWorldCountriesInformation() } throws IOException("offline")
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
 
         repo.getCountries(CachePolicy.FORCE_REFRESH).test {
             assertEquals(ApiResponse.Loading, awaitItem())
@@ -60,7 +62,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getCountryCount() } returns 42
         coEvery { dao.getOldestTimestamp() } returns 1_000L
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         val snapshot = repo.getCountryCacheSnapshot()
 
         assertEquals(42, snapshot.entryCount)
@@ -75,7 +77,7 @@ class CountriesRepositoryImplTest {
         val dao = mockk<CountryDao>()
         coEvery { dao.deleteAllCountries() } returns Unit
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.clearCountryCache()
 
         coVerify(exactly = 1) { dao.deleteAllCountries() }
@@ -87,7 +89,7 @@ class CountriesRepositoryImplTest {
         val dao = mockk<CountryDao>()
         coEvery { dao.getAllCountriesOnce() } returns emptyList()
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.getCountries(CachePolicy.CACHE_ONLY).test {
             assertEquals(ApiResponse.Loading, awaitItem())
             val err = awaitItem() as ApiResponse.Error
@@ -105,7 +107,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
         coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.getCountries(CachePolicy.CACHE_ONLY).test {
             assertEquals(ApiResponse.Loading, awaitItem())
             val first = awaitItem() as ApiResponse.Success
@@ -129,7 +131,7 @@ class CountriesRepositoryImplTest {
         coEvery { api.fetchPopulation() } returns JsonArray(emptyList())
         coEvery { dao.refreshCountries(any()) } returns Unit
 
-        val weekly = CountriesRepositoryImpl(api, dao, clock, FakeUserPreferencesPort())
+        val weekly = CountriesRepositoryImpl(api, dao, clock, FakeUserPreferencesPort(), FakeSyncStatePort())
         weekly.getCountries(CachePolicy.CACHE_FIRST).test { cancelAndIgnoreRemainingEvents() }
         coVerify(exactly = 0) { api.fetchWorldCountriesInformation() }
 
@@ -138,6 +140,7 @@ class CountriesRepositoryImplTest {
             dao,
             clock,
             FakeUserPreferencesPort(UserPreferences(refreshInterval = RefreshInterval.DAILY)),
+            FakeSyncStatePort(),
         )
         daily.getCountries(CachePolicy.CACHE_FIRST).test { cancelAndIgnoreRemainingEvents() }
         coVerify(exactly = 1) { api.fetchWorldCountriesInformation() }
@@ -154,7 +157,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
         coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.getCountries(CachePolicy.CACHE_FIRST).test {
             assertEquals(ApiResponse.Loading, awaitItem())
             val first = awaitItem() as ApiResponse.Success
@@ -180,7 +183,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.refreshCountries(any()) } returns Unit
         coEvery { dao.getAllCountries() } returns flowOf(entities)
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.getCountries(CachePolicy.NETWORK_FIRST).test {
             assertEquals(ApiResponse.Loading, awaitItem())
             val success = awaitItem() as ApiResponse.Success
@@ -207,9 +210,62 @@ class CountriesRepositoryImplTest {
         coEvery { dao.refreshCountries(capture(saved)) } returns Unit
         coEvery { dao.getAllCountries() } returns flowOf(emptyList())
 
-        CountriesRepositoryImpl(api, dao, clock, prefs).forceRefresh()
+        CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort()).forceRefresh()
 
         assertEquals(27_614_411, saved.captured.single().population)
+    }
+
+    @Test
+    fun `sync skips the database write when the data is unchanged`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val syncStatePort = FakeSyncStatePort()
+        coEvery { api.fetchWorldCountriesInformation() } returns listOf(minimalApiItem())
+        coEvery { api.fetchPopulation() } returns JsonArray(emptyList())
+        coEvery { dao.refreshCountries(any()) } returns Unit
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, syncStatePort)
+
+        val first = repo.sync()
+        val second = repo.sync()
+
+        assertEquals(SyncOutcome.UPDATED, first.getOrThrow())
+        assertEquals(SyncOutcome.UNCHANGED, second.getOrThrow())
+        coVerify(exactly = 1) { dao.refreshCountries(any()) }
+        assertEquals(clock.millis(), syncStatePort.state.lastCheckedAtMs)
+        assertEquals(clock.millis(), syncStatePort.state.lastChangedAtMs)
+        assertTrue(syncStatePort.state.fingerprint.isNotEmpty())
+    }
+
+    @Test
+    fun `sync failure leaves the sync state untouched`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val syncStatePort = FakeSyncStatePort(SyncState(fingerprint = "old", lastCheckedAtMs = 5L))
+        coEvery { api.fetchWorldCountriesInformation() } throws IOException("offline")
+
+        val result = CountriesRepositoryImpl(api, dao, clock, prefs, syncStatePort).sync()
+
+        assertTrue(result.isFailure)
+        assertEquals(SyncState(fingerprint = "old", lastCheckedAtMs = 5L), syncStatePort.state)
+        coVerify(exactly = 0) { dao.refreshCountries(any()) }
+    }
+
+    @Test
+    fun `CACHE_FIRST uses the last check time, not the row age`() = runTest {
+        val api = mockk<WorldCountriesApi>()
+        val dao = mockk<CountryDao>()
+        val tenDaysOld = clock.millis() - 10 * 24 * 3_600_000L
+        val entity = testEntity(tenDaysOld)
+        coEvery { dao.getCountryCount() } returns 1
+        coEvery { dao.getOldestTimestamp() } returns tenDaysOld
+        coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
+        coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
+        val checkedAnHourAgo = FakeSyncStatePort(SyncState(fingerprint = "x", lastCheckedAtMs = clock.millis() - 3_600_000L))
+
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, checkedAnHourAgo)
+        repo.getCountries(CachePolicy.CACHE_FIRST).test { cancelAndIgnoreRemainingEvents() }
+
+        coVerify(exactly = 0) { api.fetchWorldCountriesInformation() }
     }
 
     @Test
@@ -222,7 +278,7 @@ class CountriesRepositoryImplTest {
         coEvery { api.fetchPopulation() } throws IOException("world bank down")
         coEvery { dao.refreshCountries(capture(saved)) } returns Unit
 
-        val result = CountriesRepositoryImpl(api, dao, clock, prefs).forceRefresh()
+        val result = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort()).forceRefresh()
 
         assertTrue(result.isSuccess)
         // Falls back to whatever the feed carried (the fixture's 1; the real feed has none).
@@ -239,7 +295,7 @@ class CountriesRepositoryImplTest {
         coEvery { dao.getAllCountriesOnce() } returns listOf(entity)
         coEvery { dao.getAllCountries() } returns flowOf(listOf(entity))
 
-        val repo = CountriesRepositoryImpl(api, dao, clock, prefs)
+        val repo = CountriesRepositoryImpl(api, dao, clock, prefs, FakeSyncStatePort())
         repo.getCountries(CachePolicy.NETWORK_FIRST).test {
             assertEquals(ApiResponse.Loading, awaitItem())
             val success = awaitItem() as ApiResponse.Success

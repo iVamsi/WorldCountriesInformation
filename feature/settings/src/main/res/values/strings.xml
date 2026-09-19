@@ -45,7 +45,8 @@
 
     <string name="settings_cached_countries">Countries</string>
     <string name="settings_estimated_size">Size</string>
-    <string name="settings_oldest_entry">Oldest entry</string>
+    <string name="settings_last_checked">Last checked</string>
+    <string name="settings_last_changed">Data changed</string>
     <string name="settings_clear_cache">Clear cache</string>
     <string name="settings_no_data">No data</string>
     <string name="settings_age_just_now">Just now</string>

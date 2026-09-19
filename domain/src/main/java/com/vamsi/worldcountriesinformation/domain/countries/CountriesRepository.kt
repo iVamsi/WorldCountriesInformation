@@ -396,6 +396,12 @@ interface CountriesRepository {
     suspend fun forceRefresh(): Result<Unit>
 
     /**
+     * Fetches both sources and rewrites the cache only when the merged data differs from the
+     * last write. Always records the check time on success.
+     */
+    suspend fun sync(): Result<SyncOutcome>
+
+    /**
      * Returns a snapshot of local cache size and oldest row timestamp for diagnostics.
      */
     suspend fun getCountryCacheSnapshot(): CountryCacheSnapshot

@@ -30,7 +30,8 @@
     <string name="settings_offline_mode_desc">Nur zwischengespeicherte Daten verwenden</string>
     <string name="settings_cached_countries">Länder</string>
     <string name="settings_estimated_size">Größe</string>
-    <string name="settings_oldest_entry">Ältester Eintrag</string>
+    <string name="settings_last_checked">Zuletzt geprüft</string>
+    <string name="settings_last_changed">Daten geändert</string>
     <string name="settings_clear_cache">Cache löschen</string>
     <string name="settings_no_data">Keine Daten</string>
     <string name="settings_age_just_now">Gerade eben</string>
@@ -41,4 +42,28 @@
     <string name="settings_clear">Löschen</string>
     <string name="settings_cancel">Abbrechen</string>
     <string name="settings_oss_licenses">Open-Source-Lizenzen</string>
+    <string name="cache_policy_force_refresh">Immer aktualisieren</string>
+    <string name="cache_policy_force_refresh_desc">Immer aus dem Netzwerk laden (für Ziehen zum Aktualisieren)</string>
+    <string name="theme_mode_system">Systemstandard</string>
+    <string name="theme_mode_system_desc">Hell/Dunkel des Geräts folgen</string>
+    <string name="theme_mode_light">Hell</string>
+    <string name="theme_mode_light_desc">Immer helles Design</string>
+    <string name="theme_mode_dark">Dunkel</string>
+    <string name="theme_mode_dark_desc">Immer dunkles Design</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+    <string name="settings_data_attribution_header">Länderdaten</string>
+    <string name="settings_data_attribution_body">Länderdaten stammen von mledoze/countries (github.com/mledoze/countries), lizenziert unter ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Flaggen-Emoji in diesem Datensatz fallen nicht unter ODbL; Details im Quell-Repository. Bevölkerungszahlen stammen von der Weltbank (data.worldbank.org, Indikator SP.POP.TOTL), lizenziert unter CC BY 4.0.</string>
+    <plurals name="settings_age_days">
+        <item quantity="one">vor %1$d Tag</item>
+        <item quantity="other">vor %1$d Tagen</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">vor %1$d Stunde</item>
+        <item quantity="other">vor %1$d Stunden</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">vor %1$d Minute</item>
+        <item quantity="other">vor %1$d Minuten</item>
+    </plurals>
 </resources>

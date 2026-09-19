@@ -399,11 +399,18 @@ private fun CacheStatistics(
                     modifier = Modifier.weight(1f),
                 )
             }
-            FactTile(
-                label = stringResource(R.string.settings_oldest_entry),
-                value = formatAge(stats.oldestEntryAgeMs),
-                modifier = Modifier.fillMaxWidth(),
-            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FactTile(
+                    label = stringResource(R.string.settings_last_checked),
+                    value = formatAge(stats.lastCheckedAgeMs),
+                    modifier = Modifier.weight(1f),
+                )
+                FactTile(
+                    label = stringResource(R.string.settings_last_changed),
+                    value = formatAge(stats.lastChangedAgeMs),
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
         TextButton(onClick = onClearCache, modifier = Modifier.align(Alignment.End)) {
             Icon(
@@ -498,7 +505,14 @@ private const val KB_PER_MB = 1024
 private fun SettingsScreenPreview() {
     WorldCountriesTheme(dynamicColor = false) {
         SettingsScreenContent(
-            state = SettingsContract.State(cacheStats = CacheStats(entryCount = 250, estimatedSizeKB = 512, oldestEntryAgeMs = 7_200_000)),
+            state = SettingsContract.State(
+                cacheStats = CacheStats(
+                    entryCount = 250,
+                    estimatedSizeKB = 512,
+                    lastCheckedAgeMs = 7_200_000,
+                    lastChangedAgeMs = 260_000_000,
+                ),
+            ),
             onIntent = {},
             onNavigateBack = {},
         )

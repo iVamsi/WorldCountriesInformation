@@ -11,10 +11,13 @@ import com.vamsi.worldcountriesinformation.data.countries.mapper.toEntityList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toPopulationByIso3
 import com.vamsi.worldcountriesinformation.data.countries.mapper.toSummaryList
 import com.vamsi.worldcountriesinformation.data.countries.mapper.withPopulation
+import com.vamsi.worldcountriesinformation.data.countries.sync.fingerprint
 import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domain.countries.CountryCacheSnapshot
+import com.vamsi.worldcountriesinformation.domain.countries.SyncOutcome
+import com.vamsi.worldcountriesinformation.domain.countries.SyncStatePort
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
@@ -45,6 +48,7 @@ class CountriesRepositoryImpl @Inject constructor(
     private val countryDao: CountryDao,
     private val clock: Clock,
     private val userPreferencesPort: UserPreferencesPort,
+    private val syncState: SyncStatePort,
 ) : CountriesRepository {
 
     /**
@@ -189,12 +193,13 @@ class CountriesRepositoryImpl @Inject constructor(
 
             // Determine cache staleness (only for CACHE_FIRST) via scalar MIN(lastUpdated)
             val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
-                val oldestTimestamp = countryDao.getOldestTimestamp()
+                // Installs from before sync tracking have no check time; their row age stands in.
+                val lastChecked = syncState.read().lastCheckedAtMs.takeIf { it > 0 } ?: countryDao.getOldestTimestamp()
                 val nowMillis = clock.millis()
                 val validityMs = userPreferencesPort.userPreferences.first().refreshInterval.millis
-                val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, validityPeriodMs = validityMs, nowMillis = nowMillis)
+                val isFresh = CachePolicy.isCacheFresh(lastChecked, validityPeriodMs = validityMs, nowMillis = nowMillis)
                 Timber.d(
-                    "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp, nowMillis)}, fresh=$isFresh",
+                    "CACHE_FIRST: Last checked ${CachePolicy.getCacheAgeDescription(lastChecked, nowMillis)}, fresh=$isFresh",
                 )
                 isFresh
             } else {
@@ -250,12 +255,8 @@ class CountriesRepositoryImpl @Inject constructor(
             if (shouldFetchNetwork) {
                 try {
                     Timber.d("${policy.name}: Fetching fresh countries from network")
-                    val domainCountries = fetchCountriesWithPopulation()
-
-                    // Update database - this will trigger reactive Flow emission below
-                    // Database update will set current timestamp for lastUpdated
-                    countryDao.refreshCountries(domainCountries.toEntityList())
-                    Timber.d("${policy.name}: Database updated with ${domainCountries.size} countries")
+                    val outcome = syncOrThrow()
+                    Timber.d("${policy.name}: sync ${outcome.name.lowercase()}")
 
                     // Note: No manual emit here - the emitAll() below will handle it
                     // This ensures we're always emitting from the single source of truth
@@ -536,42 +537,57 @@ class CountriesRepositoryImpl @Inject constructor(
         entities.toSummaryList()
     }
 
-    override suspend fun forceRefresh(): Result<Unit> = try {
-        Timber.d("Force refresh: Fetching fresh data from network")
-        val domainCountries = fetchCountriesWithPopulation()
+    override suspend fun forceRefresh(): Result<Unit> = sync().map { }
 
-        Timber.d("Force refresh: Updating database with ${domainCountries.size} countries")
-        countryDao.refreshCountries(domainCountries.toEntityList())
-
-        Timber.d("Force refresh: Completed successfully")
-        Result.success(Unit)
+    override suspend fun sync(): Result<SyncOutcome> = try {
+        Result.success(syncOrThrow())
     } catch (e: CancellationException) {
         throw e
     } catch (e: IOException) {
-        Timber.e(e, "Force refresh failed")
+        Timber.e(e, "Sync failed")
         Result.failure(e)
     } catch (e: HttpException) {
-        Timber.e(e, "Force refresh failed")
+        Timber.e(e, "Sync failed")
         Result.failure(e)
     } catch (e: SerializationException) {
-        Timber.e(e, "Force refresh failed")
+        Timber.e(e, "Sync failed")
         Result.failure(e)
     } catch (e: SQLiteException) {
-        Timber.e(e, "Force refresh failed")
+        Timber.e(e, "Sync failed")
         Result.failure(e)
+    }
+
+    /** Writes Room only when the merged data differs from the last write; records the check either way. */
+    private suspend fun syncOrThrow(): SyncOutcome {
+        val entities = fetchCountriesWithPopulation().toEntityList()
+        val fingerprint = entities.fingerprint()
+        val changed = fingerprint != syncState.read().fingerprint
+        if (changed) {
+            countryDao.refreshCountries(entities)
+            syncState.recordChange(fingerprint, atMs = clock.millis())
+            Timber.d("sync: database updated with ${entities.size} countries")
+        } else {
+            Timber.d("sync: unchanged, database left alone")
+        }
+        syncState.recordCheck(atMs = clock.millis())
+        return if (changed) SyncOutcome.UPDATED else SyncOutcome.UNCHANGED
     }
 
     override suspend fun getCountryCacheSnapshot(): CountryCacheSnapshot {
         val count = countryDao.getCountryCount()
         val oldest = countryDao.getOldestTimestamp()
+        val state = syncState.read()
         return CountryCacheSnapshot(
             entryCount = count,
             oldestEntryLastUpdatedMs = oldest,
+            lastCheckedAtMs = state.lastCheckedAtMs,
+            lastChangedAtMs = state.lastChangedAtMs,
         )
     }
 
     override suspend fun clearCountryCache() {
         countryDao.deleteAllCountries()
+        syncState.clear()
     }
 
     private suspend fun FlowCollector<ApiResponse<List<CountrySummary>>>.handleCountriesListNetworkFailure(

@@ -186,13 +186,18 @@ class SettingsViewModel @Inject constructor(
                     val snapshot = result.data
                     val countryCount = snapshot.entryCount
                     val oldestTimestamp = snapshot.oldestEntryLastUpdatedMs
-                    val cacheAge = if (oldestTimestamp > 0) clock.millis() - oldestTimestamp else 0L
+                    val now = clock.millis()
+                    fun ageOf(timestamp: Long) = if (timestamp > 0) now - timestamp else 0L
+                    // Installs from before sync tracking only have row ages to show.
+                    val lastChanged = snapshot.lastChangedAtMs.takeIf { it > 0 } ?: oldestTimestamp
                     setState {
                         copy(
                             cacheStats = CacheStats(
                                 entryCount = countryCount,
-                                oldestEntryAgeMs = cacheAge,
+                                oldestEntryAgeMs = ageOf(oldestTimestamp),
                                 estimatedSizeKB = countryCount * 2,
+                                lastCheckedAgeMs = ageOf(snapshot.lastCheckedAtMs.takeIf { it > 0 } ?: oldestTimestamp),
+                                lastChangedAgeMs = ageOf(lastChanged),
                             ),
                         )
                     }

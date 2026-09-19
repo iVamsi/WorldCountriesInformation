@@ -30,7 +30,8 @@
     <string name="settings_offline_mode_desc">केवल कैश डेटा उपयोग करें</string>
     <string name="settings_cached_countries">देश</string>
     <string name="settings_estimated_size">आकार</string>
-    <string name="settings_oldest_entry">सबसे पुरानी</string>
+    <string name="settings_last_checked">पिछली जांच</string>
+    <string name="settings_last_changed">डेटा बदला</string>
     <string name="settings_clear_cache">कैश साफ़ करें</string>
     <string name="settings_no_data">कोई डेटा नहीं</string>
     <string name="settings_age_just_now">अभी</string>
@@ -41,4 +42,28 @@
     <string name="settings_clear">साफ़ करें</string>
     <string name="settings_cancel">रद्द करें</string>
     <string name="settings_oss_licenses">ओपन सोर्स लाइसेंस</string>
+    <string name="cache_policy_force_refresh">ज़बरदस्ती रीफ़्रेश</string>
+    <string name="cache_policy_force_refresh_desc">हमेशा नेटवर्क से लोड करें (खींचकर रीफ़्रेश के लिए)</string>
+    <string name="theme_mode_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="theme_mode_system_desc">डिवाइस की लाइट/डार्क सेटिंग का पालन करें</string>
+    <string name="theme_mode_light">लाइट</string>
+    <string name="theme_mode_light_desc">हमेशा लाइट थीम</string>
+    <string name="theme_mode_dark">डार्क</string>
+    <string name="theme_mode_dark_desc">हमेशा डार्क थीम</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+    <string name="settings_data_attribution_header">देश डेटा</string>
+    <string name="settings_data_attribution_body">देशों की जानकारी mledoze/countries (github.com/mledoze/countries) से ली गई है, लाइसेंस ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/)। उस डेटासेट के झंडा इमोजी ODbL के अंतर्गत नहीं आते; विवरण स्रोत रिपॉज़िटरी में देखें। जनसंख्या विश्व बैंक (data.worldbank.org, संकेतक SP.POP.TOTL) से है, लाइसेंस CC BY 4.0।</string>
+    <plurals name="settings_age_days">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">%1$d घंटा पहले</item>
+        <item quantity="other">%1$d घंटे पहले</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">%1$d मिनट पहले</item>
+        <item quantity="other">%1$d मिनट पहले</item>
+    </plurals>
 </resources>

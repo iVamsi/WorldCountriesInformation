@@ -30,7 +30,8 @@
     <string name="settings_offline_mode_desc">Utiliser uniquement les données en cache</string>
     <string name="settings_cached_countries">Pays</string>
     <string name="settings_estimated_size">Taille</string>
-    <string name="settings_oldest_entry">Plus ancienne</string>
+    <string name="settings_last_checked">Dernière vérification</string>
+    <string name="settings_last_changed">Données modifiées</string>
     <string name="settings_clear_cache">Effacer le cache</string>
     <string name="settings_no_data">Aucune donnée</string>
     <string name="settings_age_just_now">À l\'instant</string>
@@ -41,4 +42,28 @@
     <string name="settings_clear">Effacer</string>
     <string name="settings_cancel">Annuler</string>
     <string name="settings_oss_licenses">Licences open source</string>
+    <string name="cache_policy_force_refresh">Forcer l’actualisation</string>
+    <string name="cache_policy_force_refresh_desc">Toujours charger depuis le réseau (tirer pour actualiser)</string>
+    <string name="theme_mode_system">Par défaut du système</string>
+    <string name="theme_mode_system_desc">Suivre le réglage clair/sombre de l’appareil</string>
+    <string name="theme_mode_light">Clair</string>
+    <string name="theme_mode_light_desc">Toujours utiliser le thème clair</string>
+    <string name="theme_mode_dark">Sombre</string>
+    <string name="theme_mode_dark_desc">Toujours utiliser le thème sombre</string>
+    <string name="settings_size_kb">%1$d Ko</string>
+    <string name="settings_size_mb">%1$.2f Mo</string>
+    <string name="settings_data_attribution_header">Données des pays</string>
+    <string name="settings_data_attribution_body">Les données des pays proviennent de mledoze/countries (github.com/mledoze/countries), sous licence ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Les emoji de drapeaux de ce jeu de données ne sont pas couverts par l’ODbL ; voir le dépôt source. La population provient de la Banque mondiale (data.worldbank.org, indicateur SP.POP.TOTL), sous licence CC BY 4.0.</string>
+    <plurals name="settings_age_days">
+        <item quantity="one">il y a %1$d jour</item>
+        <item quantity="other">il y a %1$d jours</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">il y a %1$d heure</item>
+        <item quantity="other">il y a %1$d heures</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">il y a %1$d minute</item>
+        <item quantity="other">il y a %1$d minutes</item>
+    </plurals>
 </resources>

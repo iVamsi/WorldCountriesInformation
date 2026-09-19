@@ -30,7 +30,8 @@
     <string name="settings_offline_mode_desc">Solo usar datos en caché</string>
     <string name="settings_cached_countries">Países</string>
     <string name="settings_estimated_size">Tamaño</string>
-    <string name="settings_oldest_entry">Más antigua</string>
+    <string name="settings_last_checked">Última comprobación</string>
+    <string name="settings_last_changed">Datos cambiados</string>
     <string name="settings_clear_cache">Borrar caché</string>
     <string name="settings_no_data">Sin datos</string>
     <string name="settings_age_just_now">Ahora mismo</string>
@@ -41,4 +42,28 @@
     <string name="settings_clear">Borrar</string>
     <string name="settings_cancel">Cancelar</string>
     <string name="settings_oss_licenses">Licencias de código abierto</string>
+    <string name="cache_policy_force_refresh">Forzar actualización</string>
+    <string name="cache_policy_force_refresh_desc">Cargar siempre desde la red (para deslizar y actualizar)</string>
+    <string name="theme_mode_system">Predeterminado del sistema</string>
+    <string name="theme_mode_system_desc">Seguir el ajuste claro/oscuro del dispositivo</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_light_desc">Usar siempre el tema claro</string>
+    <string name="theme_mode_dark">Oscuro</string>
+    <string name="theme_mode_dark_desc">Usar siempre el tema oscuro</string>
+    <string name="settings_size_kb">%1$d KB</string>
+    <string name="settings_size_mb">%1$.2f MB</string>
+    <string name="settings_data_attribution_header">Datos de países</string>
+    <string name="settings_data_attribution_body">Los datos de países provienen de mledoze/countries (github.com/mledoze/countries), con licencia ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Los emoji de banderas de ese conjunto no están cubiertos por ODbL; consulta el repositorio fuente. La población proviene del Banco Mundial (data.worldbank.org, indicador SP.POP.TOTL), con licencia CC BY 4.0.</string>
+    <plurals name="settings_age_days">
+        <item quantity="one">hace %1$d día</item>
+        <item quantity="other">hace %1$d días</item>
+    </plurals>
+    <plurals name="settings_age_hours">
+        <item quantity="one">hace %1$d hora</item>
+        <item quantity="other">hace %1$d horas</item>
+    </plurals>
+    <plurals name="settings_age_minutes">
+        <item quantity="one">hace %1$d minuto</item>
+        <item quantity="other">hace %1$d minutos</item>
+    </plurals>
 </resources>

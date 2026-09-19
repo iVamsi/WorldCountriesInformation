@@ -45,4 +45,6 @@ data class CacheStats(
     val entryCount: Int = 0,
     val oldestEntryAgeMs: Long = 0L,
     val estimatedSizeKB: Int = 0,
+    val lastCheckedAgeMs: Long = 0L,
+    val lastChangedAgeMs: Long = 0L,
 )

@@ -9,4 +9,6 @@ package com.vamsi.worldcountriesinformation.domain.countries
 data class CountryCacheSnapshot(
     val entryCount: Int,
     val oldestEntryLastUpdatedMs: Long,
+    val lastCheckedAtMs: Long = 0L,
+    val lastChangedAtMs: Long = 0L,
 )

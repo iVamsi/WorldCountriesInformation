@@ -3,6 +3,8 @@ package com.vamsi.worldcountriesinformation.core.datastore.di
 import com.vamsi.worldcountriesinformation.core.datastore.PreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesDataSource
 import com.vamsi.worldcountriesinformation.core.datastore.SearchPreferencesPort
+import com.vamsi.worldcountriesinformation.core.datastore.SyncStateDataSource
+import com.vamsi.worldcountriesinformation.domain.countries.SyncStatePort
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import dagger.Binds
 import dagger.Module
@@ -25,4 +27,10 @@ abstract class DataStoreBindsModule {
     abstract fun bindUserPreferencesPort(
         impl: PreferencesDataSource,
     ): UserPreferencesPort
+
+    @Binds
+    @Singleton
+    abstract fun bindSyncStatePort(
+        impl: SyncStateDataSource,
+    ): SyncStatePort
 }
