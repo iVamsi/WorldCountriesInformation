@@ -10,9 +10,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.Locale
 
 /**
  * One fact in the reference table: a small tracked label over its value, on a low tonal surface.
@@ -31,7 +31,7 @@ fun FactTile(
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
-            text = label.uppercase(Locale.getDefault()),
+            text = label.uppercase(LocalConfiguration.current.locales[0]),
             style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

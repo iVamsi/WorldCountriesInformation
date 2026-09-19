@@ -103,6 +103,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -166,6 +167,7 @@ fun CountriesScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     val isVoiceSearchAvailable = remember {
         SpeechRecognizer.isRecognitionAvailable(context)
@@ -193,7 +195,7 @@ fun CountriesScreen(
                 }
 
                 is CountriesContract.Effect.ShowMessage -> {
-                    SnapNotify.show(context.getString(effect.messageRes))
+                    SnapNotify.show(resources.getString(effect.messageRes))
                 }
 
                 is CountriesContract.Effect.ShowToast -> {

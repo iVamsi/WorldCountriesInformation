@@ -7,4 +7,7 @@
     <string name="error_load_countries_failed">देश लोड करने में विफल। कृपया पुनः प्रयास करें।</string>
     <string name="error_load_country_details_failed">देश का विवरण लोड करने में विफल। कृपया पुनः प्रयास करें।</string>
     <string name="error_unknown">कुछ गलत हो गया। कृपया पुनः प्रयास करें।</string>
+    <string name="added_to_favorites">पसंदीदा में जोड़ा गया</string>
+    <string name="removed_from_favorites">पसंदीदा से हटाया गया</string>
+    <string name="filters_cleared">फ़िल्टर साफ़ किए गए</string>
 </resources>

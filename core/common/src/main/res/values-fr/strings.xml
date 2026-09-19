@@ -7,4 +7,7 @@
     <string name="error_load_countries_failed">Échec du chargement des pays. Réessayez.</string>
     <string name="error_load_country_details_failed">Échec du chargement des détails du pays. Réessayez.</string>
     <string name="error_unknown">Une erreur s\'est produite. Réessayez.</string>
+    <string name="added_to_favorites">Ajouté aux favoris</string>
+    <string name="removed_from_favorites">Retiré des favoris</string>
+    <string name="filters_cleared">Filtres effacés</string>
 </resources>

@@ -27,4 +27,18 @@
     <string name="countries_no_results_hint">वर्तनी जांचें या क्षेत्र फ़िल्टर आज़माएं।</string>
     <string name="countries_clear_search">खोज साफ़ करें</string>
     <string name="countries_select_hint">विवरण के लिए देश चुनें</string>
+    <string name="countries_search">खोजें</string>
+    <string name="countries_back">वापस</string>
+    <string name="countries_clear">साफ़ करें</string>
+    <string name="countries_change_sort">क्रम बदलें</string>
+    <string name="countries_flag_desc">%1$s का झंडा</string>
+    <string name="countries_favorite_add">पसंदीदा में जोड़ें</string>
+    <string name="countries_favorite_remove">पसंदीदा से हटाएं</string>
+    <string name="countries_alphabet_jump">%1$s से शुरू होने वाले देशों पर जाएं</string>
+    <string name="countries_sort_name_asc">नाम · A से Z</string>
+    <string name="countries_sort_name_desc">नाम · Z से A</string>
+    <string name="countries_sort_population_asc">जनसंख्या · कम से ज़्यादा</string>
+    <string name="countries_sort_population_desc">जनसंख्या · ज़्यादा से कम</string>
+    <string name="countries_sort_area_asc">क्षेत्रफल · छोटे से बड़े</string>
+    <string name="countries_sort_area_desc">क्षेत्रफल · बड़े से छोटे</string>
 </resources>

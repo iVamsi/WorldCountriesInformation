@@ -27,4 +27,18 @@
     <string name="countries_no_results_hint">Vérifiez l’orthographe ou essayez un filtre de région.</string>
     <string name="countries_clear_search">Effacer la recherche</string>
     <string name="countries_select_hint">Sélectionnez un pays pour les détails</string>
+    <string name="countries_search">Rechercher</string>
+    <string name="countries_back">Retour</string>
+    <string name="countries_clear">Effacer</string>
+    <string name="countries_change_sort">Changer le tri</string>
+    <string name="countries_flag_desc">Drapeau de %1$s</string>
+    <string name="countries_favorite_add">Ajouter aux favoris</string>
+    <string name="countries_favorite_remove">Retirer des favoris</string>
+    <string name="countries_alphabet_jump">Aller aux pays commençant par %1$s</string>
+    <string name="countries_sort_name_asc">Nom · A à Z</string>
+    <string name="countries_sort_name_desc">Nom · Z à A</string>
+    <string name="countries_sort_population_asc">Population · croissante</string>
+    <string name="countries_sort_population_desc">Population · décroissante</string>
+    <string name="countries_sort_area_asc">Superficie · croissante</string>
+    <string name="countries_sort_area_desc">Superficie · décroissante</string>
 </resources>

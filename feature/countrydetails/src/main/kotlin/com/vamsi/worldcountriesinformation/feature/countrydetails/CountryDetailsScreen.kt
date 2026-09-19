@@ -153,10 +153,10 @@ fun CountryDetailsRoute(
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_TEXT, effect.shareText)
-                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.details_share_subject))
+                        putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.details_share_subject))
                     }
                     context.startActivity(
-                        Intent.createChooser(shareIntent, context.getString(R.string.details_share_chooser)),
+                        Intent.createChooser(shareIntent, resources.getString(R.string.details_share_chooser)),
                     )
                 }
 
@@ -499,7 +499,7 @@ private data class CountryFact(val label: String, val value: String)
 
 @Composable
 private fun countryFacts(country: Country): List<CountryFact> {
-    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
+    val numberFormat = NumberFormat.getNumberInstance(LocalConfiguration.current.locales[0])
     return listOf(
         CountryFact(stringResource(R.string.details_label_capital), country.capital),
         // The mledoze dataset has no population; 0 means unknown, which FactTile renders as a dash.

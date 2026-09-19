@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
@@ -68,7 +69,6 @@ import com.vamsi.worldcountriesinformation.domainmodel.Currency
 import com.vamsi.worldcountriesinformation.domainmodel.Language
 import kotlinx.coroutines.flow.collectLatest
 import java.text.NumberFormat
-import java.util.Locale
 
 @Composable
 fun CompareRoute(
@@ -282,7 +282,7 @@ private fun CompareScrollTable(rows: List<CompareRow>, countries: List<Country>,
                     horizontalArrangement = Arrangement.spacedBy(CELL_GAP),
                 ) {
                     Text(
-                        text = row.label.uppercase(Locale.getDefault()),
+                        text = row.label.uppercase(LocalConfiguration.current.locales[0]),
                         style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.width(LABEL_COLUMN_WIDTH),
@@ -320,7 +320,7 @@ private fun CountryHeader(country: Country, modifier: Modifier = Modifier) {
 
 @Composable
 private fun buildRows(countries: List<Country>): List<CompareRow> {
-    val nf = NumberFormat.getNumberInstance(Locale.getDefault())
+    val nf = NumberFormat.getNumberInstance(LocalConfiguration.current.locales[0])
     return listOf(
         CompareRow(
             label = stringResource(R.string.compare_label_capital),

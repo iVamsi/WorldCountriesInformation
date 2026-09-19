@@ -7,4 +7,7 @@
     <string name="error_load_countries_failed">No se pudieron cargar los países. Inténtalo de nuevo.</string>
     <string name="error_load_country_details_failed">No se pudieron cargar los detalles del país. Inténtalo de nuevo.</string>
     <string name="error_unknown">Algo salió mal. Inténtalo de nuevo.</string>
+    <string name="added_to_favorites">Añadido a favoritos</string>
+    <string name="removed_from_favorites">Eliminado de favoritos</string>
+    <string name="filters_cleared">Filtros borrados</string>
 </resources>
