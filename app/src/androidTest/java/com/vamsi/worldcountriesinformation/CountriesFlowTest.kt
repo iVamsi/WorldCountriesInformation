@@ -33,7 +33,7 @@ class CountriesFlowTest {
     fun countriesScreen_showsTitle() {
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(UiTestTags.COUNTRIES_SCREEN).assertIsDisplayed()
-        composeRule.onNodeWithText("Countries", substring = true, ignoreCase = true)
-            .assertIsDisplayed()
+        // Exact match: the subtitle ("250 countries · Updated …") also contains the word.
+        composeRule.onNodeWithText("Countries").assertIsDisplayed()
     }
 }
