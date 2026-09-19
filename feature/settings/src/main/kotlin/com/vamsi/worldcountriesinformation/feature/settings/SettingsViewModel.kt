@@ -8,6 +8,7 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.ClearCacheUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.GetCacheStatsUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -50,6 +51,8 @@ class SettingsViewModel @Inject constructor(
                 updateDailyNotificationEnabled(intent.enabled)
 
             is SettingsContract.Intent.UpdateMapBordersEnabled -> updateMapBordersEnabled(intent.enabled)
+
+            is SettingsContract.Intent.UpdateRefreshInterval -> updateRefreshInterval(intent.interval)
 
             SettingsContract.Intent.ClearCache -> clearCache()
 
@@ -121,6 +124,16 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 userPreferencesPort.updateDailyNotificationEnabled(enabled)
+            } catch (e: IOException) {
+                handlePreferenceError(e)
+            }
+        }
+    }
+
+    private fun updateRefreshInterval(interval: RefreshInterval) {
+        viewModelScope.launch {
+            try {
+                userPreferencesPort.updateRefreshInterval(interval)
             } catch (e: IOException) {
                 handlePreferenceError(e)
             }

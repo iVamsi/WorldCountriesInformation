@@ -21,6 +21,11 @@
     <string name="settings_daily_notification_desc">Tägliche Länder-des-Tages-Benachrichtigung. Tippen für Details.</string>
     <string name="settings_map_borders">Kartengrenzen</string>
     <string name="settings_map_borders_desc">Ländergrenzen auf der Detailkarte anzeigen.</string>
+    <string name="settings_refresh_interval">Nach Updates suchen</string>
+    <string name="refresh_interval_desc">Länderdaten ändern sich selten. Eine Prüfung lädt nichts herunter, wenn sich nichts geändert hat.</string>
+    <string name="refresh_interval_daily">Täglich</string>
+    <string name="refresh_interval_weekly">Wöchentlich</string>
+    <string name="refresh_interval_monthly">Monatlich</string>
     <string name="settings_offline_mode">Offline-Modus</string>
     <string name="settings_offline_mode_desc">Nur zwischengespeicherte Daten verwenden</string>
     <string name="settings_cached_countries">Länder</string>

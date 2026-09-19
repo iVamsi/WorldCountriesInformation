@@ -288,7 +288,9 @@ fun <T> Result<T>.toApiResponse(): ApiResponse<T> = fold(
  */
 fun <T> ApiResponse<T>.toResult(): Result<T> = when (this) {
     is Success -> Result.success(data)
+
     is ApiResponse.Error -> Result.failure(exception)
+
     is ApiResponse.Loading ->
         Result.failure(
             IllegalStateException("Cannot convert Loading state to Result"),

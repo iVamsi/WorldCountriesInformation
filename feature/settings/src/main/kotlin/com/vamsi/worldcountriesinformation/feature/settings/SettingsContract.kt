@@ -5,6 +5,7 @@ import com.vamsi.worldcountriesinformation.core.common.mvi.MVIEffect
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIIntent
 import com.vamsi.worldcountriesinformation.core.common.mvi.MVIState
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
 
@@ -19,6 +20,8 @@ object SettingsContract {
         data class UpdateAiSummaryEnabled(val enabled: Boolean) : Intent
         data class UpdateDailyNotificationEnabled(val enabled: Boolean) : Intent
         data class UpdateMapBordersEnabled(val enabled: Boolean) : Intent
+
+        data class UpdateRefreshInterval(val interval: RefreshInterval) : Intent
         data object ClearCache : Intent
         data object ClearError : Intent
     }

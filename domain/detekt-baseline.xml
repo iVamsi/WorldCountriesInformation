@@ -9,6 +9,7 @@
     <ID>SwallowedException:UseCaseTest.kt$UseCaseTest$e: CancellationException</ID>
     <ID>TooGenericExceptionCaught:UseCase.kt$UseCase$e: Exception</ID>
     <ID>TooGenericExceptionThrown:FlowUseCaseTest.kt$FlowUseCaseTest.ExceptionUseCase$throw Exception("Test exception")</ID>
+    <ID>TooManyFunctions:UserPreferencesPort.kt$UserPreferencesPort</ID>
     <ID>WildcardImport:CachePolicyTest.kt$import org.junit.Assert.*</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -35,6 +35,11 @@
     <string name="settings_map_borders">Map borders</string>
     <string name="settings_map_borders_desc">Show country border overlays on the details map.</string>
 
+    <string name="settings_refresh_interval">Check for updates</string>
+    <string name="refresh_interval_desc">Country facts rarely change. A check downloads nothing when they haven\'t.</string>
+    <string name="refresh_interval_daily">Daily</string>
+    <string name="refresh_interval_weekly">Weekly</string>
+    <string name="refresh_interval_monthly">Monthly</string>
     <string name="settings_offline_mode">Offline mode</string>
     <string name="settings_offline_mode_desc">Use cached data only, even when a network is available.</string>
 

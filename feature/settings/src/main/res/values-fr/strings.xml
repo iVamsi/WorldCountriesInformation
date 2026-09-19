@@ -21,6 +21,11 @@
     <string name="settings_daily_notification_desc">Pays du jour chaque jour. Appuyer pour les détails.</string>
     <string name="settings_map_borders">Frontières sur la carte</string>
     <string name="settings_map_borders_desc">Afficher les frontières sur la carte des détails.</string>
+    <string name="settings_refresh_interval">Rechercher les mises à jour</string>
+    <string name="refresh_interval_desc">Les données changent rarement. Une vérification ne télécharge rien s’il n’y a pas de changement.</string>
+    <string name="refresh_interval_daily">Chaque jour</string>
+    <string name="refresh_interval_weekly">Chaque semaine</string>
+    <string name="refresh_interval_monthly">Chaque mois</string>
     <string name="settings_offline_mode">Mode hors ligne</string>
     <string name="settings_offline_mode_desc">Utiliser uniquement les données en cache</string>
     <string name="settings_cached_countries">Pays</string>

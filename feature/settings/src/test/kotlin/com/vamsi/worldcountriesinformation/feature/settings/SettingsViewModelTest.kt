@@ -5,6 +5,7 @@ import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.ClearCacheUseCase
 import com.vamsi.worldcountriesinformation.domain.countries.CountryCacheSnapshot
 import com.vamsi.worldcountriesinformation.domain.countries.GetCacheStatsUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
@@ -110,6 +111,17 @@ class SettingsViewModelTest {
         advanceUntilIdle()
 
         coVerify { userPreferencesPort.updateCachePolicy(CachePolicy.FORCE_REFRESH) }
+    }
+
+    @Test
+    fun `update refresh interval delegates to port`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.processIntent(SettingsContract.Intent.UpdateRefreshInterval(RefreshInterval.MONTHLY))
+        advanceUntilIdle()
+
+        coVerify { userPreferencesPort.updateRefreshInterval(RefreshInterval.MONTHLY) }
     }
 
     @Test

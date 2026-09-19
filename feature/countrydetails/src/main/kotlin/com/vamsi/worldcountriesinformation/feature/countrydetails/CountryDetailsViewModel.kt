@@ -15,6 +15,7 @@ import com.vamsi.worldcountriesinformation.domain.countries.GetCountryByCodeUseC
 import com.vamsi.worldcountriesinformation.domain.countries.GetNearbyCountriesUseCase
 import com.vamsi.worldcountriesinformation.domain.preferences.GetUserDataPolicyUseCase
 import com.vamsi.worldcountriesinformation.domain.preferences.ObserveFavoritesUseCase
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ToggleFavoriteUseCase
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.domainmodel.Country
@@ -52,9 +53,13 @@ class CountryDetailsViewModel @Inject constructor(
     initialState = CountryDetailsContract.State(),
 ) {
 
+    // Follows the Settings refresh interval so the "Updated" chip agrees with the sync rule.
+    private var cacheValidityMs: Long = RefreshInterval.WEEKLY.millis
+
     init {
         viewModelScope.launch {
             userPreferencesPort.userPreferences.collect { prefs ->
+                cacheValidityMs = prefs.refreshInterval.millis
                 setState { copy(showMapBorders = prefs.showMapBorders) }
             }
         }
@@ -332,7 +337,7 @@ class CountryDetailsViewModel @Inject constructor(
     fun isCacheFresh(): Boolean {
         val timestamp = state.value.lastUpdated
         return if (timestamp > 0) {
-            CachePolicy.isCacheFresh(timestamp, nowMillis = clock.millis())
+            CachePolicy.isCacheFresh(timestamp, validityPeriodMs = cacheValidityMs, nowMillis = clock.millis())
         } else {
             false
         }

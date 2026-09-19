@@ -11,5 +11,6 @@ data class UserPreferences(
     val aiSummaryEnabled: Boolean = false,
     val dailyNotificationEnabled: Boolean = false,
     val showMapBorders: Boolean = true,
+    val refreshInterval: RefreshInterval = RefreshInterval.WEEKLY,
     val favoriteCountryCodes: Set<String> = emptySet(),
 )

@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferences
 import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
@@ -39,6 +40,7 @@ class PreferencesDataSource @Inject constructor(
         val AI_SUMMARY_ENABLED = booleanPreferencesKey("ai_summary_enabled")
         val DAILY_NOTIFICATION_ENABLED = booleanPreferencesKey("daily_notification_enabled")
         val SHOW_MAP_BORDERS = booleanPreferencesKey("show_map_borders")
+        val REFRESH_INTERVAL = stringPreferencesKey("refresh_interval")
         val FAVORITE_COUNTRY_CODES = stringSetPreferencesKey("favorite_country_codes")
     }
 
@@ -94,6 +96,12 @@ class PreferencesDataSource @Inject constructor(
         }
     }
 
+    override suspend fun updateRefreshInterval(interval: RefreshInterval) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REFRESH_INTERVAL] = interval.name
+        }
+    }
+
     override suspend fun updateMapBordersEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.SHOW_MAP_BORDERS] = enabled
@@ -131,6 +139,7 @@ class PreferencesDataSource @Inject constructor(
             aiSummaryEnabled = preferences[PreferencesKeys.AI_SUMMARY_ENABLED] ?: false,
             dailyNotificationEnabled = preferences[PreferencesKeys.DAILY_NOTIFICATION_ENABLED] ?: false,
             showMapBorders = preferences[PreferencesKeys.SHOW_MAP_BORDERS] ?: true,
+            refreshInterval = parseRefreshInterval(preferences[PreferencesKeys.REFRESH_INTERVAL]),
             favoriteCountryCodes = preferences[PreferencesKeys.FAVORITE_COUNTRY_CODES]
                 .orEmpty()
                 .map { it.uppercase() }
@@ -146,6 +155,11 @@ class PreferencesDataSource @Inject constructor(
         } catch (_: IllegalArgumentException) {
             CachePolicy.CACHE_FIRST
         }
+    }
+
+    private fun parseRefreshInterval(raw: String?): RefreshInterval {
+        val match = RefreshInterval.entries.firstOrNull { it.name == raw }
+        return match ?: RefreshInterval.WEEKLY
     }
 
     private fun parseThemeMode(raw: String?): ThemeMode {

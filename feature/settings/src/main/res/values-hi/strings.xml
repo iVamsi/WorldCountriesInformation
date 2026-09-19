@@ -21,6 +21,11 @@
     <string name="settings_daily_notification_desc">हर दिन दिन का देश। विवरण के लिए टैप करें।</string>
     <string name="settings_map_borders">मानचित्र सीमाएँ</string>
     <string name="settings_map_borders_desc">विवरण मानचित्र पर देश सीमाएँ दिखाएँ।</string>
+    <string name="settings_refresh_interval">अपडेट जांचें</string>
+    <string name="refresh_interval_desc">देशों की जानकारी कम ही बदलती है। बदलाव न होने पर जांच में कुछ डाउनलोड नहीं होता।</string>
+    <string name="refresh_interval_daily">रोज़</string>
+    <string name="refresh_interval_weekly">हर हफ़्ते</string>
+    <string name="refresh_interval_monthly">हर महीने</string>
     <string name="settings_offline_mode">ऑफ़लाइन मोड</string>
     <string name="settings_offline_mode_desc">केवल कैश डेटा उपयोग करें</string>
     <string name="settings_cached_countries">देश</string>

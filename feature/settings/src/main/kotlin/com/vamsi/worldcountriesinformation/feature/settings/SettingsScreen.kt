@@ -65,6 +65,7 @@ import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.designsystem.component.FactTile
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
+import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import kotlinx.coroutines.flow.collectLatest
 import java.util.concurrent.TimeUnit
@@ -161,6 +162,28 @@ internal fun SettingsScreenContent(
                                 onSelect = { onIntent(SettingsContract.Intent.UpdateCachePolicy(policy)) },
                             )
                             if (index < policies.lastIndex) RowDivider()
+                        }
+                    }
+                    RowDivider()
+                    Text(
+                        text = stringResource(R.string.settings_refresh_interval),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(start = 16.dp, top = 12.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.refresh_interval_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 2.dp),
+                    )
+                    Column(Modifier.selectableGroup()) {
+                        RefreshInterval.entries.forEach { interval ->
+                            RadioRow(
+                                title = interval.displayName(),
+                                description = null,
+                                selected = interval == prefs.refreshInterval,
+                                onSelect = { onIntent(SettingsContract.Intent.UpdateRefreshInterval(interval)) },
+                            )
                         }
                     }
                     RowDivider()
@@ -302,13 +325,13 @@ private fun SwitchRow(
 @Composable
 private fun RadioRow(
     title: String,
-    description: String,
+    description: String?,
     selected: Boolean,
     onSelect: () -> Unit,
 ) {
     ListItem(
         headlineContent = { Text(title) },
-        supportingContent = { Text(description) },
+        supportingContent = description?.let { { Text(it) } },
         leadingContent = { RadioButton(selected = selected, onClick = null) },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         modifier = Modifier.selectable(selected = selected, role = Role.RadioButton, onClick = onSelect),
@@ -329,6 +352,13 @@ private fun CachePolicy.description(): String = when (this) {
     CachePolicy.NETWORK_FIRST -> stringResource(R.string.cache_policy_network_first_desc)
     CachePolicy.CACHE_ONLY -> stringResource(R.string.cache_policy_cache_only_desc)
     CachePolicy.FORCE_REFRESH -> stringResource(R.string.cache_policy_force_refresh_desc)
+}
+
+@Composable
+private fun RefreshInterval.displayName(): String = when (this) {
+    RefreshInterval.DAILY -> stringResource(R.string.refresh_interval_daily)
+    RefreshInterval.WEEKLY -> stringResource(R.string.refresh_interval_weekly)
+    RefreshInterval.MONTHLY -> stringResource(R.string.refresh_interval_monthly)
 }
 
 @Composable

@@ -15,12 +15,14 @@ import com.vamsi.worldcountriesinformation.domain.core.ApiResponse
 import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.countries.CountriesRepository
 import com.vamsi.worldcountriesinformation.domain.countries.CountryCacheSnapshot
+import com.vamsi.worldcountriesinformation.domain.preferences.UserPreferencesPort
 import com.vamsi.worldcountriesinformation.domainmodel.Country
 import com.vamsi.worldcountriesinformation.domainmodel.CountrySummary
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
@@ -42,6 +44,7 @@ class CountriesRepositoryImpl @Inject constructor(
     private val countriesApi: WorldCountriesApi,
     private val countryDao: CountryDao,
     private val clock: Clock,
+    private val userPreferencesPort: UserPreferencesPort,
 ) : CountriesRepository {
 
     /**
@@ -52,7 +55,7 @@ class CountriesRepositoryImpl @Inject constructor(
      * **[CachePolicy.CACHE_FIRST]** (Default):
      * 1. Emit loading state
      * 2. Check database for cached data
-     * 3. If cache exists and is fresh (< 24 hours):
+     * 3. If cache exists and is fresh (younger than the Settings refresh interval):
      *    - Emit cached data immediately
      *    - Start observing database for future updates
      * 4. If cache is stale or missing:
@@ -105,7 +108,7 @@ class CountriesRepositoryImpl @Inject constructor(
      *    - No manual emission needed after database update
      *
      * **Cache Staleness:**
-     * - Data is considered fresh if lastUpdated < 24 hours ago
+     * - Data is considered fresh if lastUpdated is younger than the refresh interval (weekly by default)
      * - Uses [CachePolicy.isCacheFresh] for staleness detection
      * - Staleness only checked for [CachePolicy.CACHE_FIRST]
      *
@@ -188,7 +191,8 @@ class CountriesRepositoryImpl @Inject constructor(
             val isCacheFresh = if (hasCache && policy == CachePolicy.CACHE_FIRST) {
                 val oldestTimestamp = countryDao.getOldestTimestamp()
                 val nowMillis = clock.millis()
-                val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, nowMillis = nowMillis)
+                val validityMs = userPreferencesPort.userPreferences.first().refreshInterval.millis
+                val isFresh = CachePolicy.isCacheFresh(oldestTimestamp, validityPeriodMs = validityMs, nowMillis = nowMillis)
                 Timber.d(
                     "CACHE_FIRST: Cache age=${CachePolicy.getCacheAgeDescription(oldestTimestamp, nowMillis)}, fresh=$isFresh",
                 )
@@ -489,23 +493,14 @@ class CountriesRepositoryImpl @Inject constructor(
                     item.ccn3 == normalizedCode
             }
 
-        if (matchedItem != null) {
-            val domainCountry = matchedItem.toCountry()
-                ?.let { listOf(it).withPopulation(fetchPopulationOrEmpty()).single() }
-
-            if (domainCountry != null) {
-                // Cache the fetched country
-                countryDao.insertCountries(listOf(domainCountry).toEntityList())
-                Timber.d("Country fetched and cached: ${domainCountry.name}")
-                return domainCountry
-            } else {
-                Timber.w("Failed to map country data for code: $code")
-            }
-        } else {
+        if (matchedItem == null) {
             Timber.w("Country not found in API: $code")
+            return null
         }
-
-        return null
+        val domainCountry = listOf(matchedItem.toCountry()).withPopulation(fetchPopulationOrEmpty()).single()
+        countryDao.insertCountries(listOf(domainCountry).toEntityList())
+        Timber.d("Country fetched and cached: ${domainCountry.name}")
+        return domainCountry
     }
 
     private suspend fun fetchCountriesWithPopulation(): List<Country> {

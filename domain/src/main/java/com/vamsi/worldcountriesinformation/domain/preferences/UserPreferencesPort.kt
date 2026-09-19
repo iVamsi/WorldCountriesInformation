@@ -22,6 +22,8 @@ interface UserPreferencesPort {
 
     suspend fun updateMapBordersEnabled(enabled: Boolean)
 
+    suspend fun updateRefreshInterval(interval: RefreshInterval)
+
     suspend fun toggleFavorite(countryCode: String)
 
     suspend fun clearPreferences()
