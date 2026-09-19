@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kover)
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.screenshot) apply false
     id("worldcountries.quality")
 }
 

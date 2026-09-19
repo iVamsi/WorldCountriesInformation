@@ -34,7 +34,7 @@ private val AppShapes = Shapes(
     extraExtraLarge = RoundedCornerShape(48.dp),
 )
 
-private val LightColors = lightColorScheme(
+internal val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
     onPrimary = md_theme_light_onPrimary,
     primaryContainer = md_theme_light_primaryContainer,
@@ -64,7 +64,7 @@ private val LightColors = lightColorScheme(
     surfaceTint = md_theme_light_surfaceTint,
 )
 
-private val DarkColors = darkColorScheme(
+internal val DarkColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
     primaryContainer = md_theme_dark_primaryContainer,
@@ -109,6 +109,7 @@ fun WorldCountriesTheme(
         }
 
         darkTheme -> DarkColors
+
         else -> LightColors
     }
 
