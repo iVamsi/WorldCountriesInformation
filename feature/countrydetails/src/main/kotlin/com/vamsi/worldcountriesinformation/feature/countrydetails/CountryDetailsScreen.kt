@@ -502,7 +502,11 @@ private fun countryFacts(country: Country): List<CountryFact> {
     val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
     return listOf(
         CountryFact(stringResource(R.string.details_label_capital), country.capital),
-        CountryFact(stringResource(R.string.details_label_population), numberFormat.format(country.population)),
+        // The mledoze dataset has no population; 0 means unknown, which FactTile renders as a dash.
+        CountryFact(
+            stringResource(R.string.details_label_population),
+            if (country.population > 0) numberFormat.format(country.population) else "",
+        ),
         CountryFact(stringResource(R.string.details_label_region), country.region),
         CountryFact(
             stringResource(R.string.details_label_languages),

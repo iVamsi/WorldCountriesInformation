@@ -332,7 +332,7 @@ private fun buildRows(countries: List<Country>): List<CompareRow> {
         ),
         CompareRow(
             label = stringResource(R.string.compare_label_population),
-            values = countries.map { nf.format(it.population) },
+            values = countries.map { if (it.population > 0) nf.format(it.population) else "—" },
         ),
         CompareRow(
             label = stringResource(R.string.compare_label_languages),
