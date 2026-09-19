@@ -2,9 +2,8 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>LongMethod:SettingsScreen.kt$@Composable private fun AboutSection(onOpenLicenses: () -&gt; Unit)</ID>
-    <ID>LongMethod:SettingsScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun SettingsScreen( onNavigateBack: () -&gt; Unit, onDailyNotificationChanged: (Boolean) -&gt; Unit = {}, onOpenLicenses: () -&gt; Unit = {}, viewModel: SettingsViewModel = hiltViewModel(), )</ID>
+    <ID>LongMethod:SettingsScreen.kt$@Composable internal fun SettingsScreenContent( state: SettingsContract.State, onIntent: (SettingsContract.Intent) -&gt; Unit, onNavigateBack: () -&gt; Unit, onDailyNotificationChanged: (Boolean) -&gt; Unit = {}, onOpenLicenses: () -&gt; Unit = {}, )</ID>
     <ID>SwallowedException:SettingsViewModel.kt$SettingsViewModel$e: IOException</ID>
-    <ID>UnusedParameter:SettingsScreen.kt$onRefresh: () -&gt; Unit</ID>
+    <ID>UnusedPrivateMember:SettingsScreen.kt$@PreviewLightDark @Preview(showBackground = true) @Composable private fun SettingsScreenPreview()</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -2,8 +2,7 @@
 <resources>
     <string name="settings_title">Paramètres</string>
     <string name="settings_navigate_back">Retour</string>
-    <string name="settings_section_cache_policy">Politique de cache</string>
-    <string name="settings_section_network">Réseau</string>
+    <string name="settings_section_cache_policy">Données et cache</string>
     <string name="settings_section_appearance">Apparence</string>
     <string name="settings_section_features">Fonctionnalités</string>
     <string name="settings_section_cache_stats">Statistiques du cache</string>
@@ -24,15 +23,14 @@
     <string name="settings_map_borders_desc">Afficher les frontières sur la carte des détails.</string>
     <string name="settings_offline_mode">Mode hors ligne</string>
     <string name="settings_offline_mode_desc">Utiliser uniquement les données en cache</string>
-    <string name="settings_cached_countries">Pays en cache</string>
-    <string name="settings_estimated_size">Taille estimée</string>
-    <string name="settings_oldest_entry">Entrée la plus ancienne</string>
-    <string name="settings_clear_cache">Effacer tout le cache</string>
+    <string name="settings_cached_countries">Pays</string>
+    <string name="settings_estimated_size">Taille</string>
+    <string name="settings_oldest_entry">Plus ancienne</string>
+    <string name="settings_clear_cache">Effacer le cache</string>
     <string name="settings_no_data">Aucune donnée</string>
     <string name="settings_age_just_now">À l\'instant</string>
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">Version %1$s</string>
-    <string name="settings_features_header">Fonctionnalités :</string>
     <string name="settings_clear_cache_title">Effacer tout le cache ?</string>
     <string name="settings_clear_cache_message">Toutes les données pays en cache seront supprimées. Connexion internet requise pour recharger.</string>
     <string name="settings_clear">Effacer</string>

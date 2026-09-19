@@ -2,8 +2,7 @@
 <resources>
     <string name="settings_title">Ajustes</string>
     <string name="settings_navigate_back">Volver</string>
-    <string name="settings_section_cache_policy">Política de caché</string>
-    <string name="settings_section_network">Red</string>
+    <string name="settings_section_cache_policy">Datos y caché</string>
     <string name="settings_section_appearance">Apariencia</string>
     <string name="settings_section_features">Funciones</string>
     <string name="settings_section_cache_stats">Estadísticas de caché</string>
@@ -24,15 +23,14 @@
     <string name="settings_map_borders_desc">Mostrar fronteras en el mapa de detalles.</string>
     <string name="settings_offline_mode">Modo sin conexión</string>
     <string name="settings_offline_mode_desc">Solo usar datos en caché</string>
-    <string name="settings_cached_countries">Países en caché</string>
-    <string name="settings_estimated_size">Tamaño estimado</string>
-    <string name="settings_oldest_entry">Entrada más antigua</string>
-    <string name="settings_clear_cache">Borrar toda la caché</string>
+    <string name="settings_cached_countries">Países</string>
+    <string name="settings_estimated_size">Tamaño</string>
+    <string name="settings_oldest_entry">Más antigua</string>
+    <string name="settings_clear_cache">Borrar caché</string>
     <string name="settings_no_data">Sin datos</string>
     <string name="settings_age_just_now">Ahora mismo</string>
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">Versión %1$s</string>
-    <string name="settings_features_header">Funciones:</string>
     <string name="settings_clear_cache_title">¿Borrar toda la caché?</string>
     <string name="settings_clear_cache_message">Se eliminarán todos los datos de países en caché. Necesitarás internet para recargar.</string>
     <string name="settings_clear">Borrar</string>

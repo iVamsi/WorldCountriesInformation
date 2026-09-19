@@ -99,6 +99,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.testTag
@@ -403,11 +404,13 @@ internal fun CountriesScreenContent(
                                         .fillMaxHeight(),
                                     contentAlignment = Alignment.CenterEnd,
                                 ) {
+                                    // ponytail: screen height stands in for list viewport height.
+                                    val tallEnough = LocalConfiguration.current.screenHeightDp >= ALPHABET_INDEX_MIN_HEIGHT_DP
                                     AlphabetJumpIndexWithVisibility(
-                                        visible = scrolledPastTop,
+                                        visible = scrolledPastTop && tallEnough,
                                         countries = state.filteredCountries,
                                         listState = listState,
-                                        headerItemCount = getHeaderItemCount(state),
+                                        headerItemCount = HEADER_ITEM_COUNT,
                                         modifier = Modifier
                                             .fillMaxHeight()
                                             .padding(top = 12.dp, bottom = 88.dp, end = 4.dp),
@@ -598,17 +601,13 @@ private fun SearchBar(
     }
 }
 
-private fun getHeaderItemCount(state: CountriesContract.State): Int {
-    var count = 1 // filters + sort row
-    if (
-        state.recentlyViewedCountries.isNotEmpty() &&
-        state.searchQuery.isBlank() &&
-        !state.isSearchFocused
-    ) {
-        count++
-    }
-    return count
-}
+// Recently viewed + filters. The recently-viewed item is always present (empty when hidden) so the
+// list never anchors to the filter row when history loads after first layout.
+private const val HEADER_ITEM_COUNT = 2
+
+private fun showRecentlyViewed(state: CountriesContract.State): Boolean = state.recentlyViewedCountries.isNotEmpty() &&
+    state.searchQuery.isBlank() &&
+    !state.isSearchFocused
 
 @Composable
 private fun ScrollableCountriesContent(
@@ -622,12 +621,8 @@ private fun ScrollableCountriesContent(
         state = listState,
         contentPadding = PaddingValues(top = 4.dp, end = listEndPadding, bottom = 16.dp),
     ) {
-        if (
-            state.recentlyViewedCountries.isNotEmpty() &&
-            state.searchQuery.isBlank() &&
-            !state.isSearchFocused
-        ) {
-            item(key = "recently-viewed", contentType = "recently-viewed") {
+        item(key = "recently-viewed", contentType = "recently-viewed") {
+            if (showRecentlyViewed(state)) {
                 RecentlyViewedSection(
                     countries = state.recentlyViewedCountries,
                     onCountryClick = { country ->
@@ -1232,6 +1227,7 @@ private fun EmptySearchResults(
 }
 
 private const val ALPHABET_INDEX_MIN_ITEMS = 15
+private const val ALPHABET_INDEX_MIN_HEIGHT_DP = 480
 private const val SELECTED_ROW_ALPHA = 0.35f
 private const val FAVORITE_SCALE = 1.1f
 

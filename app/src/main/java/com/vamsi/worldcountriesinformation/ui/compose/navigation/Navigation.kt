@@ -1,16 +1,19 @@
 package com.vamsi.worldcountriesinformation.ui.compose.navigation
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -80,7 +83,7 @@ private fun ExpandedWidthNavigation(
     Row(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
-                .weight(if (secondaryRoute != null) 0.42f else 1f)
+                .then(if (secondaryRoute != null) Modifier.width(LIST_PANE_WIDTH) else Modifier.weight(1f))
                 .fillMaxHeight(),
         ) {
             CountriesScreen(
@@ -96,9 +99,10 @@ private fun ExpandedWidthNavigation(
         }
 
         if (secondaryRoute != null) {
+            VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Box(
                 modifier = Modifier
-                    .weight(0.58f)
+                    .weight(1f)
                     .fillMaxHeight(),
             ) {
                 SecondaryDestination(
@@ -206,15 +210,19 @@ private fun CompactNavigation(
         }
     }
 
-    val currentRoute = navigationState.backStack.lastOrNull()
-    AnimatedContent(
-        targetState = currentRoute,
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
-        label = "nav_transition",
-    ) { _ ->
-        NavDisplay(
-            entries = navigationState.toEntries(entryProvider),
-            onBack = { navigator.goBack() },
-        )
-    }
+    // Shared-axis X: forward slides in from the end, back slides in from the start.
+    val enter = slideInHorizontally { it / SLIDE_FRACTION } + fadeIn()
+    val exit = slideOutHorizontally { -it / SLIDE_FRACTION } + fadeOut()
+    val popEnter = slideInHorizontally { -it / SLIDE_FRACTION } + fadeIn()
+    val popExit = slideOutHorizontally { it / SLIDE_FRACTION } + fadeOut()
+    NavDisplay(
+        entries = navigationState.toEntries(entryProvider),
+        onBack = { navigator.goBack() },
+        transitionSpec = { enter togetherWith exit },
+        popTransitionSpec = { popEnter togetherWith popExit },
+        predictivePopTransitionSpec = { popEnter togetherWith popExit },
+    )
 }
+
+private val LIST_PANE_WIDTH = 380.dp
+private const val SLIDE_FRACTION = 8

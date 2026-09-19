@@ -2,8 +2,7 @@
 <resources>
     <string name="settings_title">सेटिंग्स</string>
     <string name="settings_navigate_back">वापस जाएँ</string>
-    <string name="settings_section_cache_policy">कैश नीति</string>
-    <string name="settings_section_network">नेटवर्क</string>
+    <string name="settings_section_cache_policy">डेटा और कैश</string>
     <string name="settings_section_appearance">दिखावट</string>
     <string name="settings_section_features">सुविधाएँ</string>
     <string name="settings_section_cache_stats">कैश आँकड़े</string>
@@ -24,15 +23,14 @@
     <string name="settings_map_borders_desc">विवरण मानचित्र पर देश सीमाएँ दिखाएँ।</string>
     <string name="settings_offline_mode">ऑफ़लाइन मोड</string>
     <string name="settings_offline_mode_desc">केवल कैश डेटा उपयोग करें</string>
-    <string name="settings_cached_countries">कैश देश</string>
-    <string name="settings_estimated_size">अनुमानित आकार</string>
-    <string name="settings_oldest_entry">सबसे पुरानी प्रविष्टि</string>
-    <string name="settings_clear_cache">सारा कैश साफ़ करें</string>
+    <string name="settings_cached_countries">देश</string>
+    <string name="settings_estimated_size">आकार</string>
+    <string name="settings_oldest_entry">सबसे पुरानी</string>
+    <string name="settings_clear_cache">कैश साफ़ करें</string>
     <string name="settings_no_data">कोई डेटा नहीं</string>
     <string name="settings_age_just_now">अभी</string>
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">संस्करण %1$s</string>
-    <string name="settings_features_header">सुविधाएँ:</string>
     <string name="settings_clear_cache_title">सारा कैश साफ़ करें?</string>
     <string name="settings_clear_cache_message">सभी कैश देश डेटा हट जाएगा। पुनः लोड के लिए इंटरनेट चाहिए।</string>
     <string name="settings_clear">साफ़ करें</string>
