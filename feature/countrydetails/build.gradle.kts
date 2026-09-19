@@ -2,6 +2,7 @@ plugins {
     id("worldcountries.android.library")
     id("worldcountries.android.hilt")
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.screenshot)
     alias(libs.plugins.kotlin.serialization)
     id("worldcountries.kover")
 }
@@ -12,6 +13,8 @@ android {
     buildFeatures {
         compose = true
     }
+
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 }
 
 dependencies {
@@ -61,4 +64,7 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.androidx.arch.core.testing)
     testImplementation(project(":tests-shared"))
+
+    screenshotTestImplementation(libs.screenshot.validation.api)
+    screenshotTestImplementation(libs.androidx.compose.ui.tooling)
 }

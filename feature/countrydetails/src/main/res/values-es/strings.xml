@@ -19,11 +19,10 @@
     <string name="details_flag_desc">Bandera de %1$s</string>
     <string name="details_section_information">Información del país</string>
     <string name="details_open_in_maps">Abrir en Mapas</string>
-    <string name="details_nearby_title">Países cercanos (%1$s)</string>
+    <string name="details_nearby_title">Cerca en %1$s</string>
     <string name="details_nearby_empty">No se encontraron países cercanos</string>
     <string name="details_error_title">No se pudieron cargar los detalles</string>
     <string name="details_updated">Actualizado %1$s</string>
-    <string name="details_label_name">Nombre del país</string>
     <string name="details_label_capital">Capital</string>
     <string name="details_label_population">Población</string>
     <string name="details_label_calling_code">Prefijo telefónico</string>

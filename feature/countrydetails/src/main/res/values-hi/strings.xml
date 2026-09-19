@@ -19,11 +19,10 @@
     <string name="details_flag_desc">%1$s का झंडा</string>
     <string name="details_section_information">देश की जानकारी</string>
     <string name="details_open_in_maps">Maps में खोलें</string>
-    <string name="details_nearby_title">आस-पास के देश (%1$s)</string>
+    <string name="details_nearby_title">%1$s में आस-पास</string>
     <string name="details_nearby_empty">आस-पास कोई देश नहीं मिला</string>
     <string name="details_error_title">विवरण लोड नहीं हो सका</string>
     <string name="details_updated">अपडेट किया गया %1$s</string>
-    <string name="details_label_name">देश का नाम</string>
     <string name="details_label_capital">राजधानी</string>
     <string name="details_label_population">जनसंख्या</string>
     <string name="details_label_calling_code">कॉलिंग कोड</string>

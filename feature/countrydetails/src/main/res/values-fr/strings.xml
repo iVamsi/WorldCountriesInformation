@@ -19,11 +19,10 @@
     <string name="details_flag_desc">Drapeau de %1$s</string>
     <string name="details_section_information">Informations du pays</string>
     <string name="details_open_in_maps">Ouvrir dans Cartes</string>
-    <string name="details_nearby_title">Pays voisins (%1$s)</string>
+    <string name="details_nearby_title">À proximité : %1$s</string>
     <string name="details_nearby_empty">Aucun pays voisin trouvé</string>
     <string name="details_error_title">Impossible de charger les détails</string>
     <string name="details_updated">Mis à jour %1$s</string>
-    <string name="details_label_name">Nom du pays</string>
     <string name="details_label_capital">Capitale</string>
     <string name="details_label_population">Population</string>
     <string name="details_label_calling_code">Indicatif</string>

@@ -19,11 +19,10 @@
     <string name="details_flag_desc">Flag of %1$s</string>
     <string name="details_section_information">Country information</string>
     <string name="details_open_in_maps">Open in Maps</string>
-    <string name="details_nearby_title">Nearby countries (%1$s)</string>
+    <string name="details_nearby_title">Nearby in %1$s</string>
     <string name="details_nearby_empty">No nearby countries found</string>
     <string name="details_error_title">Couldn\'t load details</string>
     <string name="details_updated">Updated %1$s</string>
-    <string name="details_label_name">Country name</string>
     <string name="details_label_capital">Capital city</string>
     <string name="details_label_population">Population</string>
     <string name="details_label_calling_code">Calling code</string>
