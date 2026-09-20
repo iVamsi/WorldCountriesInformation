@@ -34,7 +34,6 @@
     <string name="settings_last_changed">Daten geändert</string>
     <string name="settings_clear_cache">Cache löschen</string>
     <string name="settings_no_data">Keine Daten</string>
-    <string name="settings_age_just_now">Gerade eben</string>
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">Version %1$s</string>
     <string name="settings_clear_cache_title">Gesamten Cache löschen?</string>
@@ -54,16 +53,4 @@
     <string name="settings_size_mb">%1$.2f MB</string>
     <string name="settings_data_attribution_header">Länderdaten</string>
     <string name="settings_data_attribution_body">Länderdaten stammen von mledoze/countries (github.com/mledoze/countries), lizenziert unter ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/). Flaggen-Emoji in diesem Datensatz fallen nicht unter ODbL; Details im Quell-Repository. Bevölkerungszahlen stammen von der Weltbank (data.worldbank.org, Indikator SP.POP.TOTL), lizenziert unter CC BY 4.0.</string>
-    <plurals name="settings_age_days">
-        <item quantity="one">vor %1$d Tag</item>
-        <item quantity="other">vor %1$d Tagen</item>
-    </plurals>
-    <plurals name="settings_age_hours">
-        <item quantity="one">vor %1$d Stunde</item>
-        <item quantity="other">vor %1$d Stunden</item>
-    </plurals>
-    <plurals name="settings_age_minutes">
-        <item quantity="one">vor %1$d Minute</item>
-        <item quantity="other">vor %1$d Minuten</item>
-    </plurals>
 </resources>

@@ -121,6 +121,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.relativeAge
 import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.designsystem.component.EmptyState
@@ -229,7 +230,7 @@ fun CountriesScreen(
     CountriesScreenContent(
         state = state,
         listState = listState,
-        cacheAge = viewModel.getCacheAge().takeIf { state.lastUpdated > 0 },
+        cacheAge = viewModel.getCacheAge()?.let { resources.relativeAge(it) },
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToQuiz = onNavigateToQuiz,
         onIntent = { intent -> viewModel.processIntent(intent) },

@@ -34,7 +34,6 @@
     <string name="settings_last_changed">डेटा बदला</string>
     <string name="settings_clear_cache">कैश साफ़ करें</string>
     <string name="settings_no_data">कोई डेटा नहीं</string>
-    <string name="settings_age_just_now">अभी</string>
     <string name="settings_app_name">World Countries Information</string>
     <string name="settings_version">संस्करण %1$s</string>
     <string name="settings_clear_cache_title">सारा कैश साफ़ करें?</string>
@@ -54,16 +53,4 @@
     <string name="settings_size_mb">%1$.2f MB</string>
     <string name="settings_data_attribution_header">देश डेटा</string>
     <string name="settings_data_attribution_body">देशों की जानकारी mledoze/countries (github.com/mledoze/countries) से ली गई है, लाइसेंस ODbL 1.0 (opendatacommons.org/licenses/odbl/1.0/)। उस डेटासेट के झंडा इमोजी ODbL के अंतर्गत नहीं आते; विवरण स्रोत रिपॉज़िटरी में देखें। जनसंख्या विश्व बैंक (data.worldbank.org, संकेतक SP.POP.TOTL) से है, लाइसेंस CC BY 4.0।</string>
-    <plurals name="settings_age_days">
-        <item quantity="one">%1$d दिन पहले</item>
-        <item quantity="other">%1$d दिन पहले</item>
-    </plurals>
-    <plurals name="settings_age_hours">
-        <item quantity="one">%1$d घंटा पहले</item>
-        <item quantity="other">%1$d घंटे पहले</item>
-    </plurals>
-    <plurals name="settings_age_minutes">
-        <item quantity="one">%1$d मिनट पहले</item>
-        <item quantity="other">%1$d मिनट पहले</item>
-    </plurals>
 </resources>

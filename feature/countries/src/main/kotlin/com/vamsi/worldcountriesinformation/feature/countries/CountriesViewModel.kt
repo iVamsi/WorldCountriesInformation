@@ -509,16 +509,10 @@ class CountriesViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Gets human-readable cache age description.
-     */
-    fun getCacheAge(): String {
+    /** Age of the cached data in milliseconds, or null before the first load. */
+    fun getCacheAge(): Long? {
         val timestamp = state.value.lastUpdated
-        return if (timestamp > 0) {
-            CachePolicy.getCacheAgeDescription(timestamp, clock.millis())
-        } else {
-            "Never"
-        }
+        return if (timestamp > 0) CachePolicy.getCacheAge(timestamp, clock.millis()) else null
     }
 
     /**

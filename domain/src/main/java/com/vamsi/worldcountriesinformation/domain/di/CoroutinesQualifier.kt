@@ -18,7 +18,7 @@ package com.vamsi.worldcountriesinformation.domain.di
 
 import javax.inject.Qualifier
 
-/**
+/*
  * Coroutine dispatcher and scope qualifiers for dependency injection.
  *
  * These qualifiers are platform-agnostic and can be used in pure JVM/Kotlin modules.

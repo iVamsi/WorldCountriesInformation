@@ -3,7 +3,7 @@ package com.vamsi.worldcountriesinformation.core.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-/**
+/*
  * Navigation keys representing all navigation destinations in the app.
  *
  * This file serves as the **single source of truth** for navigation routes,

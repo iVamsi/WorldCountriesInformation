@@ -47,9 +47,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -61,6 +62,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vamsi.snapnotify.SnapNotify
 import com.vamsi.worldcountriesinformation.core.common.error.message
+import com.vamsi.worldcountriesinformation.core.common.relativeAge
 import com.vamsi.worldcountriesinformation.core.common.testing.UiTestTags
 import com.vamsi.worldcountriesinformation.core.designsystem.WorldCountriesTheme
 import com.vamsi.worldcountriesinformation.core.designsystem.component.FactTile
@@ -68,7 +70,6 @@ import com.vamsi.worldcountriesinformation.domain.core.CachePolicy
 import com.vamsi.worldcountriesinformation.domain.preferences.RefreshInterval
 import com.vamsi.worldcountriesinformation.domain.preferences.ThemeMode
 import kotlinx.coroutines.flow.collectLatest
-import java.util.concurrent.TimeUnit
 
 /**
  * Settings: cache policy, offline mode, appearance, feature toggles, cache statistics, and about.
@@ -432,17 +433,9 @@ private fun formatSize(sizeKB: Int): String = when {
 @Composable
 private fun formatAge(ageMs: Long): String {
     if (ageMs == 0L) return stringResource(R.string.settings_no_data)
-
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(ageMs)
-    val hours = TimeUnit.MILLISECONDS.toHours(ageMs)
-    val days = TimeUnit.MILLISECONDS.toDays(ageMs)
-
-    return when {
-        days > 0 -> pluralStringResource(R.plurals.settings_age_days, days.toInt(), days)
-        hours > 0 -> pluralStringResource(R.plurals.settings_age_hours, hours.toInt(), hours)
-        minutes > 0 -> pluralStringResource(R.plurals.settings_age_minutes, minutes.toInt(), minutes)
-        else -> stringResource(R.string.settings_age_just_now)
-    }
+    // Standalone tile value, so it starts with a capital ("Just now"); inline uses stay lowercase.
+    val locale = LocalConfiguration.current.locales[0]
+    return LocalResources.current.relativeAge(ageMs).replaceFirstChar { it.titlecase(locale) }
 }
 
 @Composable

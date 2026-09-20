@@ -322,13 +322,9 @@ class CountryDetailsViewModel @Inject constructor(
     /**
      * Gets human-readable cache age description.
      */
-    fun getCacheAge(): String? {
+    fun getCacheAge(): Long? {
         val timestamp = state.value.lastUpdated
-        return if (timestamp > 0) {
-            CachePolicy.getCacheAgeDescription(timestamp, clock.millis())
-        } else {
-            null
-        }
+        return if (timestamp > 0) CachePolicy.getCacheAge(timestamp, clock.millis()) else null
     }
 
     /**

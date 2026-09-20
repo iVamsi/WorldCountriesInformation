@@ -32,6 +32,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -426,7 +427,7 @@ class CountriesViewModelTest {
     // ============================================================================
 
     @Test
-    fun `getCacheAge should return never for zero timestamp`() {
+    fun `getCacheAge should return null for zero timestamp`() {
         // Given
         coEvery { getCountriesUseCase(any()) } returns flowOf(ApiResponse.Loading)
         viewModel = createViewModel()
@@ -435,7 +436,7 @@ class CountriesViewModelTest {
         val age = viewModel.getCacheAge()
 
         // Then
-        assertEquals("Never", age)
+        assertNull(age)
     }
 
     @Test

@@ -10,4 +10,17 @@
     <string name="added_to_favorites">पसंदीदा में जोड़ा गया</string>
     <string name="removed_from_favorites">पसंदीदा से हटाया गया</string>
     <string name="filters_cleared">फ़िल्टर साफ़ किए गए</string>
+    <plurals name="age_days">
+        <item quantity="one">%1$d दिन पहले</item>
+        <item quantity="other">%1$d दिन पहले</item>
+    </plurals>
+    <plurals name="age_hours">
+        <item quantity="one">%1$d घंटा पहले</item>
+        <item quantity="other">%1$d घंटे पहले</item>
+    </plurals>
+    <plurals name="age_minutes">
+        <item quantity="one">%1$d मिनट पहले</item>
+        <item quantity="other">%1$d मिनट पहले</item>
+    </plurals>
+    <string name="age_just_now">अभी</string>
 </resources>
