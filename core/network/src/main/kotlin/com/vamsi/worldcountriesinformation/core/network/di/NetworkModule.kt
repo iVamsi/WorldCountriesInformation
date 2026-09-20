@@ -182,8 +182,12 @@ object NetworkModule {
 
         // When offline, allow OkHttp to serve a stale cached response
         // (up to one week old) instead of failing immediately.
+        // Callers that set their own Cache-Control (the sync endpoints send max-age=0 so a check
+        // really reaches the server) keep it; everything else may fall back to stale cache.
         addInterceptor { chain ->
-            val request = chain.request().newBuilder()
+            val original = chain.request()
+            if (original.header("Cache-Control") != null) return@addInterceptor chain.proceed(original)
+            val request = original.newBuilder()
                 .cacheControl(
                     CacheControl.Builder()
                         .maxStale(HTTP_CACHE_MAX_STALE_SECONDS, TimeUnit.SECONDS)

@@ -18,7 +18,7 @@ Android app for browsing country data. Country facts are loaded from the [mledoz
 - **Widget & Wear** — Country of the Day (Glance widget + Wear tile).
 - **Adaptive UI** — Two-pane list + detail on expanded width; list pane kept for Settings, Quiz, and Compare.
 - **Localization** — Static strings in English plus de/es/fr/hi for key screens.
-- **Offline** — Room cache; behavior depends on policy + offline switch.
+- **Offline** — Room is the source of truth after the first load. A WorkManager job re-checks the sources at the interval chosen in Settings (daily, weekly by default, monthly), revalidates with the server (ETag), and rewrites the database only when the merged data actually changed. Cache policy and the offline switch still apply. Plan: [docs/plans/2026-09-19-data-refresh.md](docs/plans/2026-09-19-data-refresh.md).
 - **UI** — Material 3 Expressive, Navigation 3. The static "Explorer" look is a warm paper palette in light, ink navy in dark, with Fraunces for headings; colors, type, shapes and the shared `FlagImage`, `FactTile` and `SectionHeader` components live in `core/designsystem`. Design plan: [docs/plans/2026-09-19-ui-redesign.md](docs/plans/2026-09-19-ui-redesign.md).
 
 ## Tech stack

@@ -28,7 +28,7 @@ A neighboring atlas or quiz app that requires an account, a paid API key, or onl
 
 - Android phone (compact) and tablet (expanded two-pane list + detail; Settings, Quiz, and Compare keep the list pane).
 - Home-screen Glance widget and Wear OS tile, both titled Country of the Day.
-- First load needs a network; later use follows cache policy and an offline-mode switch (Room cache).
+- First load needs a network. After that Room serves everything; a background check runs at the interval picked in Settings (weekly by default) and rewrites the cache only when the data changed. Cache policy and the offline-mode switch still gate every network call.
 - Maps: OpenStreetMap via osmdroid; optional country border overlays.
 - Deep links: `https://worldcountries.vamsi.dev/country/{code}` and `wci://country/{code}`.
 - Voice search uses on-device / system speech recognition (`RECORD_AUDIO`).
@@ -45,7 +45,7 @@ Confirmed capabilities:
 - Details: flag, facts listed above, OSM map, share, favorites, neighbors, optional on-device AI summary.
 - Compare: side-by-side table for 2–3 countries; optional template insight when AI summaries are on.
 - Quiz: guess flag, capital, or region; score and streak persisted in DataStore.
-- Settings: cache policy (cache-first, network-first, cache-only), offline mode, theme, dynamic color, AI toggle, daily notification, map borders, cache stats, OSS licenses, data attribution.
+- Settings: cache policy (cache-first, network-first, cache-only), refresh interval (daily, weekly, monthly), offline mode, theme, dynamic color, AI toggle, daily notification, map borders, cache stats (last checked, data changed), OSS licenses, data attribution.
 - Widget and Wear: Country of the Day.
 
 Constraints:

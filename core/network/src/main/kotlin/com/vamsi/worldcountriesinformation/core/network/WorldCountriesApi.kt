@@ -5,6 +5,7 @@ import com.vamsi.worldcountriesinformation.core.common.Constants.ALL
 import com.vamsi.worldcountriesinformation.model.CountriesV3ResponseItem
 import kotlinx.serialization.json.JsonArray
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -44,6 +45,7 @@ interface WorldCountriesApi {
      * - idd: International dialing code
      * - latlng: Latitude and longitude coordinates
      */
+    @Headers(REVALIDATE)
     @GET(ALL)
     suspend fun fetchWorldCountriesInformation(
         @Query("fields") fields: String = COUNTRY_LIST_FIELDS,
@@ -53,6 +55,7 @@ interface WorldCountriesApi {
      * Latest population per economy from the World Bank. The body is a two-element array:
      * `[metadata, rows]`, so it is returned raw and parsed by the data layer.
      */
+    @Headers(REVALIDATE)
     @GET
     suspend fun fetchPopulation(@Url url: String = Constants.WORLD_BANK_POPULATION_URL): JsonArray
 
@@ -96,3 +99,6 @@ interface WorldCountriesApi {
 
 private const val COUNTRY_LIST_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,latlng"
 private const val COUNTRY_DETAIL_FIELDS = "name,capital,region,subregion,population,languages,currencies,cca2,cca3,idd,latlng"
+
+/** Revalidate with the server (ETag / If-Modified-Since) instead of serving stale cache. */
+private const val REVALIDATE = "Cache-Control: max-age=0"

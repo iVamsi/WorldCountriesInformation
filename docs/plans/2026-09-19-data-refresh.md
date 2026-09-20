@@ -122,11 +122,11 @@ Cache tiles become: Countries · Size · Last checked · Data changed. "Clear ca
 - Modify: `CountriesViewModel.isCacheFresh()/getCacheAge()`, `CountryDetailsViewModel` equivalents, `CountriesRepositoryImpl` `CACHE_FIRST` staleness: pass `userPreferences.refreshInterval.millis` as `validityPeriodMs`
 - Test: `SettingsViewModelTest` (update delegates to port), `CachePolicyTest` (weekly interval keeps a 3-day-old cache fresh), datastore round trip if a test exists for other keys
 
-- [ ] Add enum, preference field, DataStore key, Settings intent + radios + strings.
-- [ ] Thread `refreshInterval.millis` into every `isCacheFresh` call that decides whether to fetch (grep: 33 sites; only the ones that gate a network call change; display-only `getCacheAge` sites stay).
-- [ ] Tests green: `./gradlew :feature:settings:testDebugUnitTest :domain:test :data:countries:testDebugUnitTest`.
-- [ ] Device: set Weekly, relaunch, confirm no network call in `adb logcat | grep OkHttp` when cache is < 7 days old. Screenshot goldens for Settings regenerated.
-- [ ] Commit: `feat(settings): refresh interval preference drives cache freshness`
+- [x] Add enum, preference field, DataStore key, Settings intent + radios + strings.
+- [x] Thread `refreshInterval.millis` into every `isCacheFresh` call that decides whether to fetch (grep: 33 sites; only the ones that gate a network call change; display-only `getCacheAge` sites stay).
+- [x] Tests green: `./gradlew :feature:settings:testDebugUnitTest :domain:test :data:countries:testDebugUnitTest`.
+- [x] Device: set Weekly, relaunch, confirm no network call in `adb logcat | grep OkHttp` when cache is < 7 days old. Screenshot goldens for Settings regenerated.
+- [x] Commit: `feat(settings): refresh interval preference drives cache freshness`
 
 ### Phase B — Fingerprint and write-on-change
 
@@ -138,10 +138,10 @@ Cache tiles become: Countries · Size · Last checked · Data changed. "Clear ca
 - Modify: `feature/settings/.../SettingsScreen.kt` (tiles), `SettingsViewModel` (snapshot fields), strings
 - Test: `FingerprintTest` (order-independent, ignores `lastUpdated`, changes when population changes), `CountriesRepositoryImplTest` (`sync unchanged → no refreshCountries, lastCheckedAt set`, `sync changed → refreshCountries once, fingerprint stored`, `sync failure → state untouched`), existing tests updated for the new constructor parameter with a fake `SyncStateDataSource` (fakes over mocks; it is a small interface)
 
-- [ ] Implement, keeping `refreshCountries()` as the only Room write path.
-- [ ] Upgrade path: when `lastCheckedAt == 0` and Room has rows, treat `MIN(lastUpdated)` as the last check (no forced refetch).
-- [ ] Tests green; `adb shell pm clear` then launch twice with logcat open: second launch shows the OkHttp 304 revalidation (or no request inside the hour) and no Room rewrite (`Timber` line "sync: unchanged").
-- [ ] Commit: `feat(data): fingerprint merged country data and rewrite Room only on change`
+- [x] Implement, keeping `refreshCountries()` as the only Room write path.
+- [x] Upgrade path: when `lastCheckedAt == 0` and Room has rows, treat `MIN(lastUpdated)` as the last check (no forced refetch).
+- [x] Tests green; `adb shell pm clear` then launch twice with logcat open: second launch shows the OkHttp 304 revalidation (or no request inside the hour) and no Room rewrite (`Timber` line "sync: unchanged").
+- [x] Commit: `feat(data): fingerprint merged country data and rewrite Room only on change`
 
 ### Phase C — Scheduled background check
 
@@ -150,16 +150,28 @@ Cache tiles become: Countries · Size · Last checked · Data changed. "Clear ca
 - Modify: `app/.../WorldCountriesApplication.kt` (schedule on create with the stored interval), `SettingsViewModel` (reschedule on interval change), `data/countries/build.gradle.kts` (`work-runtime-ktx`, `hilt-work` if not already on the classpath; both already used by `feature/widget`, move the catalog aliases)
 - Test: `CountriesSyncWorkerTest` with `TestListenableWorkerBuilder` (offline mode → success without calling `sync()`; `sync()` failure → retry), `CountriesSyncSchedulerTest` (interval → period, unique name, `UPDATE` policy) using `WorkManagerTestInitHelper`
 
-- [ ] Implement worker and scheduler; add `docs/INSTRUMENTATION_TESTS.md` note that the test runner initializes WorkManager.
-- [ ] Device: `adb shell dumpsys jobscheduler | grep countries-sync` shows the job; `adb shell cmd jobscheduler run -f com.vamsi.worldcountriesinformation <jobId>` triggers it; logcat shows one check and "unchanged".
-- [ ] Commit: `feat(data): periodic countries sync at the user's refresh interval`
+- [x] Implement worker and scheduler; add `docs/INSTRUMENTATION_TESTS.md` note that the test runner initializes WorkManager.
+- [x] Device: `adb shell dumpsys jobscheduler | grep countries-sync` shows the job; `adb shell cmd jobscheduler run -f com.vamsi.worldcountriesinformation <jobId>` triggers it; logcat shows one check and "unchanged".
+- [x] Commit: `feat(data): periodic countries sync at the user's refresh interval`
 
 ### Phase D — Verification and docs
 
-- [ ] `./gradlew testDebugUnitTest detekt spotlessCheck lintDebug validateDebugScreenshotTest assembleDebug assembleRelease` and `:app:connectedDebugAndroidTest`.
-- [ ] Edge passes: airplane mode on second launch (cache serves, no error); Clear cache then relaunch offline (error state with retry); change interval Daily → Weekly (worker rescheduled, no duplicate jobs); pull-to-refresh with unchanged data (no Room rewrite, "Last checked" updates).
-- [ ] README "Offline" bullet: describe the weekly check and the change-only write. `PRODUCT.md` Operating Context: replace "later use follows cache policy" with the interval sentence.
-- [ ] Commit: `docs: describe scheduled sync and change-only cache writes`
+- [x] `./gradlew testDebugUnitTest detekt spotlessCheck lintDebug validateDebugScreenshotTest assembleDebug assembleRelease` and `:app:connectedDebugAndroidTest`.
+- [x] Edge passes: airplane mode on second launch (cache serves, no error); Clear cache then relaunch offline (error state with retry); change interval Daily → Weekly (worker rescheduled, no duplicate jobs); pull-to-refresh with unchanged data (no Room rewrite, "Last checked" updates).
+- [x] README "Offline" bullet: describe the weekly check and the change-only write. `PRODUCT.md` Operating Context: replace "later use follows cache policy" with the interval sentence.
+- [x] Commit: `docs: describe scheduled sync and change-only cache writes`
+
+## Outcome (2026-09-19)
+
+All four phases shipped to master. Two things differed from the plan:
+
+- The OkHttp request interceptor added `max-stale=7d` to every request, so a "check" could be
+  answered from the disk cache for a week without reaching the server. The interceptor now yields
+  to an explicit request `Cache-Control`, and the two sync endpoints send `max-age=0`, so a check
+  revalidates (ETag → 304) or fails honestly when offline.
+- No Robolectric in the project, so the worker's scheduling was verified on device
+  (`androidx.work.diagnostics.REQUEST_DIAGNOSTICS`) rather than with `WorkManagerTestInitHelper`;
+  the `shouldSync` decision is unit-tested.
 
 ## Out of scope (say so in the PR)
 

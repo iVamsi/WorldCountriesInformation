@@ -8,6 +8,12 @@ CI compiles androidTest sources without a device:
 ./gradlew :app:compileDebugAndroidTestSources
 ```
 
+## Test runner
+
+`WorldCountriesTestRunner` swaps in `HiltTestApplication`, which is not the app's WorkManager
+`Configuration.Provider`, so the runner initializes WorkManager itself before the application
+starts. Without that, `MainActivity` crashes on its first `WorkManager.getInstance` call.
+
 ## Local run
 
 Requires emulator or device:
