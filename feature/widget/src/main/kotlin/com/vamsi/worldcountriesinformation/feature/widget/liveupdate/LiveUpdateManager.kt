@@ -1,11 +1,14 @@
 package com.vamsi.worldcountriesinformation.feature.widget.liveupdate
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.vamsi.worldcountriesinformation.feature.widget.R
 import com.vamsi.worldcountriesinformation.feature.widget.data.WidgetDataSource
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -28,9 +31,14 @@ class LiveUpdateManagerImpl @Inject constructor(
     override fun isSupported(): Boolean = Build.VERSION.SDK_INT >= 35
 
     override suspend fun publishCountryOfDayUpdate() {
-        if (!isSupported()) return
-
-        val country = widgetDataSource.getWidgetData().featuredCountry ?: return
+        // The user can revoke POST_NOTIFICATIONS at any time; posting without it throws on Android 13+.
+        val permitted = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        val country = widgetDataSource.getWidgetData().featuredCountry
+        if (!isSupported() || !permitted || country == null) {
+            Timber.d("Live update skipped: supported=${isSupported()}, permitted=$permitted, country=${country != null}")
+            return
+        }
         ensureChannel()
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -45,13 +53,13 @@ class LiveUpdateManagerImpl @Inject constructor(
             .setOnlyAlertOnce(true)
             .setSilent(true)
             .apply {
-                if (Build.VERSION.SDK_INT >= 35) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
                     setRequestPromotedOngoing(true)
                 }
             }
             .build()
 
-        if (Build.VERSION.SDK_INT >= 35 &&
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA &&
             !notification.hasPromotableCharacteristics()
         ) {
             Timber.d("Live update notification missing promotable characteristics")

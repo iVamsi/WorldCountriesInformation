@@ -1,14 +1,17 @@
 package com.vamsi.worldcountriesinformation.feature.widget.notification
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -39,7 +42,15 @@ class CountryOfDayNotificationWorker @AssistedInject constructor(
                 .firstOrNull { it !is ApiResponse.Loading }
 
             val countries = (response as? ApiResponse.Success)?.data.orEmpty()
-            val country = featuredCountrySelector.select(countries) ?: return Result.success()
+            val country = featuredCountrySelector.select(countries)
+            // The user can revoke POST_NOTIFICATIONS at any time; posting without it throws on Android 13+.
+            if (country == null ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                Timber.d("Country-of-day notification skipped: no country or notifications not permitted")
+                return Result.success()
+            }
 
             val deepLinkUri = Uri.parse(
                 "https://worldcountries.vamsi.dev/country/${country.threeLetterCode.lowercase()}",
