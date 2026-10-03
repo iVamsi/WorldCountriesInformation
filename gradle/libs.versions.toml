@@ -114,7 +114,7 @@ benchmarkMacro = "1.5.0"
 uiautomator = "2.4.0"
 detekt = "1.23.8"
 spotless = "8.10.2"
-kover = "0.9.9"
+kover = "0.9.11"
 
 [libraries]
 # Android Core
