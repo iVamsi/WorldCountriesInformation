@@ -94,7 +94,7 @@ appfunctions = "1.0.0-alpha09"
 playServicesOssLicenses = "17.5.2"
 ossLicensesPlugin = "0.13.0"
 glanceWearTiles = "1.0.0-alpha07"
-wearCompose = "1.6.2"
+wearCompose = "1.7.0"
 playServicesWearable = "20.0.1"
 
 # Testing
